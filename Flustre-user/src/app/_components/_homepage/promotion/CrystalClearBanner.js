@@ -24,7 +24,7 @@ export default function CrystalClearBanner() {
     description:
       "Premium furniture essentials for comfortable, stylish living. Limited time offer",
     image:
-      "/crystal-banner/crystabanner1.jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/crystal/crystabanner1+(1).jpg",
     productLink: "/category/skin-care",
     percentage: 20,
   };

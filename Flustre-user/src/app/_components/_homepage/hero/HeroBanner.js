@@ -22,28 +22,28 @@ export default function HeroBanner() {
   const banners = [
     {
       id: 1,
-      image: "/banner/newbanner1.png",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner1(re).jpeg",
       title: "Living Room Furniture",
       subtitle: "Sofas, sectionals, coffee tables",
       description: "Design a cozy living space with modern, durable pieces.",
     },
     {
       id: 2,
-      image: "/banner/newbanner2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner2+(re).jpg",
       title: "Bedroom Collections",
       subtitle: "Beds, wardrobes, nightstands",
       description: "Sleep better with thoughtfully crafted bedroom essentials.",
     },
     {
       id: 3,
-      image: "/banner/newbanner4.png",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner3(re).jpeg",
       title: "Dining & Kitchen",
       subtitle: "Dining sets, chairs, storage",
       description: "Gather in style with functional dining furniture.",
     },
     {
       id: 4,
-      image: "/banner/newbanner5.png",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner5+(re).jpg",
       title: "Office & Study",
       subtitle: "Desks, ergonomic chairs, shelves",
       description: "Work comfortably with smart, space‑saving designs.",

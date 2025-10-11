@@ -9,27 +9,27 @@ const PRICE_RANGES_CONFIG = {
   "Living": [
     {
       range: "Under ₹500",
-      image: "/recommended/recommended1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended1+(1).jpg",
     },
     {
       range: "₹500 - ₹1000",
-      image: "/recommended/recommended2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
     },
     {
       range: "₹1000 - ₹1500",
-      image: "/recommended/recommended1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended1+(1).jpg",
     },
     {
       range: "₹1500 - ₹2000",
-      image: "/recommended/recommended2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
     },
     {
       range: "₹2000 - ₹2500",
-      image: "/recommended/recommended1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended1+(1).jpg",
     },
     {
       range: "Over ₹2500",
-      image: "/recommended/recommended2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
     },
   ],
 };
@@ -39,27 +39,27 @@ const PRICE_RANGES_CONFIG = {
 const DEFAULT_PRICE_RANGES = [
   {
     range: "Under ₹500",
-    image: "/recommended/recommended1.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended1+(1).jpg",
   },
   {
     range: "₹500 - ₹1000",
-    image: "/recommended/recommended2.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
   },
   {
     range: "₹1000 - ₹1500",
-    image: "/recommended/recommended1.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended1+(1).jpg",
   },
   {
     range: "₹1500 - ₹2000",
-    image: "/recommended/recommended2.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
   },
   {
     range: "₹2000 - ₹2500",
-    image: "/recommended/recommended1.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended1+(1).jpg",
   },
   {
     range: "Over ₹2500",
-    image: "/recommended/recommended2.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
   },
 ];
 

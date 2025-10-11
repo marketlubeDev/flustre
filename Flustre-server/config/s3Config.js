@@ -17,14 +17,14 @@ const s3ConfigOptions = {
   region: process.env.AWS_REGION || "us-east-1",
   // Default folder structure for different types of uploads
   folders: {
-    products: "sukalmart/products",
-    banners: "sukalmart/banners",
-    categories: "sukalmart/categories",
-    brands: "sukalmart/brands",
-    users: "sukalmart/users",
-    offers: "sukalmart/offers",
-    InstaCarousel: "sukalmart/InstaCarousel",
-    general: "sukalmart/uploads",
+    products: "Flustre/products",
+    banners: "Flustre/banners",
+    categories: "Flustre/categories",
+    brands: "Flustre/brands",
+    users: "Flustre/users",
+    offers: "Flustre/offers",
+    InstaCarousel: "Flustre/InstaCarousel",
+    general: "Flustre/uploads",
   },
 };
 

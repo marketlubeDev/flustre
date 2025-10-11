@@ -56,7 +56,7 @@ export default function Footer() {
             >
               <Image
                 src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Asset+1.svg"
-                alt="Souqalmart Logo"
+                alt="Flustre Logo"
                 fill
                 className="object-contain"
                 priority

@@ -1,4 +1,4 @@
-# SukalMart Backend Server
+# Flustre Backend Server
 
 A comprehensive e-commerce backend API built with Node.js, Express, and MongoDB.
 

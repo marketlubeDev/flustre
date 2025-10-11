@@ -582,7 +582,7 @@ function NavContent() {
                 <Link href="/" className="flex items-center">
                   <Image
                     src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Asset+1.svg"
-                    alt="Souqalmart"
+                    alt="Flustre"
                     width={200}
                     height={32}
                     className="h-8 w-auto"
@@ -1031,7 +1031,7 @@ function NavContent() {
                   <Link href="/" className="flex items-center">
                     <Image
                       src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Asset+1.svg"
-                      alt="Souqalmart"
+                      alt="Flustre"
                       width={120}
                       height={20}
                       className="h-5 w-auto"
@@ -1593,7 +1593,7 @@ export default function Nav() {
               <div className="flex-shrink-0 pr-4 hidden lg:block">
                 <Image
                   src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Asset+1.svg"
-                  alt="Souqalmart"
+                  alt="Flustre"
                   width={200}
                   height={32}
                   className="h-8 w-auto"

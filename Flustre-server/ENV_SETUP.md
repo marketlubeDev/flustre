@@ -2,7 +2,7 @@
 
 ## Backend Environment Variables (.env)
 
-Create a `.env` file in the `Sukalmart_server` directory with the following variables:
+Create a `.env` file in the `flustre_server` directory with the following variables:
 
 ### Required Variables
 

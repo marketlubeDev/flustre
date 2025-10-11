@@ -13,7 +13,7 @@ const generateOtp = () => crypto.randomInt(1000, 9999).toString();
 
 // Build branded OTP email HTML
 function buildOtpEmailHtml(otp) {
-  const brandName = process.env.BRAND_NAME || "Souqalmart";
+  const brandName = process.env.BRAND_NAME || "Flustre";
   const brandPrimary = process.env.BRAND_PRIMARY_COLOR || "#6D0D26";
   const brandAccent = process.env.BRAND_ACCENT_COLOR || "#f59e0b"; // amber-500
   const logoUrl = process.env.BRAND_LOGO_URL || "";
@@ -139,7 +139,7 @@ const otpToEmail = async (
     from: process.env.NODEMAILER_MAIL,
     to: mail,
     subject:
-      customSubject || `Your ${process.env.BRAND_NAME || "SukalMart"} OTP Code`,
+      customSubject || `Your ${process.env.BRAND_NAME || "Flustre"} OTP Code`,
     html: customContent || buildOtpEmailHtml(otp),
   };
 

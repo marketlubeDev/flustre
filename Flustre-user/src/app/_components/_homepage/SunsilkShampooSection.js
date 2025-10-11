@@ -81,7 +81,7 @@ export default function ProductSection() {
       type: "Living",
       price: 299,
       originalPrice: 399,
-      image: "/products/product1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
       category: "Living",
     },
     {
@@ -90,7 +90,7 @@ export default function ProductSection() {
       type: "Living",
       price: 349,
       originalPrice: 449,
-      image: "/recommended/recommended2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended2+(1).jpg",
       category: "Living",
     },
     {
@@ -99,7 +99,7 @@ export default function ProductSection() {
       type: "Living",
       price: 279,
       originalPrice: 379,
-      image: "/products/product3.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
       category: "Living",
     },
     {
@@ -108,7 +108,7 @@ export default function ProductSection() {
       type: "Living",
       price: 259,
       originalPrice: 359,
-      image: "/recommended/recommended4.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended4+(1).jpg",
       category: "Living",
     },
     {
@@ -117,7 +117,7 @@ export default function ProductSection() {
       type: "Living",
       price: 329,
       originalPrice: 429,
-      image: "/products/product5.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product5+(1).jpg",
       category: "Living",
     },
     {
@@ -126,7 +126,7 @@ export default function ProductSection() {
       type: "Living",
       price: 289,
       originalPrice: 389,
-      image: "/recommended/recommended6.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/recommended/recommended6.jpg",
       category: "Living",
     },
   ];

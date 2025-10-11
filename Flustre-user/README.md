@@ -1,4 +1,4 @@
-# SukalMart Frontend
+# Flustre Frontend
 
 A modern e-commerce frontend built with Next.js 15, React 19, and Tailwind CSS.
 

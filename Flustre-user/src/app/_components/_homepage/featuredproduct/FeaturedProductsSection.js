@@ -21,9 +21,9 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
     ...p,
     image:
       i === 0
-        ? "/featured/featured7.jpg"
+        ? "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/finest/featured7+(re).jpg"
         : i === 1
-        ? "/featured/featured4.jpg"
+        ? "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/finest/featured4+(re).jpg"
         : p.image,
   }));
 

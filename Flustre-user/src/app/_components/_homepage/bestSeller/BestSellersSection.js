@@ -157,7 +157,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 899,
         originalPrice: 1199,
-        image: "/bestseller/bestseller1.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller1+(re).jpg",
         badge: "#1",
       },
       {
@@ -166,7 +166,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 329,
         originalPrice: 429,
-        image: "/bestseller/bestseller2.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller2(re).jpg",
         badge: "#2",
       },
       {
@@ -175,7 +175,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 299,
         originalPrice: 399,
-        image: "/bestseller/bestseller3.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller3+(re).jpg",
         badge: "#3",
       },
       {
@@ -184,7 +184,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 749,
         originalPrice: 949,
-        image: "/bestseller/bestseller4.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller4(re).jpg",
       },
       {
         id: 5,
@@ -192,7 +192,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 259,
         originalPrice: 329,
-        image: "/bestseller/bestseller5.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller5+(re).jpg",
       },
       {
         id: 6,
@@ -200,7 +200,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 389,
         originalPrice: 499,
-        image: "/bestseller/bestseller6.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller6+(re).jpg",
       },
       {
         id: 7,
@@ -208,7 +208,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 679,
         originalPrice: 849,
-        image: "/bestseller/bestseller7.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller7(re).jpg",
       },
       {
         id: 8,
@@ -216,7 +216,7 @@ export default function BestSellersSection() {
         category: "Furniture",
         price: 189,
         originalPrice: 249,
-        image: "/bestseller/bestseller8.jpg",
+        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller8+(re).jpg",
       },
     ],
     []

@@ -96,7 +96,7 @@ export default function PrivacyPage() {
           </h2>
           <p className="text-gray-700 mb-6">
             If you have any questions about this privacy policy, please contact
-            us at privacy@souqalmart.com or through our customer support
+            us at privacy@flustre.com or through our customer support
             channels.
           </p>
         </div>

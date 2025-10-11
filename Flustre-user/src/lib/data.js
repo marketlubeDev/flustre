@@ -1,25 +1,25 @@
-// Product and category data for SukalMart
+// Product and category data for flustre
 
 export const categories = [
   {
     name: "Living",
-    image: "/category/category1.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category1+(re).jpg",
   },
   {
     name: "Bedroom",
-    image: "/category/category2.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category2+(re).jpg",
   },
   {
     name: "Dining & Kitchen",
-    image: "/category/category3.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category3+(re).jpg",
   },
   {
     name: "Office",
-    image: "/category/category4.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category4+(re).jpg",
   },
   {
     name: "Outdoor",
-    image: "/category/category5.jpg",
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category5+(re).jpg",
   },
 ];
 

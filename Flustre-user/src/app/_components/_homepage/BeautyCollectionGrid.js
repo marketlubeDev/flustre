@@ -11,7 +11,7 @@ const products = [
     category: "Sofas",
     price: 899,
     originalPrice: 1099,
-    image: "/beauty/beauty1.jpg"
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/beauty/beauty1+(1).jpg"
   },
   {
     id: "18",
@@ -19,7 +19,7 @@ const products = [
     category: "Dining Tables",
     price: 2499,
     originalPrice: 3199,
-    image: "/beauty/beauty2.jpg"
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/beauty/beauty2+(1).jpg"
   },
   {
     id: "19",
@@ -27,7 +27,7 @@ const products = [
     category: "Table Sets",
     price: 1299,
     originalPrice: 1599,
-    image: "/beauty/beauty3.jpg"
+    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/beauty/beauty3+(1).jpg"
   }
 ];
 

@@ -1,6 +1,6 @@
-# AWS S3 Setup Guide for SukalMart
+# AWS S3 Setup Guide for Flustre
 
-This guide will help you set up AWS S3 for image uploads in your SukalMart application.
+This guide will help you set up AWS S3 for image uploads in your Flustre application.
 
 ## Prerequisites
 

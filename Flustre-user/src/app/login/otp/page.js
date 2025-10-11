@@ -156,7 +156,7 @@ export default function OTPPage() {
             <div className="flex items-center space-x-2">
               <Image
                 src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Asset+1.svg"
-                alt="Souqalmart"
+                alt="flustre"
                 width={200}
                 height={48}
                 className="h-10 sm:h-12 w-auto"
