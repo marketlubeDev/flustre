@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --color-primary: #2B73B8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --color-primary: var(--color-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-nunito), 'Nunito Sans', Arial, Helvetica, sans-serif;
+}
+
+/* Hide scrollbar for mobile horizontal scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Thin scrollbar styling */
+.thin-scrollbar {
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: #cbd5e0 #f7fafc;  /* Firefox: thumb and track colors */
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;  /* Very thin scrollbar width */
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: #f7fafc;  /* Light gray track */
+  border-radius: 3px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e0;  /* Gray thumb */
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;  /* Darker gray on hover */
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Sticky positioning for product images */
+.product-images-sticky {
+  position: sticky;
+  top: 8rem;
+  align-self: flex-start;
+  height: fit-content;
+}
+
+@media (max-width: 1023px) {
+  .product-images-sticky {
+    position: static;
+  }
+}
+
+/* Sticky left column in reviews */
+.reviews-sticky-left {
+  position: sticky;
+  top: 8rem;
+  align-self: flex-start;
+  height: fit-content;
+}
+
+@media (max-width: 1023px) {
+  .reviews-sticky-left {
+    position: static;
+  }
+}
+
+/* Scoped width for LocationModal search bar only */
+.location-modal .ant-input-affix-wrapper,
+.location-modal-root .ant-input-affix-wrapper {
+  width: 65% !important;
+}
+
+/* Scoped padding for LocationModal modal content only */
+.location-modal .ant-modal-content,
+.location-modal-root .ant-modal-content {
+  padding: 14px 10px !important;
+}
+
+/* Scoped country dropdown width and item spacing */
+.location-modal .country-dropdown .ant-dropdown-menu,
+.location-modal-root .country-dropdown .ant-dropdown-menu {
+  width: 184px !important;
+  padding: 6px !important;
+}
+.location-modal .country-dropdown .ant-dropdown-menu-item,
+.location-modal-root .country-dropdown .ant-dropdown-menu-item {
+  padding: 6px 8px !important;
+}
+.location-modal .country-dropdown .ant-dropdown-menu-item > div,
+.location-modal-root .country-dropdown .ant-dropdown-menu-item > div {
+  width: 100%;
+}

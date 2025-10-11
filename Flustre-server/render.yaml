@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: sukal-mart-server
+    env: node
+    rootDir: Sukalmart_server
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production

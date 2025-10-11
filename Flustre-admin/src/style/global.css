@@ -1,0 +1,310 @@
+/* .modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+} */
+
+/* .modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+} */
+
+.modal-content h2 {
+  margin-bottom: 10px;
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.modal-content select,
+.modal-content input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cancel-button {
+  background-color: transparent;
+  color: red;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.apply-button {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.apply-button:hover {
+  background-color: darkgreen;
+}
+
+/* Ticket style coupon card */
+:root {
+  --page-bg: #ffffff; /* background outside ticket (holes color) */
+  --ticket-bg: #f8f3f4; /* requested ticket background */
+  --ticket-border: #f5d0e6; /* rose-200 */
+  --ticket-accent: #be185d; /* rose-700 */
+}
+
+.coupon-ticket {
+  position: relative;
+  background: var(--ticket-bg);
+  /* border: 1px solid var(--ticket-border); */
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* top and bottom center notches */
+.coupon-ticket::before,
+.coupon-ticket::after {
+  content: "";
+  position: absolute;
+  left: 70%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 14px;
+  background: var(--page-bg);
+  border-left: 1px solid var(--ticket-border);
+  border-right: 1px solid var(--ticket-border);
+  z-index: 1;
+}
+
+.coupon-ticket::before {
+  top: -7px;
+  border-bottom-left-radius: 9999px;
+  border-bottom-right-radius: 9999px;
+}
+
+.coupon-ticket::after {
+  bottom: -7px;
+  border-top-left-radius: 9999px;
+  border-top-right-radius: 9999px;
+}
+
+/* dashed perforation on the right third */
+.coupon-ticket__divider {
+  position: absolute;
+  right: 30%; /* space for checkbox and scallops */
+  top: 10px;
+  bottom: 10px;
+  border-right: 2px dashed var(--ticket-border);
+}
+
+/* fill element for scallop pseudo elements */
+.coupon-ticket__scallops {
+  position: absolute;
+  inset: 0;
+}
+
+/* Right side area containing checkbox and vertical text */
+.coupon-ticket__right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coupon-ticket__side {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+
+.coupon-ticket__check {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e9d5ff;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.coupon-ticket__off {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: #6d0d26; /* rose-900-ish */
+  font-weight: bolder;
+  letter-spacing: 0.05em;
+  font-size: 20px;
+  white-space: nowrap;
+  opacity: 0.5;
+}
+
+.coupon-ticket__scallops::before,
+.coupon-ticket__scallops::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background: radial-gradient(
+      6px 6px at 6px 8px,
+      var(--page-bg) 6px,
+      transparent 6.2px
+    )
+    repeat-y;
+  background-size: 12px 16px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.coupon-ticket__scallops::before {
+  left: -6px;
+}
+.coupon-ticket__scallops::after {
+  right: -6px;
+}
+
+/* Ensure AntD Drawer close icon sits at the right edge for coupon drawer */
+.coupon-drawer .ant-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coupon-drawer .ant-drawer-header .ant-drawer-header-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  /* put the title first and the close button last */
+  flex-direction: row;
+}
+
+.coupon-drawer .ant-drawer-header .ant-drawer-title {
+  flex: 1 1 auto;
+}
+
+.coupon-drawer .ant-drawer-header .ant-drawer-close {
+  order: 2;
+  margin-inline-start: auto;
+}
+
+/* Ensure AntD Drawer close icon sits at the right edge for insta drawer */
+.insta-drawer .ant-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.insta-drawer .ant-drawer-header .ant-drawer-header-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  /* put the title first and the close button last */
+  flex-direction: row;
+}
+
+.insta-drawer .ant-drawer-header .ant-drawer-title {
+  flex: 1 1 auto;
+}
+
+.insta-drawer .ant-drawer-header .ant-drawer-close {
+  order: 2;
+  margin-inline-start: auto;
+}
+
+/* Ensure AntD Drawer close icon sits at the right edge for orders drawer */
+.orders-drawer .ant-drawer-header {
+  display: flex;
+  align-items: center;
+}
+
+.orders-drawer .ant-drawer-header .ant-drawer-header-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.orders-drawer .ant-drawer-header .ant-drawer-title {
+  flex: 1 1 auto;
+}
+
+.orders-drawer .ant-drawer-header .ant-drawer-close {
+  order: 2;
+  margin-inline-start: auto;
+}
+
+/* Print styles for Orders Drawer */
+@media print {
+  /* Only show the orders drawer content when printing */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .orders-drawer,
+  .orders-drawer * {
+    visibility: visible !important;
+  }
+
+  /* Remove overlay and make drawer occupy printable page */
+  .orders-drawer .ant-drawer-mask {
+    display: none !important;
+  }
+
+  .orders-drawer .ant-drawer-wrapper-body,
+  .orders-drawer .ant-drawer-content-wrapper,
+  .orders-drawer .ant-drawer-content,
+  .orders-drawer .ant-drawer,
+  .orders-drawer .ant-drawer-body {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* Hide elements not needed on paper */
+  .orders-drawer .ant-drawer-footer,
+  .orders-drawer .ant-drawer-close {
+    display: none !important;
+  }
+
+  /* Optional: nicer page margins and size */
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}
