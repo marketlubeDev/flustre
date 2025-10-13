@@ -30,7 +30,7 @@ function ProductsPageContent() {
       originalPrice: 3000,
       discount: 17,
       category: "Living Room",
-      image: "/products/product1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
       rating: 4.5,
       reviews: 128,
       inStock: true,
@@ -43,7 +43,7 @@ function ProductsPageContent() {
       originalPrice: 2200,
       discount: 18,
       category: "Bedroom",
-      image: "/products/product2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg",
       rating: 4.3,
       reviews: 95,
       inStock: true,
@@ -56,7 +56,7 @@ function ProductsPageContent() {
       originalPrice: 1500,
       discount: 20,
       category: "Dining & Kitchen",
-      image: "/products/product3.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
       rating: 4.7,
       reviews: 67,
       inStock: true,
@@ -69,7 +69,7 @@ function ProductsPageContent() {
       originalPrice: 1000,
       discount: 20,
       category: "Office",
-      image: "/products/product4.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg",
       rating: 4.2,
       reviews: 43,
       inStock: true,
@@ -82,7 +82,7 @@ function ProductsPageContent() {
       originalPrice: 750,
       discount: 20,
       category: "Outdoors",
-      image: "/products/product5.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product5+(1).jpg",
       rating: 4.4,
       reviews: 29,
       inStock: true,
@@ -95,7 +95,7 @@ function ProductsPageContent() {
       originalPrice: 600,
       discount: 25,
       category: "Living Room",
-      image: "/products/product1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
       rating: 4.6,
       reviews: 84,
       inStock: true,
@@ -108,7 +108,7 @@ function ProductsPageContent() {
       originalPrice: 2800,
       discount: 21,
       category: "Bedroom",
-      image: "/products/product2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg",
       rating: 4.5,
       reviews: 56,
       inStock: true,
@@ -121,7 +121,7 @@ function ProductsPageContent() {
       originalPrice: 1900,
       discount: 21,
       category: "Dining & Kitchen",
-      image: "/products/product3.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
       rating: 4.8,
       reviews: 72,
       inStock: true,
@@ -134,7 +134,7 @@ function ProductsPageContent() {
       originalPrice: 450,
       discount: 22,
       category: "Office",
-      image: "/products/product4.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg",
       rating: 4.3,
       reviews: 91,
       inStock: true,
@@ -147,7 +147,7 @@ function ProductsPageContent() {
       originalPrice: 1200,
       discount: 25,
       category: "Outdoors",
-      image: "/products/product5.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product5+(1).jpg",
       rating: 4.4,
       reviews: 38,
       inStock: true,
@@ -160,7 +160,7 @@ function ProductsPageContent() {
       originalPrice: 850,
       discount: 24,
       category: "Living Room",
-      image: "/products/product1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
       rating: 4.2,
       reviews: 47,
       inStock: true,
@@ -173,7 +173,7 @@ function ProductsPageContent() {
       originalPrice: 350,
       discount: 20,
       category: "Bedroom",
-      image: "/products/product2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg",
       rating: 4.5,
       reviews: 63,
       inStock: true,
@@ -299,7 +299,7 @@ function ProductsPageContent() {
     if (!priceLabel) return;
 
     const parsePriceRangeLabel = (label) => {
-      const sanitized = label.replaceAll(",", "").replaceAll("AED", "").trim();
+      const sanitized = label.replaceAll(",", "").replaceAll("₹", "").trim();
 
       // Under X
       const underMatch = sanitized.match(/^Under\s+(\d+)$/i);
@@ -713,7 +713,7 @@ function ProductsPageContent() {
                           letterSpacing: "-0.14px",
                         }}
                       >
-                        AED {priceRange.min.toLocaleString()}
+                        ₹ {priceRange.min.toLocaleString()}
                       </div>
                       <Image
                         src="/doublearrow.svg"
@@ -742,7 +742,7 @@ function ProductsPageContent() {
                           letterSpacing: "-0.14px",
                         }}
                       >
-                        AED {priceRange.max.toLocaleString()}
+                        ₹ {priceRange.max.toLocaleString()}
                       </div>
                     </div>
                   </div>

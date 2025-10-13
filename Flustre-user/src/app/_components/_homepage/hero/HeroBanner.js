@@ -16,13 +16,16 @@ export default function HeroBanner() {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const intervalRef = useRef(null);
 
   // STATIC BANNERS: Using local images from public/banner
+  // Desktop and mobile versions for responsive design
   const banners = [
     {
       id: 1,
       image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner1(re).jpeg",
+      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner2+(1).jpg",
       title: "Living Room Furniture",
       subtitle: "Sofas, sectionals, coffee tables",
       description: "Design a cozy living space with modern, durable pieces.",
@@ -30,6 +33,7 @@ export default function HeroBanner() {
     {
       id: 2,
       image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner2+(re).jpg",
+      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner3+(1).jpg",
       title: "Bedroom Collections",
       subtitle: "Beds, wardrobes, nightstands",
       description: "Sleep better with thoughtfully crafted bedroom essentials.",
@@ -37,6 +41,7 @@ export default function HeroBanner() {
     {
       id: 3,
       image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner3(re).jpeg",
+      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner4+(1).jpg",
       title: "Dining & Kitchen",
       subtitle: "Dining sets, chairs, storage",
       description: "Gather in style with functional dining furniture.",
@@ -44,6 +49,7 @@ export default function HeroBanner() {
     {
       id: 4,
       image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner5+(re).jpg",
+      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner5+(1).jpg",
       title: "Office & Study",
       subtitle: "Desks, ergonomic chairs, shelves",
       description: "Work comfortably with smart, space‑saving designs.",
@@ -51,6 +57,22 @@ export default function HeroBanner() {
   ];
 
   console.log(banners, "hero-banners-static");
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px is the md breakpoint in Tailwind
+    };
+
+    // Check on mount
+    checkMobile();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Auto-slide functionality (unchanged from original implementation)
   useEffect(() => {
@@ -102,11 +124,11 @@ export default function HeroBanner() {
       <div className="relative h-[500px] md:h-[500px] lg:h-[640px] bg-white overflow-hidden">
         {/* Background image with responsive sizing */}
         {/* BACKEND INTERACTION: Previously used dynamic image URLs from database */}
-        {/* Now uses static image paths from public folder */}
+        {/* Now uses static image paths - different images for mobile and desktop */}
         <div
           className="absolute inset-0 transition-all duration-500 ease-in-out"
           style={{
-            backgroundImage: `url('${currentBanner.image}')`,
+            backgroundImage: `url('${isMobile ? currentBanner.mobileImage : currentBanner.image}')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

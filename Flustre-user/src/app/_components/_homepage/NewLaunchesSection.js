@@ -44,37 +44,37 @@ export default function NewLaunchesSection() {
       id: "13",
       name: "The Answer Super Shampoo",
       description: "Hydrolyzed Keratin & Ceramide Formula",
-      image: "/featured/featured1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/featured1+(1).jpg",
     },
     {
       id: "14",
       name: "Newest Onion Protein Shampoo",
       description: "Almond & Onion Ultra Nourishing",
-      image: "/featured/featured2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/featured2+(1).jpg",
     },
     {
       id: "15",
       name: "Flakes Anti-Dandruff Shampoo",
       description: "Professional Anti-Dandruff Formula",
-      image: "/featured/featured3.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/featured3+(1).jpg",
     },
     {
       id: "16",
       name: "Redken Anti-Dandruff Shampoo",
       description: "Professional Hair Care Formula",
-      image: "/featured/featured4.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/featured4+(1).jpg",
     },
     {
       id: "17",
       name: "Kerastase Repair Shampoo",
       description: "Fiber-strengthening care for damaged hair",
-      image: "/featured/featured5.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/featured5+(1).jpg",
     },
     {
       id: "18",
       name: "Moroccanoil Hydrating Shampoo",
       description: "Argan oil infused moisture balance",
-      image: "/featured/featured6.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/featured6+(1).jpg",
     },
    
   ];

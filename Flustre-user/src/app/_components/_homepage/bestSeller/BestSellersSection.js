@@ -141,8 +141,6 @@ export default function BestSellersSection() {
   const router = useRouter();
   const scrollerRef = useRef(null);
   const isPausedRef = useRef(false);
-  const rafRef = useRef(null);
-  const pageIndexRef = useRef(0);
   // Static cart function - no API integration
   const addToCart = (item) => {
     console.log('Added to cart (static):', item);
@@ -223,91 +221,103 @@ export default function BestSellersSection() {
   );
   const isLoading = false;
 
-  // Group products into pages of 4 and add duplicates for infinite scroll
-  const productPages = useMemo(() => {
-    const pages = [];
-    for (let i = 0; i < products.length; i += 4) {
-      pages.push(products.slice(i, i + 4));
-    }
-    
-    // For infinite scroll: duplicate first page at end and last page at start
-    if (pages.length > 1) {
-      return [pages[pages.length - 1], ...pages, pages[0]];
-    }
-    return pages;
+  // Duplicate products for infinite scroll effect
+  const duplicatedProducts = useMemo(() => {
+    // Triple the array for seamless infinite scrolling
+    return [...products, ...products, ...products];
   }, [products]);
-  
-  // Actual number of real pages (excluding duplicates)
-  const realPageCount = useMemo(() => {
-    return Math.ceil(products.length / 4);
-  }, [products.length]);
 
-  // Scroll behavior effect (simplified and optimized)
+  // Initialize scroll position to middle set for seamless infinite scroll
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const el = scrollerRef.current;
-    if (!el) return;
+    if (!el || products.length === 0) return;
 
-    let timerId;
+    // Wait for layout to complete
+    const timer = setTimeout(() => {
+      const cardWidth = el.querySelector('.product-card')?.offsetWidth || 0;
+      const gap = 16;
+      // Start at the beginning of the second set (middle)
+      const initialScroll = (cardWidth + gap) * products.length;
+      el.scrollLeft = initialScroll;
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [products.length]);
+
+  // Handle infinite scroll loop - seamlessly jump when reaching boundaries
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = scrollerRef.current;
+    if (!el || products.length === 0) return;
+
+    let scrollTimer;
     const handleScroll = () => {
       el.classList.add("scrolling");
-      if (timerId) clearTimeout(timerId);
-      timerId = setTimeout(() => {
+      if (scrollTimer) clearTimeout(scrollTimer);
+      
+      scrollTimer = setTimeout(() => {
         el.classList.remove("scrolling");
-      }, 700);
+        
+        const cardWidth = el.querySelector('.product-card')?.offsetWidth || 0;
+        const gap = 16;
+        const oneSetWidth = (cardWidth + gap) * products.length;
+        
+        // If we've scrolled past the second set, jump back to the first set
+        if (el.scrollLeft >= oneSetWidth * 2) {
+          el.scrollLeft = el.scrollLeft - oneSetWidth;
+        }
+        // If we've scrolled before the first set, jump to the second set
+        else if (el.scrollLeft < oneSetWidth * 0.5) {
+          el.scrollLeft = el.scrollLeft + oneSetWidth;
+        }
+      }, 150);
     };
 
     el.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       el.removeEventListener("scroll", handleScroll);
-      if (timerId) clearTimeout(timerId);
+      if (scrollTimer) clearTimeout(scrollTimer);
     };
-  }, []);
+  }, [products.length]);
 
-  // Auto-scroll pages of 4 with infinite cyclic loop and pause on hover/touch
+  // Auto-scroll with pause on hover/touch - continuous scrolling
   useEffect(() => {
     if (typeof window === "undefined") return;
     const el = scrollerRef.current;
-    if (!el || productPages.length === 0 || realPageCount <= 1) return;
-
-    // Start at page 1 (first real page, since page 0 is the duplicate last page)
-    if (pageIndexRef.current === 0) {
-      pageIndexRef.current = 1;
-      el.scrollTo({ left: el.clientWidth, behavior: "auto" });
-    }
-
-    const goToPage = (pageIndex, smooth = true) => {
-      pageIndexRef.current = pageIndex;
-      const targetLeft = pageIndex * el.clientWidth;
-      el.scrollTo({ left: targetLeft, behavior: smooth ? "smooth" : "auto" });
-    };
-
-    const handleTransitionEnd = () => {
-      // If we're at the duplicate last page (index 0), jump to real last page
-      if (pageIndexRef.current === 0) {
-        goToPage(realPageCount, false);
-      }
-      // If we're at the duplicate first page (last index), jump to real first page
-      else if (pageIndexRef.current === productPages.length - 1) {
-        goToPage(1, false);
-      }
-    };
+    if (!el || products.length === 0) return;
 
     const intervalMs = 3500;
     let timerId = null;
     
+    const scrollToNext = () => {
+      if (!isPausedRef.current) {
+        const cardWidth = el.querySelector('.product-card')?.offsetWidth || 0;
+        const gap = 16; // gap-4 = 16px
+        
+        // Determine number of cards to scroll based on screen width
+        const screenWidth = window.innerWidth;
+        let cardsToScroll = 2; // default for mobile
+        
+        if (screenWidth >= 1280) { // xl and above
+          cardsToScroll = 4;
+        } else if (screenWidth >= 1024) { // lg
+          cardsToScroll = 3;
+        } else if (screenWidth >= 768) { // md
+          cardsToScroll = 3;
+        }
+        
+        const scrollAmount = (cardWidth + gap) * cardsToScroll;
+        
+        // Just scroll forward - the boundary detection will handle looping
+        el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      }
+    };
+    
     const start = () => {
       if (timerId) return;
-      timerId = setInterval(() => {
-        if (!isPausedRef.current) {
-          // Always move forward, will handle wrap-around via handleTransitionEnd
-          goToPage(pageIndexRef.current + 1, true);
-          // Check after animation completes
-          setTimeout(handleTransitionEnd, 600);
-        }
-      }, intervalMs);
+      timerId = setInterval(scrollToNext, intervalMs);
     };
     
     const stop = () => {
@@ -327,19 +337,12 @@ export default function BestSellersSection() {
     const handleLeave = () => {
       isPausedRef.current = false;
     };
-    
-    const handleResize = () => {
-      // Realign to current page on resize
-      const current = pageIndexRef.current;
-      el.scrollTo({ left: current * el.clientWidth, behavior: "auto" });
-    };
 
     // Pause on hover or touch
     el.addEventListener("mouseenter", handleEnter);
     el.addEventListener("mouseleave", handleLeave);
     el.addEventListener("touchstart", handleEnter, { passive: true });
     el.addEventListener("touchend", handleLeave, { passive: true });
-    window.addEventListener("resize", handleResize);
 
     return () => {
       stop();
@@ -347,9 +350,8 @@ export default function BestSellersSection() {
       el.removeEventListener("mouseleave", handleLeave);
       el.removeEventListener("touchstart", handleEnter);
       el.removeEventListener("touchend", handleLeave);
-      window.removeEventListener("resize", handleResize);
     };
-  }, [productPages.length, realPageCount]);
+  }, [products.length]);
 
   const handleProductClick = (productId) => {
     router.push(`/products/${productId}`);
@@ -405,11 +407,11 @@ export default function BestSellersSection() {
           </button>
         </div>
 
-        {/* Products Grid - pages of 4 with snap */}
+        {/* Products Display - horizontal scroll on all screen sizes */}
         <div
           id="best-sellers-scroller"
           ref={scrollerRef}
-          className="flex overflow-x-auto pb-2 md:pb-4 snap-x snap-mandatory"
+          className="overflow-x-auto pb-2 md:pb-4"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {isLoading && (
@@ -419,20 +421,22 @@ export default function BestSellersSection() {
             <div className="py-6 text-sm text-gray-600">No products found.</div>
           )}
 
-          {!isLoading && productPages.map((page, pageIdx) => (
-            <div key={`page-${pageIdx}`} className="min-w-full snap-start px-0">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-                {page.map((product, idx) => (
+          {!isLoading && (
+            <div className="flex gap-4 md:gap-5">
+              {duplicatedProducts.map((product, idx) => (
+                <div 
+                  key={`${product.id}-${idx}`} 
+                  className="product-card flex-shrink-0 w-[calc(50%-8px)] md:w-[calc(33.333%-13.33px)] lg:w-[calc(25%-12px)] xl:w-[calc(25%-12px)] 2xl:w-[calc(25%-12px)]"
+                >
                   <ProductCard
-                    key={`${pageIdx}-${product.id || idx}`}
                     product={product}
                     onAddToCart={(p) => addToCart(p, undefined, 1)}
                     onProductClick={handleProductClick}
                   />
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
         {/* Hide scrollbar for the scroller (scoped) */}

@@ -84,7 +84,7 @@ export default function BeautyCollectionGrid() {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="object-contain w-full h-full transition-transform duration-300 ease-out group-hover:scale-105"
+                    className="object-fit w-full h-full transition-transform duration-300 ease-out group-hover:scale-105"
                     onError={(e) => {
                       e.target.src = "https://via.placeholder.com/300x300?text=Product+Image";
                     }}

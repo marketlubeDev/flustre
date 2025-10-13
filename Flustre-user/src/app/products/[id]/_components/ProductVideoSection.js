@@ -5,7 +5,7 @@ export default function ProductVideoSection() {
   const staticVideo = {
     id: 1,
     title: "Product Demo Video",
-    videoUrl: "/feature-product/feature-video1.mp4",
+    videoUrl: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/videos/feature-video1+(1).mp4",
 
   };
 

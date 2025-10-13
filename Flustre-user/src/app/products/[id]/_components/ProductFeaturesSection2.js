@@ -9,7 +9,7 @@ export default function ProductFeaturesSection2() {
       id: 1,
       title: "Eco-Friendly Design",
       description: "Designed with sustainability in mind, our products are made from environmentally friendly materials that reduce your carbon footprint.",
-      imageUrl: "/feature-product/feature-banner4.jpg",
+      imageUrl: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/feature-banner4+(1).jpg",
       alt: "Eco-Friendly Design"
     },
    

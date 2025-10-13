@@ -50,6 +50,20 @@ export default function SavedAddress() {
     }
   }, []);
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    
+    // Cleanup function to restore scrolling when component unmounts
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isModalOpen]);
+
   const openAddModal = () => {
     setModalMode("add");
     setEditingId(null);
@@ -149,7 +163,7 @@ export default function SavedAddress() {
 
   return (
     <div className="bg-white rounded-lg p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
           Saved Addresses
         </h2>
@@ -259,23 +273,35 @@ export default function SavedAddress() {
             className="absolute inset-0 bg-black/40 z-40"
             onClick={closeModal}
           />
-          <div className="relative bg-white w-full max-w-lg mx-3 rounded-lg shadow-lg z-50">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+          <div className="relative bg-white w-full max-w-sm sm:max-w-lg mx-3 rounded-lg shadow-lg z-50">
+            <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                 {modalMode === "add" ? "Add Address" : "Edit Address"}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700 text-sm"
+                className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors"
                 disabled={updateUser.isLoading || deleteAddress.isLoading}
+                aria-label="Close"
               >
-                Close
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="px-4 py-4 space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleSubmit} className="px-3 sm:px-4 py-2 sm:py-4 space-y-2 sm:space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-xs sm:text-sm text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">
                     Full name
                   </label>
                   <input
@@ -284,14 +310,14 @@ export default function SavedAddress() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, fullName: e.target.value }))
                     }
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
                     required
                     disabled={updateUser.isLoading || deleteAddress.isLoading}
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">
                     Phone number
                   </label>
                   <input
@@ -311,7 +337,7 @@ export default function SavedAddress() {
                       }
                     }}
                     inputMode="tel"
-                    className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
+                    className={`w-full rounded-md border px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       phoneError
                         ? "border-red-400 focus:ring-red-300 focus:border-red-400"
                         : "border-gray-300 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
@@ -326,7 +352,7 @@ export default function SavedAddress() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs sm:text-sm text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">
                   House / Apartment
                 </label>
                 <input
@@ -338,13 +364,13 @@ export default function SavedAddress() {
                       houseApartmentName: e.target.value,
                     }))
                   }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
                   disabled={updateUser.isLoading || deleteAddress.isLoading}
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-xs sm:text-sm text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">
                     Street
                   </label>
                   <input
@@ -353,12 +379,12 @@ export default function SavedAddress() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, street: e.target.value }))
                     }
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
                     disabled={updateUser.isLoading || deleteAddress.isLoading}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">
                     Landmark
                   </label>
                   <input
@@ -367,7 +393,7 @@ export default function SavedAddress() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, landmark: e.target.value }))
                     }
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-gray-900 placeholder:text-gray-400 bg-white"
                     disabled={updateUser.isLoading || deleteAddress.isLoading}
                   />
                 </div>

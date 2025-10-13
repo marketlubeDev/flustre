@@ -1,16 +1,46 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 // import { useQuery } from "@tanstack/react-query"; // Removed API integration
 // import { getUserOrders } from "@/lib/services/orderService"; // Removed API integration
 
 export default function MyOrders() {
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Static data - no API integration
-  const data = [];
-  const isLoading = false;
+  // Load orders from localStorage
+  useEffect(() => {
+    const loadOrders = () => {
+      try {
+        if (typeof window !== "undefined") {
+          const storedOrders = window.localStorage.getItem("userOrders");
+          if (storedOrders) {
+            setOrders(JSON.parse(storedOrders));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load orders:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadOrders();
+
+    // Listen for order updates
+    const handleOrdersUpdate = () => {
+      loadOrders();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("orders-updated", handleOrdersUpdate);
+      return () => {
+        window.removeEventListener("orders-updated", handleOrdersUpdate);
+      };
+    }
+  }, []);
+
   const isError = false;
-  const orders = [];
 
   const getStatusColor = (status) => {
     switch ((status || "").toLowerCase()) {
@@ -103,7 +133,7 @@ export default function MyOrders() {
                 </div>
                 <div className="sm:text-right">
                   <p className="font-medium text-gray-900 text-sm sm:text-base">
-                    AED {order.totalAmount}
+                    ₹{order.totalAmount}
                   </p>
                   <span
                     className={`px-2 py-1 text-[10px] sm:text-xs rounded-full ${getStatusColor(
@@ -125,7 +155,7 @@ export default function MyOrders() {
                       {item?.productId?.name || "Product"} (Qty: {item.quantity}
                       )
                     </span>
-                    <span className="text-gray-900">AED {item.price}</span>
+                    <span className="text-gray-900">₹{item.price}</span>
                   </div>
                 ))}
               </div>

@@ -51,8 +51,36 @@ export default function CheckoutLeft({
 
       await ensureServerCart();
 
-      // Static order placement - no API integration
-      console.log('Order placed (static mode):', { address: addressId, paymentMethod: "COD" });
+      // Static order placement - save to localStorage
+      const orderData = {
+        _id: `ORD${Date.now()}`,
+        products: cartItems.map(item => ({
+          productId: {
+            name: item.name,
+            image: item.image
+          },
+          quantity: quantities[item.id] || 1,
+          price: item.price * (quantities[item.id] || 1)
+        })),
+        totalAmount: total - couponDiscount,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : "Online",
+        subtotal: subtotal,
+        discount: discount,
+        couponDiscount: couponDiscount
+      };
+
+      // Save order to localStorage
+      try {
+        if (typeof window !== "undefined") {
+          const existingOrders = JSON.parse(window.localStorage.getItem("userOrders") || "[]");
+          existingOrders.unshift(orderData); // Add new order at the beginning
+          window.localStorage.setItem("userOrders", JSON.stringify(existingOrders));
+        }
+      } catch (error) {
+        console.error("Failed to save order:", error);
+      }
 
       toast.success("Order placed successfully");
 
@@ -63,6 +91,7 @@ export default function CheckoutLeft({
           // Notify listeners (Nav, CartSidebar, etc.)
           window.dispatchEvent(new Event("coupon-updated"));
           window.dispatchEvent(new Event("cart-updated"));
+          window.dispatchEvent(new Event("orders-updated")); // Notify orders updated
         }
       } catch {}
 
@@ -78,7 +107,7 @@ export default function CheckoutLeft({
   };
 
   return (
-    <div className="space-y-6 h-screen overflow-y-auto">
+    <div className="space-y-6 h-screen overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {/* Items Section */}
       <div className="rounded-lg">
         <div className="flex justify-between items-center p-4 sm:p-5 md:p-6">
@@ -182,10 +211,10 @@ export default function CheckoutLeft({
                   {/* Price Section */}
                   <div className="flex items-center space-x-2">
                     <span className="text-base font-semibold text-[var(--color-primary)]">
-                      AED {item.price.toLocaleString()}
+                      ₹ {item.price.toLocaleString()}
                     </span>
                     <span className="text-sm text-gray-400 line-through">
-                      AED {item.originalPrice.toLocaleString()}
+                      ₹ {item.originalPrice.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -230,7 +259,7 @@ export default function CheckoutLeft({
                 Subtotal
               </span>
               <span className="text-lg font-bold text-gray-800">
-                AED {subtotal.toLocaleString()}
+                ₹ {subtotal.toLocaleString()}
               </span>
             </div>
 
@@ -240,7 +269,7 @@ export default function CheckoutLeft({
                   Total
                 </span>
                 <span className="text-base font-medium text-gray-800">
-                  AED {total.toLocaleString()}
+                  ₹ {total.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -248,7 +277,7 @@ export default function CheckoutLeft({
                   Discount
                 </span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
-                  -AED {discount.toLocaleString()}
+                  -₹ {discount.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -264,7 +293,7 @@ export default function CheckoutLeft({
                   Coupon Discount
                 </span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
-                  -AED {couponDiscount.toLocaleString()}
+                  -₹ {couponDiscount.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -280,7 +309,7 @@ export default function CheckoutLeft({
           className="w-[80%] text-white py-3 px-4 rounded font-medium transition-colors cursor-pointer"
           style={{ backgroundColor: "var(--color-primary)" }}
           onClick={handleProceedToPay}
-          onMouseOver={(e) => (e.currentTarget.style.background = "#520A1E")}
+          onMouseOver={(e) => (e.currentTarget.style.background = "var(--color-primary)")}
           onMouseOut={(e) =>
             (e.currentTarget.style.background = "var(--color-primary)")
           }

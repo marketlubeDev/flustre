@@ -8,7 +8,7 @@ export default function ProductFeaturesBanner() {
     {
       id: 1,
       title: "Premium Quality Materials",
-      imageUrl: "/feature-product/feature-banner1.jpg",
+      imageUrl: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/feature-banner1+(1).jpg",
       alt: "Premium Quality Materials"
     }
  

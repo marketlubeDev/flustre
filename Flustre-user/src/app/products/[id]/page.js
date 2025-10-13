@@ -45,18 +45,18 @@ export default function ProductDetailPage() {
     originalPrice: 399,
     description: "A luxurious organic face serum enriched with vitamin C and hyaluronic acid. This premium formula helps reduce fine lines, brightens skin tone, and provides deep hydration for a radiant complexion.",
     images: [
-      "/products/product1.jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
       "/products/product2.jpg", 
       "/products/product3.jpg",
       "/products/product4.jpg"
     ],
     featureImages: [
-      "/products/product1.jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
       "/products/product2.jpg", 
       "/products/product3.jpg",
       "/products/product4.jpg"
     ],
-    primaryImage: "/products/product1.jpg",
+    primaryImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
     category: "Skincare",
     label: "Premium",
     specifications: {
@@ -94,7 +94,7 @@ export default function ProductDetailPage() {
         name: "30ml",
         price: 299,
         compareAtPrice: 399,
-        images: ["/products/product1.jpg"]
+        images: ["https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg"]
       },
       {
         _id: "variant2", 
@@ -155,15 +155,15 @@ export default function ProductDetailPage() {
   const coupons = [
     {
       code: "FLAT20",
-      description: "Get 20% discount on products above AED 1,999",
+      description: "Get 20% discount on products above Rs 1,999",
     },
     {
       code: "SAVE100",
-      description: "Flat AED 100 OFF on orders above AED 999",
+      description: "Flat Rs 100 OFF on orders above Rs 999",
     },
     {
       code: "GET250",
-      description: "AED 250 OFF when you spend AED 2,499 or more",
+      description: "Rs 250 OFF when you spend Rs 2,499 or more",
     },
   ];
   const visibleCoupons = coupons.slice(0, 2);

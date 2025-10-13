@@ -163,7 +163,7 @@ export default function AddressForm({ onBack, initialData, onSave, addressId }) 
               variant="secondary"
               size="medium"
               onClick={onBack}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors cursor-pointer font-medium"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-500 transition-colors cursor-pointer font-medium"
             >
               Cancel
             </Button>

@@ -82,12 +82,12 @@ export default function AccountInfo() {
 
   return (
     <div className="bg-white rounded-lg p-3 sm:p-4 md:p-6">
-      <div className="flex items-center justify-between mb-4 sm:mb-5 md:mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-5 md:mb-6">
         <h2 className="text-lg sm:text-xl md:text-xl font-semibold text-gray-900">
           Personal Information
         </h2>
         {isEditing ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="secondary"
               size="large"

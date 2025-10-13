@@ -209,30 +209,35 @@ export default function ReviewsSection({ product, selectedImage }) {
                   Review Images
                 </h5>
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <Image
-                      key={idx}
-                      src={
-                        product?.featureImages &&
-                        product.featureImages.length > 0
-                          ? product.featureImages[selectedImage]
-                          : product?.image || "/shop2.png"
+                  {Array.from({ length: 6 }).map((_, idx) => {
+                    // Get a valid image source or use placeholder
+                    const getImageSource = () => {
+                      if (product?.featureImages && product.featureImages.length > 0) {
+                        const imageIndex = selectedImage < product.featureImages.length ? selectedImage : 0;
+                        const imageSrc = product.featureImages[imageIndex];
+                        return imageSrc || "/shop2.png";
                       }
-                      alt="Selected product"
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 rounded object-cover border border-gray-200"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/64x64?text=Product";
-                      }}
-                      unoptimized={(product?.featureImages &&
-                      product.featureImages.length > 0
-                        ? product.featureImages[selectedImage]
-                        : product?.image
-                      )?.includes("amazonaws.com")}
-                    />
-                  ))}
+                      return product?.image || "/shop2.png";
+                    };
+                    
+                    const imageSrc = getImageSource();
+                    
+                    return (
+                      <Image
+                        key={idx}
+                        src={imageSrc}
+                        alt="Selected product"
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded object-cover border border-gray-200"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/64x64?text=Product";
+                        }}
+                        unoptimized={imageSrc?.includes("amazonaws.com")}
+                      />
+                    );
+                  })}
                 </div>
                 <hr
                   style={{
@@ -285,7 +290,7 @@ export default function ReviewsSection({ product, selectedImage }) {
                     </div>
                     {Array.isArray(r.images) && r.images.length > 0 && (
                       <div className="flex gap-2 mt-2">
-                        {r.images.map((img, i) => (
+                        {r.images.filter(img => img && img.trim() !== "").map((img, i) => (
                           <Image
                             key={i}
                             src={img}

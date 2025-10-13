@@ -167,7 +167,7 @@ function NavContent() {
       id: String(p.id),
       name: p.name,
       image: p.image,
-      price: p.price ? `AED ${p.price}` : undefined,
+      price: p.price ? `₹${p.price}` : undefined,
       originalPrice: p.originalPrice,
       category: p.category || p.type,
     }));
@@ -1257,7 +1257,28 @@ function NavContent() {
                 key={index}
                 className="border-b border-gray-100 last:border-b-0"
               >
-                {item.href ? (
+                {item.hasDropdown ? (
+                  <button
+                    className={`flex items-center justify-between w-full py-3 ${
+                      isRTL ? "text-right" : "text-left"
+                    } text-gray-700 font-normal transition-colors duration-200 cursor-pointer hover:text-[#2B73B8]`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleDropdown(item.label);
+                    }}
+                  >
+                    <span>{item.label}</span>
+                    <Image
+                      src="/dropdownicon.svg"
+                      alt="dropdown"
+                      width={7}
+                      height={4}
+                      className={`w-[7px] h-[4px] transition-transform duration-200 ${
+                        activeDropdown === item.label ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                ) : (
                   <Link
                     href={item.href}
                     className={`flex items-center justify-between w-full py-3 ${
@@ -1275,34 +1296,6 @@ function NavContent() {
                     }}
                   >
                     <span>{item.label}</span>
-                  </Link>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={`flex items-center justify-between w-full py-3 ${
-                      isRTL ? "text-right" : "text-left"
-                    } text-gray-700 font-normal transition-colors duration-200 cursor-pointer hover:text-[#2B73B8]`}
-                    onClick={(e) => {
-                      if (item.hasDropdown) {
-                        e.preventDefault();
-                        toggleDropdown(item.label);
-                      } else {
-                        setIsMobileMenuOpen(false);
-                      }
-                    }}
-                  >
-                    <span>{item.label}</span>
-                    {item.hasDropdown && (
-                      <Image
-                        src="/dropdownicon.svg"
-                        alt="dropdown"
-                        width={7}
-                        height={4}
-                        className={`w-[7px] h-[4px] transition-transform duration-200 ${
-                          activeDropdown === item.label ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
                   </Link>
                 )}
 

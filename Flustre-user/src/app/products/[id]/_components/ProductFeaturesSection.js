@@ -9,7 +9,7 @@ export default function ProductFeaturesSection() {
       id: 1,
       title: "Advanced Technology",
       description: "Experience cutting-edge technology that delivers superior performance and reliability for all your needs.",
-      imageUrl: "/feature-product/feature-banner3.jpg",
+      imageUrl: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/feature-banner3+(1).jpg",
       alt: "Advanced Technology"
     },
   

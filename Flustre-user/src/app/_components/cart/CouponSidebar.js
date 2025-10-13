@@ -296,24 +296,11 @@ export default function CouponSidebar({ isOpen, onClose }) {
 
         {/* Bottom Action Bar - Fixed height */}
         <div
-          className="border-t border-gray-200 bg-white p-4 sm:p-3 md:p-4 flex-shrink-0"
+          className="border-t border-gray-200 bg-white p-4 sm:p-3 md:p-4 flex-shrink-0 h-[60px] min-h-[60px] max-h-[60px] sm:h-[70px] sm:min-h-[70px] sm:max-h-[70px] md:h-[80px] md:min-h-[80px] md:max-h-[80px]"
           style={{
             width: "100%",
             backgroundColor: "white",
-            height: "60px",
-            minHeight: "60px",
-            maxHeight: "60px",
             flexShrink: 0,
-            "@media (min-width: 640px)": {
-              height: "70px",
-              minHeight: "70px",
-              maxHeight: "70px",
-            },
-            "@media (min-width: 768px)": {
-              height: "80px",
-              minHeight: "80px",
-              maxHeight: "80px",
-            },
           }}
         >
           <div className="flex items-center justify-between h-full">

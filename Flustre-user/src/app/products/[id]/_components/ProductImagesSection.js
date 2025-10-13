@@ -40,10 +40,10 @@ export default function ProductImagesSection({
 
     // Add 4 additional placeholder images if we have less than 5 images
     const additionalImages = [
-      "/products/product1.jpg",
-      "/products/product1.jpg",
-      "/products/product1.jpg", 
-      "/products/product1.jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg", 
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
      
     ];
 
