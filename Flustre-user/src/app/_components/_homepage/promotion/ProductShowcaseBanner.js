@@ -11,13 +11,13 @@ export default function ProductShowcaseBanner({ fullWidth = false }) {
 
   const showcaseItems = [
     {
-      image: "/showcase/showbanner1.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/showbanner1+(1).jpg",
     },
     {
-      image: "/showcase/showbanner2.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/showbanner2+(1).jpg",
     },
     {
-      image: "/showcase/showbanner3.jpg",
+      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/showbanner3+(1).jpg",
     },
   ];
 
@@ -121,7 +121,7 @@ export default function ProductShowcaseBanner({ fullWidth = false }) {
           }}
         >
           <Image
-            src="/showcase/showbanner1.jpg"
+            src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/showbanner1+(1).jpg"
             alt="Haircare Banner 1"
             fill
             className="object-cover"
@@ -140,7 +140,7 @@ export default function ProductShowcaseBanner({ fullWidth = false }) {
             }}
           >
             <Image
-              src="/showcase/showbanner2.jpg"
+              src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/showbanner2+(1).jpg"
               alt="Haircare Banner 2"
               fill
               className="object-cover"
@@ -157,7 +157,7 @@ export default function ProductShowcaseBanner({ fullWidth = false }) {
             }}
           >
             <Image
-              src="/showcase/showbanner3.jpg"
+              src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/showbanner3+(1).jpg"
               alt="Haircare Banner 3"
               fill
               className="object-cover"

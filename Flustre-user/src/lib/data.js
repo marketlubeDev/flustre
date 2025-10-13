@@ -88,7 +88,7 @@ export const featuredProducts = [
     price: "₹ 2,999",
     originalPrice: "₹ 3,499",
     image:
-      "/featured/featured7.jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/finest/featured7+(re).jpg",
   },
   {
     id: 2,

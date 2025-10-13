@@ -211,10 +211,10 @@ export default function CheckoutLeft({
                   {/* Price Section */}
                   <div className="flex items-center space-x-2">
                     <span className="text-base font-semibold text-[var(--color-primary)]">
-                      ₹ {item.price.toLocaleString()}
+                      ₹ {(item.price || 0).toLocaleString()}
                     </span>
                     <span className="text-sm text-gray-400 line-through">
-                      ₹ {item.originalPrice.toLocaleString()}
+                      ₹ {(item.originalPrice || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -259,7 +259,7 @@ export default function CheckoutLeft({
                 Subtotal
               </span>
               <span className="text-lg font-bold text-gray-800">
-                ₹ {subtotal.toLocaleString()}
+                ₹ {(subtotal || 0).toLocaleString()}
               </span>
             </div>
 
@@ -269,7 +269,7 @@ export default function CheckoutLeft({
                   Total
                 </span>
                 <span className="text-base font-medium text-gray-800">
-                  ₹ {total.toLocaleString()}
+                  ₹ {(total || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -277,7 +277,7 @@ export default function CheckoutLeft({
                   Discount
                 </span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
-                  -₹ {discount.toLocaleString()}
+                  -₹ {(discount || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -293,7 +293,7 @@ export default function CheckoutLeft({
                   Coupon Discount
                 </span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
-                  -₹ {couponDiscount.toLocaleString()}
+                  -₹ {(couponDiscount || 0).toLocaleString()}
                 </span>
               </div>
             </div>

@@ -109,7 +109,7 @@ export default function CheckoutPage() {
   };
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * (quantities[item.id] || 1),
+    (sum, item) => sum + (item.price || 0) * (quantities[item.id] || 1),
     0
   );
   const total = subtotal + 0; // Delivery Free

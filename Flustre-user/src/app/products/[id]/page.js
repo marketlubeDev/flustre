@@ -46,15 +46,15 @@ export default function ProductDetailPage() {
     description: "A luxurious organic face serum enriched with vitamin C and hyaluronic acid. This premium formula helps reduce fine lines, brightens skin tone, and provides deep hydration for a radiant complexion.",
     images: [
       "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      "/products/product2.jpg", 
-      "/products/product3.jpg",
-      "/products/product4.jpg"
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg", 
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg"
     ],
     featureImages: [
       "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      "/products/product2.jpg", 
-      "/products/product3.jpg",
-      "/products/product4.jpg"
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg", 
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg"
     ],
     primaryImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
     category: "Skincare",
@@ -101,7 +101,7 @@ export default function ProductDetailPage() {
         name: "50ml",
         price: 449,
         compareAtPrice: 599,
-        images: ["/products/product2.jpg"]
+        images: ["https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg"]
       }
     ],
     ratingStats: {

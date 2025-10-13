@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useRef } from "react";
 
 export default function RecommendedSection() {
@@ -73,18 +74,20 @@ export default function RecommendedSection() {
           >
             Recommended for You
           </h2>
-          <div className="flex items-center gap-2 font-medium text-gray-600">
-            <span className="text-sm md:text-base">View All</span>
-            <span className="inline-flex">
-              <Image
-                src="/nextarrow.svg"
-                alt="Next arrow"
-                width={28}
-                height={28}
-                className="w-5 h-5 md:w-7 md:h-7"
-              />
-            </span>
-          </div>
+          <Link href="/products">
+            <div className="flex items-center gap-2 font-medium text-gray-600 cursor-pointer">
+              <span className="text-sm md:text-base">View All</span>
+              <span className="inline-flex">
+                <Image
+                  src="/nextarrow.svg"
+                  alt="Next arrow"
+                  width={28}
+                  height={28}
+                  className="w-5 h-5 md:w-7 md:h-7"
+                />
+              </span>
+            </div>
+          </Link>
         </div>
 
         {/* Products Grid (horizontal scroll like BestSellers) */}
