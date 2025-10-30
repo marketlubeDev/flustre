@@ -9,9 +9,9 @@ const OrderPaymentStatus = ({ order }) => {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between  px-4 py-2 text-left"
-        style={{ background: "rgba(109, 13, 38, 0.06)" }}
+        style={{ background: "rgba(53, 115, 186, 0.06)" }}
       >
-        <span className="inline-flex items-center gap-2 text-sm font-[600] text-[#6D0D26]">
+        <span className="inline-flex items-center gap-2 text-sm font-[600] text-[#3573BA]">
           Payment status
         </span>
         <span className="text-[#000000]">

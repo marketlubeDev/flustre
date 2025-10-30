@@ -32,10 +32,10 @@ const Button = ({
     ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500/50",
     // Gradient rose variant used for Add Coupon
     gradientRose:
-      "rounded-[8px] border-b border-[#B3536C] text-white shadow-[0_1px_2px_0_rgba(189,93,118,0.69)] bg-gradient-to-b from-[#6D0D26] to-[#A94962] hover:opacity-95 focus:ring-[#A94962]/50",
+      "rounded-[8px] border-b border-[#6C9BC8] text-white shadow-[0_1px_2px_0_rgba(92,139,189,0.5)] bg-gradient-to-b from-[#3573BA] to-[#6FA0D5] hover:opacity-95 focus:ring-[#6FA0D5]/50",
     // Export button variant with light pink background and dark text
     exportButton:
-      "bg-pink-100 text-[#6D0D26] border border-pink-200 hover:bg-pink-200 hover:text-[#5A0B21] focus:ring-pink-300/50 transition-all duration-200",
+      "bg-blue-50 text-[#3573BA] border border-blue-200 hover:bg-blue-100 hover:text-[#2C609A] focus:ring-blue-300/50 transition-all duration-200",
   };
 
   // Size classes

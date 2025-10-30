@@ -25,7 +25,7 @@ function VariantOptionsBuilder({ isLoadingProduct }) {
     <div className="bg-white rounded-lg w-full">
       <div className="p-0 flex flex-col">
         <div className="flex-shrink-0">
-          <h2 className="text-sm font-semibold text-[#6D0D26] bg-[#6D0D261A] px-4 py-3 rounded-t-lg">
+          <h2 className="text-sm font-semibold text-[#3573BA] bg-[#3573BA1A] px-4 py-3 rounded-t-lg">
             VARIANT INFO
           </h2>
 
@@ -200,7 +200,7 @@ function VariantOptionsBuilder({ isLoadingProduct }) {
               <div className="flex items-center justify-between px-4 py-2">
                 <button
                   type="button"
-                  className="text-[#6D0D26] text-sm font-semibold flex items-center gap-1"
+                  className="text-[#3573BA] text-sm font-semibold flex items-center gap-1"
                   onClick={handleAddOptionSection}
                 >
                   + Add Variant
@@ -210,10 +210,10 @@ function VariantOptionsBuilder({ isLoadingProduct }) {
                   className="px-8 py-2 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     borderRadius: "6px",
-                    borderBottom: "1px solid #B3536C",
+                    borderBottom: "1px solid #6C9BC8",
                     background:
-                      "linear-gradient(180deg, #6D0D26 30.96%, #A94962 100%)",
-                    boxShadow: "0 1px 2px 0 rgba(189, 93, 118, 0.69)",
+                      "linear-gradient(180deg, #3573BA 30.96%, #6FA0D5 100%)",
+                    boxShadow: "0 1px 2px 0 rgba(92, 139, 189, 0.5)",
                   }}
                   onClick={handleGenerateVariants}
                   disabled={isLoadingProduct || !canGenerateVariants}

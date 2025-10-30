@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
 const DashboardMetrics = () => {
   // Mini chart component
   const MiniChart = () => {
-    const labels = ['OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR'];
+    const labels = ["OCT", "NOV", "DEC", "JAN", "FEB", "MAR"];
     const dataPoints = labels.length;
 
     const width = 180;
@@ -13,25 +13,43 @@ const DashboardMetrics = () => {
     const padding = 6;
 
     // Generate gently increasing values to resemble trend
-    const values = Array.from({ length: dataPoints }).map((_, idx) => 30 + idx * 8 + Math.random() * 6);
+    const values = Array.from({ length: dataPoints }).map(
+      (_, idx) => 30 + idx * 8 + Math.random() * 6
+    );
 
     const xStep = (width - padding * 2) / (dataPoints - 1);
     const yScale = (val) => {
       const minVal = 0;
       const maxVal = 100;
       const clamped = Math.max(minVal, Math.min(maxVal, val));
-      return padding + (1 - (clamped - minVal) / (maxVal - minVal)) * (chartHeight - padding * 2);
+      return (
+        padding +
+        (1 - (clamped - minVal) / (maxVal - minVal)) *
+          (chartHeight - padding * 2)
+      );
     };
 
     const points = values
       .map((val, i) => `${padding + i * xStep},${yScale(val)}`)
-      .join(' ');
+      .join(" ");
 
     return (
       <div className="h-20 w-full">
-        <svg width="100%" height="100%" viewBox={`0 0 ${width} ${totalHeight}`} preserveAspectRatio="none">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${width} ${totalHeight}`}
+          preserveAspectRatio="none"
+        >
           {/* baseline */}
-          <line x1={padding} x2={width - padding} y1={chartHeight - 1} y2={chartHeight - 1} stroke="#E1E4EA" strokeWidth="1" />
+          <line
+            x1={padding}
+            x2={width - padding}
+            y1={chartHeight - 1}
+            y2={chartHeight - 1}
+            stroke="#E1E4EA"
+            strokeWidth="1"
+          />
 
           {/* optional vertical guides */}
           {labels.map((_, i) => (
@@ -83,55 +101,57 @@ const DashboardMetrics = () => {
       value: "₹4,25,000",
       change: "+2%",
       changeType: "positive",
-      chartColor: "bg-blue-200"
+      chartColor: "bg-blue-200",
     },
     {
       label: "Total orders",
-      value: "₹1,10,000", 
+      value: "₹1,10,000",
       change: "-3%",
       changeType: "negative",
-      chartColor: "bg-red-200"
+      chartColor: "bg-red-200",
     },
     {
       label: "Total customers",
       value: "1,260",
-      change: "+7%", 
+      change: "+7%",
       changeType: "positive",
-      chartColor: "bg-blue-200"
+      chartColor: "bg-blue-200",
     },
     {
       label: "Total visitors",
       value: "22,500",
       change: "+12%",
-      changeType: "positive", 
-      chartColor: "bg-red-200"
-    }
+      changeType: "positive",
+      chartColor: "bg-red-200",
+    },
   ];
 
   return (
-    <div className="p-6" style={{backgroundColor: '#ffffff'}}>
+    <div className="p-6" style={{ backgroundColor: "#ffffff" }}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric, index) => (
-          <div 
+          <div
             key={index}
             className="p-6"
             style={{
-              borderRadius: 'var(--radius-16, 16px)',
-              border: '1px solid var(--stroke-soft-200, #E1E4EA)',
-              background: 'rgba(109, 13, 38, 0.02)',
-              boxShadow: '0 1px 2px 0 rgba(10, 13, 20, 0.03)'
+              borderRadius: "var(--radius-16, 16px)",
+              border: "1px solid var(--stroke-soft-200, #E1E4EA)",
+              background: "rgba(53, 115, 186, 0.02)",
+              boxShadow: "0 1px 2px 0 rgba(10, 13, 20, 0.03)",
             }}
           >
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">{metric.label}</p>
-                <h3 className="text-2xl font-bold text-gray-800">{metric.value}</h3>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {metric.value}
+                </h3>
               </div>
-              <span 
+              <span
                 className={`text-xs px-2 py-1 rounded ${
-                  metric.changeType === 'positive' 
-                    ? 'bg-green-100 text-green-600' 
-                    : 'bg-red-100 text-red-600'
+                  metric.changeType === "positive"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-red-100 text-red-600"
                 }`}
               >
                 {metric.change}
@@ -145,4 +165,4 @@ const DashboardMetrics = () => {
   );
 };
 
-export default DashboardMetrics; 
+export default DashboardMetrics;

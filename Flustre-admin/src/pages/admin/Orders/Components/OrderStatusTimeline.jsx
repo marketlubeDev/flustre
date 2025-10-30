@@ -35,9 +35,9 @@ const OrderStatusTimeline = ({ createdAt, status }) => {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between  px-4 py-2 text-left"
-        style={{ background: "rgba(109, 13, 38, 0.06)" }}
+        style={{ background: "rgba(53, 115, 186, 0.06)" }}
       >
-        <span className="inline-flex items-center gap-2 text-sm font-[600] text-[#6D0D26]">
+        <span className="inline-flex items-center gap-2 text-sm font-[600] text-[#3573BA]">
           Order status
         </span>
         <span className="text-[#000000]">
@@ -79,13 +79,13 @@ const OrderStatusTimeline = ({ createdAt, status }) => {
                   <span
                     className={`absolute -left-6 -translate-x-1/2 top-0 flex items-center justify-center w-6 h-6 rounded-full border-[1px] ${
                       isCompleted
-                        ? "border-[#6D0D26] bg-[#6D0D26]"
-                        : "border-[#6D0D2699] bg-white"
+                        ? "border-[#3573BA] bg-[#3573BA]"
+                        : "border-[#3573BA99] bg-white"
                     }`}
                   >
                     <span className="flex items-center justify-center ">
                       {isFuture ? (
-                        <LuCircleDashed size={14} className="text-[#6D0D26]" />
+                        <LuCircleDashed size={14} className="text-[#3573BA]" />
                       ) : (
                         <PiPackage
                           size={14}
@@ -100,7 +100,7 @@ const OrderStatusTimeline = ({ createdAt, status }) => {
                   {!isLast && (
                     <span
                       className={`absolute -left-6 -translate-x-1/2 top-8 bottom-2 w-[2px] ${
-                        i < currentIndex ? "bg-[#6D0D26]" : "bg-gray-200"
+                        i < currentIndex ? "bg-[#3573BA]" : "bg-gray-200"
                       }`}
                     />
                   )}

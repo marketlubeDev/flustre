@@ -19,7 +19,10 @@ import {
   FaCamera,
   FaCopy,
 } from "react-icons/fa";
-import { triggerCategoryCreated, triggerCategoryDeleted } from "../../../utils/menuCountUtils";
+import {
+  triggerCategoryCreated,
+  triggerCategoryDeleted,
+} from "../../../utils/menuCountUtils";
 
 function Category() {
   const [categories, setCategories] = useState([]);
@@ -197,10 +200,10 @@ function Category() {
     try {
       await deleteCategory(categoryToDelete._id);
       toast.success("Category deleted successfully");
-      
+
       // Trigger menu count update for deleted category
       triggerCategoryDeleted();
-      
+
       fetchCategories();
       setShowDeleteModal(false);
       setCategoryToDelete(null);
@@ -218,9 +221,17 @@ function Category() {
 
   const renderCategoryRow = (category, level = 0, parentName = null, idx) => {
     return (
-      <tr key={category._id} className={`hover:bg-gray-50 divide-x divide-gray-200 ${idx === categories.length - 1 ? 'last:rounded-b-lg' : ''}`}>
+      <tr
+        key={category._id}
+        className={`hover:bg-gray-50 divide-x divide-gray-200 ${
+          idx === categories.length - 1 ? "last:rounded-b-lg" : ""
+        }`}
+      >
         <td className="px-4 py-3">
-          <span className="inline-flex items-center px-3 py-1 rounded-md font-mono text-sm" style={{ background: '#F7F7F7' }}>
+          <span
+            className="inline-flex items-center px-3 py-1 rounded-md font-mono text-sm"
+            style={{ background: "#F7F7F7" }}
+          >
             {category._id}
           </span>
         </td>
@@ -235,8 +246,18 @@ function Category() {
                 />
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
               )}
@@ -262,7 +283,9 @@ function Category() {
                   </svg>
                 </>
               )}
-              <span className="text-sm text-gray-900 font-medium">{category.name}</span>
+              <span className="text-sm text-gray-900 font-medium">
+                {category.name}
+              </span>
             </div>
           </div>
         </td>
@@ -459,7 +482,9 @@ function Category() {
       indexOfLastItem
     );
 
-    return currentItems.map((category, idx) => renderCategoryRow(category, 0, null, idx));
+    return currentItems.map((category, idx) =>
+      renderCategoryRow(category, 0, null, idx)
+    );
   };
 
   return (
@@ -499,7 +524,7 @@ function Category() {
               <button
                 onClick={handleOpenModal}
                 className="block text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                style={{ backgroundColor: "#6D0D26" }}
+                style={{ backgroundColor: "#3573BA" }}
                 type="button"
               >
                 Add New Category

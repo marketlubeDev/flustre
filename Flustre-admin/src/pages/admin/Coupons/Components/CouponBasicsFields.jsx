@@ -15,9 +15,9 @@ const CouponBasicsFields = ({
         type="button"
         onClick={() => setBasicsOpen((v) => !v)}
         className="w-full flex items-center justify-between  px-4 py-2 text-left"
-        style={{ background: "rgba(109, 13, 38, 0.06)" }}
+        style={{ background: "rgba(53, 115, 186, 0.06)" }}
       >
-        <span className="inline-flex items-center gap-2 text-sm font-[600] text-[#6D0D26]">
+        <span className="inline-flex items-center gap-2 text-sm font-[600] text-[#3573BA]">
           Coupon basics{" "}
           <span className="text-[#000000]">
             {basicsOpen ? <IoIosArrowDown /> : <IoIosArrowUp />}
@@ -148,7 +148,7 @@ const CouponBasicsFields = ({
                   setFormData({ ...formData, isActive: !formData.isActive })
                 }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                  formData.isActive ? "bg-[#6D0D26]" : "bg-gray-200"
+                  formData.isActive ? "bg-[#3573BA]" : "bg-gray-200"
                 }`}
               >
                 <span

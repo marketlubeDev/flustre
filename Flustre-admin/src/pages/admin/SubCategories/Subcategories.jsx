@@ -205,7 +205,7 @@ function Subcategories() {
             <div>
               <button
                 onClick={handleOpenModal}
-                className="block text-white bg-[#6D0D26] hover:bg-[#6D0D26] focus:ring-4 focus:outline-none focus:ring-[#6D0D26] font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                className="block text-white bg-[#3573BA] hover:bg-[#3573BA] focus:ring-4 focus:outline-none focus:ring-[#3573BA] font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 type="button"
               >
                 Add New Subcategory
@@ -238,7 +238,9 @@ function Subcategories() {
                       <tr
                         key={subcategory._id}
                         className={`hover:bg-gray-50 divide-x divide-gray-200 ${
-                          idx === subcategories.length - 1 ? 'last:rounded-b-lg' : ''
+                          idx === subcategories.length - 1
+                            ? "last:rounded-b-lg"
+                            : ""
                         }`}
                       >
                         <td className="px-4 py-3">
@@ -252,8 +254,18 @@ function Subcategories() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                  <svg
+                                    className="w-3 h-3 text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                    />
                                   </svg>
                                 </div>
                               )}
@@ -264,20 +276,23 @@ function Subcategories() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          <span 
-                            className="inline-flex items-center px-3 py-1 rounded-md font-medium" 
-                            style={{ background: '#F7F7F7' }}
+                          <span
+                            className="inline-flex items-center px-3 py-1 rounded-md font-medium"
+                            style={{ background: "#F7F7F7" }}
                           >
-                            {subcategory.parentCategoryName || subcategory.category.name}
+                            {subcategory.parentCategoryName ||
+                              subcategory.category.name}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          <span 
-                            className="inline-flex items-center px-3 py-1 rounded-md font-medium" 
-                            style={{ background: '#F7F7F7' }}
+                          <span
+                            className="inline-flex items-center px-3 py-1 rounded-md font-medium"
+                            style={{ background: "#F7F7F7" }}
                           >
                             {subcategory.createdAt
-                              ? new Date(subcategory.createdAt).toLocaleDateString()
+                              ? new Date(
+                                  subcategory.createdAt
+                                ).toLocaleDateString()
                               : "Not set"}
                           </span>
                         </td>
@@ -301,7 +316,10 @@ function Subcategories() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                      <td
+                        colSpan={4}
+                        className="px-4 py-8 text-center text-gray-500"
+                      >
                         No subcategories found.
                       </td>
                     </tr>

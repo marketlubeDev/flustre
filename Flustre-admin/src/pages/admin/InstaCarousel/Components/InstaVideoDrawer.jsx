@@ -213,10 +213,10 @@ const InstaVideoDrawer = ({ open, onClose, onSubmit, isSubmitting }) => {
             disabled={isSubmitting}
             className="inline-flex items-center gap-2 px-4 py-2 text-white font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              background: "linear-gradient(180deg, #6D0D26 0%, #A94962 100%)",
+              background: "linear-gradient(180deg, #3573BA 0%, #6FA0D5 100%)",
               borderRadius: "12px",
-              borderBottom: "1px solid #B3536C",
-              boxShadow: "0 2px 8px rgba(109, 13, 38, 0.25)",
+              borderBottom: "1px solid #6C9BC8",
+              boxShadow: "0 2px 8px rgba(53, 115, 186, 0.25)",
             }}
           >
             {isSubmitting ? "Adding..." : "Add video"}

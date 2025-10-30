@@ -13,7 +13,7 @@ const OrdersPagination = ({
       <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-700">Rows per page</span>
         <select
-          className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+          className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
           value="9"
           onChange={(e) =>
             console.log("Rows per page changed:", e.target.value)
@@ -49,7 +49,7 @@ const OrdersPagination = ({
             onClick={() => onPageChange(pageNumber)}
             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
               currentPage === pageNumber
-                ? "bg-[#6D0D26] text-white"
+                ? "bg-[#3573BA] text-white"
                 : "text-gray-700 hover:bg-gray-100 border border-gray-300"
             }`}
           >

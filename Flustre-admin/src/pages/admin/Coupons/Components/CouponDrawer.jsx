@@ -87,7 +87,7 @@ const CouponDrawer = ({
                   type="submit"
                   form={formId}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-white bg-[#6D0D26] rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-white bg-[#3573BA] rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting
                     ? editingCoupon

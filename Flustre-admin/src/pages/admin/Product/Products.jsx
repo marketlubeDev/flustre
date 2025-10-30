@@ -265,12 +265,12 @@ function Products({ role }) {
                 onClick={() => handleTabChange("all")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === "all"
-                    ? "border-[#6D0D26] text-[#6D0D26]"
+                    ? "border-[#3573BA] text-[#3573BA]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 All Products{" "}
-                <span className="ml-2 bg-[#6D0D261F] text-[#6D0D26] py-1 px-2 rounded-full text-xs">
+                <span className="ml-2 bg-[#3573BA1F] text-[#3573BA] py-1 px-2 rounded-full text-xs">
                   {productCounts.all}
                 </span>
               </button>
@@ -278,12 +278,12 @@ function Products({ role }) {
                 onClick={() => handleTabChange("active")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === "active"
-                    ? "border-[#6D0D26] text-[#6D0D26]"
+                    ? "border-[#3573BA] text-[#3573BA]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 Active{" "}
-                <span className="ml-2 bg-[#6D0D261F] text-[#6D0D26] py-1 px-2 rounded-full text-xs">
+                <span className="ml-2 bg-[#3573BA1F] text-[#3573BA] py-1 px-2 rounded-full text-xs">
                   {productCounts.active}
                 </span>
               </button>
@@ -291,12 +291,12 @@ function Products({ role }) {
                 onClick={() => handleTabChange("inactive")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === "inactive"
-                    ? "border-[#6D0D26] text-[#6D0D26]"
+                    ? "border-[#3573BA] text-[#3573BA]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 Inactive{" "}
-                <span className="ml-2 bg-[#6D0D261F] text-[#6D0D26] py-1 px-2 rounded-full text-xs">
+                <span className="ml-2 bg-[#3573BA1F] text-[#3573BA] py-1 px-2 rounded-full text-xs">
                   {productCounts.inactive}
                 </span>
               </button>
@@ -304,12 +304,12 @@ function Products({ role }) {
                 onClick={() => handleTabChange("outOfStock")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === "outOfStock"
-                    ? "border-[#6D0D26] text-[#6D0D26]"
+                    ? "border-[#3573BA] text-[#3573BA]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 Out of stock{" "}
-                <span className="ml-2 bg-[#6D0D261F] text-[#6D0D26] py-1 px-2 rounded-full text-xs">
+                <span className="ml-2 bg-[#3573BA1F] text-[#3573BA] py-1 px-2 rounded-full text-xs">
                   {productCounts.outOfStock}
                 </span>
               </button>
@@ -317,12 +317,12 @@ function Products({ role }) {
                 onClick={() => handleTabChange("drafts")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === "drafts"
-                    ? "border-[#6D0D26] text-[#6D0D26]"
+                    ? "border-[#3573BA] text-[#3573BA]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 Drafts{" "}
-                <span className="ml-2 bg-[#6D0D261F] text-[#6D0D26] py-1 px-2 rounded-full text-xs">
+                <span className="ml-2 bg-[#3573BA1F] text-[#3573BA] py-1 px-2 rounded-full text-xs">
                   {productCounts.drafts}
                 </span>
               </button>

@@ -100,7 +100,7 @@ const OrdersTable = ({ orders, onOpenOrder }) => {
             <th className="px-6 py-3 text-left border-r border-gray-200">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-[#6D0D26] focus:ring-[#6D0D26]"
+                className="rounded border-gray-300 text-[#3573BA] focus:ring-[#3573BA]"
               />
             </th>
             {headers.map((label, idx) => (
@@ -121,7 +121,7 @@ const OrdersTable = ({ orders, onOpenOrder }) => {
               <td className="px-6 py-4 whitespace-nowrap border-r border-gray-200">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-[#6D0D26] focus:ring-[#6D0D26]"
+                  className="rounded border-gray-300 text-[#3573BA] focus:ring-[#3573BA]"
                 />
               </td>
               <td className="px-6 py-4 whitespace-nowrap border-r border-gray-200">

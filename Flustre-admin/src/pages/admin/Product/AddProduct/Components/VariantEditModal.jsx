@@ -31,9 +31,9 @@ const VariantEditModal = ({
           className="px-6 py-2 text-sm text-white hover:opacity-95 min-w-[100px]"
           style={{
             borderRadius: "8px",
-            borderBottom: "1px solid #B3536C",
-            background: "linear-gradient(180deg, #6D0D26 30.96%, #A94962 100%)",
-            boxShadow: "0 1px 2px 0 rgba(189, 93, 118, 0.69)",
+            borderBottom: "1px solid #6C9BC8",
+            background: "linear-gradient(180deg, #3573BA 30.96%, #6FA0D5 100%)",
+            boxShadow: "0 1px 2px 0 rgba(92, 139, 189, 0.5)",
           }}
           onClick={onCancel}
         >
@@ -44,8 +44,8 @@ const VariantEditModal = ({
       <div className="space-y-6">
         {/* Price Section */}
         <div>
-          <div className="mb-4 pb-2 bg-[#6D0D260F] ">
-            <h3 className="text-sm font-semibold text-[#6D0D26] ">Price</h3>
+          <div className="mb-4 pb-2 bg-[#3573BA0F] ">
+            <h3 className="text-sm font-semibold text-[#3573BA] ">Price</h3>
           </div>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -179,8 +179,8 @@ const VariantEditModal = ({
 
         {/* Inventory Section */}
         <div>
-          <div className="mb-4 pb-2 bg-[#6D0D260F] ">
-            <h3 className="text-sm font-semibold text-[#6D0D26] ">Inventory</h3>
+          <div className="mb-4 pb-2 bg-[#3573BA0F] ">
+            <h3 className="text-sm font-semibold text-[#3573BA] ">Inventory</h3>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

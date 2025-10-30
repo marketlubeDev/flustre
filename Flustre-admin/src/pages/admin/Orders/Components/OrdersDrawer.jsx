@@ -17,7 +17,7 @@ import { triggerOrderUpdated } from "@/utils/menuCountUtils";
 
 const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  
+
   const title = order
     ? `Order #${order._id?.slice(-6)?.toUpperCase()}`
     : "Order details";
@@ -134,21 +134,23 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
 
   const handleStatusChange = async (newStatus) => {
     if (!order?._id) return;
-    
+
     try {
       setIsUpdatingStatus(true);
       await updateOrderStatus(order._id, newStatus, "order");
       toast.success("Order status updated successfully");
-      
+
       // Trigger menu count updates
       triggerOrderUpdated();
-      
+
       // Notify parent to refresh orders list
       if (onOrderUpdate) {
         onOrderUpdate();
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update order status");
+      toast.error(
+        error?.response?.data?.message || "Failed to update order status"
+      );
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -175,7 +177,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
                 {createdAtParts ? (
                   <>
                     <span>{createdAtParts.day}</span>
-                    <span className="mx-2 inline-block w-1.5 h-1.5 rounded-full bg-[#6D0D26]" />
+                    <span className="mx-2 inline-block w-1.5 h-1.5 rounded-full bg-[#3573BA]" />
                     <span>{createdAtParts.time}</span>
                   </>
                 ) : null}
@@ -222,7 +224,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
           <div className="px-4 py-2">
             <Button
               onClick={printInvoice}
-              className="w-full flex items-center justify-center gap-2 border border-[#6D0D26] text-[#6D0D26] hover:bg-[#6D0D2610]"
+              className="w-full flex items-center justify-center gap-2 border border-[#3573BA] text-[#3573BA] hover:bg-[#3573BA10]"
               variant="whiteWithBorder"
             >
               <span className="inline-block ">

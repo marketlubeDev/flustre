@@ -18,8 +18,8 @@ const ProductFeaturesSection = ({
   return (
     <div className="h-full">
       <div className="px-0 py-0 bg-white rounded-lg h-full flex flex-col">
-        <div className="flex items-center justify-between bg-[#6D0D261A] px-4 py-3 rounded-t-lg">
-          <h2 className="text-sm font-semibold text-[#6D0D26]">
+        <div className="flex items-center justify-between bg-[#3573BA1A] px-4 py-3 rounded-t-lg">
+          <h2 className="text-sm font-semibold text-[#3573BA]">
             PRODUCT FEATURES
           </h2>
           <button
@@ -280,8 +280,8 @@ const ProductFeaturesSection = ({
                       <div
                         className="w-12 h-6 border rounded mb-1 flex items-center justify-center"
                         style={{
-                          backgroundColor: "#6D0D2629",
-                          borderColor: "#6D0D26",
+                          backgroundColor: "#3573BA29",
+                          borderColor: "#3573BA",
                         }}
                       >
                         <img
@@ -305,8 +305,8 @@ const ProductFeaturesSection = ({
                       <div
                         className="w-12 h-6 border rounded mb-1 flex items-center justify-center"
                         style={{
-                          backgroundColor: "#6D0D2629",
-                          borderColor: "#6D0D26",
+                          backgroundColor: "#3573BA29",
+                          borderColor: "#3573BA",
                         }}
                       >
                         <img
@@ -331,12 +331,12 @@ const ProductFeaturesSection = ({
                     >
                       <div
                         className="w-12 h-6 border rounded mb-1 flex"
-                        style={{ borderColor: "#6D0D26" }}
+                        style={{ borderColor: "#3573BA" }}
                       >
                         <div className="w-1/2 bg-white"></div>
                         <div
                           className="w-1/2 flex items-center justify-center"
-                          style={{ backgroundColor: "#6D0D2629" }}
+                          style={{ backgroundColor: "#3573BA29" }}
                         >
                           <img
                             src="/icons/addbannerimage.svg"
@@ -359,7 +359,7 @@ const ProductFeaturesSection = ({
                     >
                       <div
                         className="w-12 h-6 border rounded mb-1 flex"
-                        style={{ borderColor: "#6D0D26" }}
+                        style={{ borderColor: "#3573BA" }}
                       >
                         <div
                           className="w-1/2 flex items-center justify-center"

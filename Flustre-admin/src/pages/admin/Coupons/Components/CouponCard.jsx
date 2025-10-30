@@ -21,7 +21,9 @@ const CouponCard = ({
           const usageLimit = coupon?.usageLimit ?? null;
           const usageCount = coupon?.usedCount ?? null;
           const displayLimit =
-            usageLimit && usageLimit > 0 ? `${usageCount ?? 0}/${usageLimit}` : "-";
+            usageLimit && usageLimit > 0
+              ? `${usageCount ?? 0}/${usageLimit}`
+              : "-";
           const isSelected = selectedIds?.has?.(coupon._id);
 
           return (
@@ -71,7 +73,7 @@ const CouponCard = ({
                         height="12"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="#6D0D26"
+                        stroke="#3573BA"
                         strokeWidth="3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -86,13 +88,13 @@ const CouponCard = ({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p
-                      className="text-xs text-[#6D0D26]"
+                      className="text-xs text-[#3573BA]"
                       style={{ opacity: 0.6 }}
                     >
                       Coupon code
                     </p>
                     <div className="flex items-center gap-2">
-                      <p className="text-2xl font-bold text-[#6D0D26] tracking-wide">
+                      <p className="text-2xl font-bold text-[#3573BA] tracking-wide">
                         {coupon.code}
                       </p>
                       <button
@@ -101,7 +103,7 @@ const CouponCard = ({
                           navigator.clipboard.writeText(coupon.code);
                           toast.success("Coupon code copied");
                         }}
-                        className="text-[#6D0D26] hover:text-[#6D0D26]/80 cursor-pointer"
+                        className="text-[#3573BA] hover:text-[#3573BA]/80 cursor-pointer"
                         title="Copy code"
                         aria-label="Copy coupon code"
                       >
@@ -114,7 +116,7 @@ const CouponCard = ({
                         >
                           <path
                             d="M5.25 5.5C5.80228 5.5 6.25 5.05228 6.25 4.5V3.25C6.25 3.05109 6.32902 2.86032 6.46967 2.71967C6.61032 2.57902 6.80109 2.5 7 2.5H16C16.1989 2.5 16.3897 2.57902 16.5303 2.71967C16.671 2.86032 16.75 3.05109 16.75 3.25V13.75C16.75 13.9489 16.671 14.1397 16.5303 14.2803C16.3897 14.421 16.1989 14.5 16 14.5H14.75C14.1977 14.5 13.75 14.9477 13.75 15.5V16.75C13.75 17.164 13.4125 17.5 12.9948 17.5H4.00525C3.90635 17.5006 3.8083 17.4816 3.71674 17.4442C3.62519 17.4068 3.54192 17.3517 3.47174 17.282C3.40156 17.2123 3.34584 17.1294 3.30779 17.0381C3.26974 16.9468 3.2501 16.8489 3.25 16.75L3.25225 6.25C3.25225 5.836 3.58975 5.5 4.0075 5.5H5.25ZM5.752 7C5.19981 7 4.75214 7.44756 4.752 7.99975L4.75025 14.9998C4.75011 15.5521 5.19787 16 5.75025 16H11.25C11.8023 16 12.25 15.5523 12.25 15V8C12.25 7.44772 11.8023 7 11.25 7H5.752ZM7.75 4.75C7.75 5.16421 8.08579 5.5 8.5 5.5H12.75C13.3023 5.5 13.75 5.94772 13.75 6.5V12.25C13.75 12.6642 14.0858 13 14.5 13C14.9142 13 15.25 12.6642 15.25 12.25V5C15.25 4.44772 14.8023 4 14.25 4H8.5C8.08579 4 7.75 4.33579 7.75 4.75Z"
-                            fill="#6D0D26"
+                            fill="#3573BA"
                             fillOpacity="0.5"
                           />
                         </svg>
@@ -147,10 +149,10 @@ const CouponCard = ({
 
                 <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-[#6D0D26]" style={{ opacity: 0.6 }}>
+                    <p className="text-[#3573BA]" style={{ opacity: 0.6 }}>
                       Valid till
                     </p>
-                    <p className="font-medium text-[#6D0D26]">
+                    <p className="font-medium text-[#3573BA]">
                       {new Date(coupon.expiryDate).toLocaleDateString("en-GB", {
                         day: "2-digit",
                         month: "short",
@@ -159,7 +161,7 @@ const CouponCard = ({
                     </p>
                   </div>
                   <div>
-                    <p className="text-[#6D0D26]" style={{ opacity: 0.6 }}>
+                    <p className="text-[#3573BA]" style={{ opacity: 0.6 }}>
                       Limit
                     </p>
                     <p className="font-medium text-gray-900">{displayLimit}</p>

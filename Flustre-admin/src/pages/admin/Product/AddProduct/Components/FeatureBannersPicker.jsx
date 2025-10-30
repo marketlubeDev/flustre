@@ -4,7 +4,7 @@ function FeatureBannersPicker({ onSelect }) {
   return (
     <div className="h-full">
       <div className="px-0 py-0 bg-white rounded-lg h-full flex flex-col">
-        <h2 className="text-sm font-semibold bg-[#6D0D261A] text-[#6D0D26] px-4 py-3 rounded-t-lg">
+        <h2 className="text-sm font-semibold bg-[#3573BA1A] text-[#3573BA] px-4 py-3 rounded-t-lg">
           PRODUCT FEATURES
         </h2>
 
@@ -24,11 +24,11 @@ function FeatureBannersPicker({ onSelect }) {
               >
                 <div
                   className="w-32 h-12 border rounded px-0.5 py-0.5 mb-2"
-                  style={{ borderColor: "#6D0D26" }}
+                  style={{ borderColor: "#3573BA" }}
                 >
                   <div
                     className="w-full h-full rounded flex items-center justify-center"
-                    style={{ backgroundColor: "#6D0D2629" }}
+                    style={{ backgroundColor: "#3573BA29" }}
                   >
                     <div className="flex items-center justify-center">
                       <img
@@ -60,11 +60,11 @@ function FeatureBannersPicker({ onSelect }) {
               >
                 <div
                   className="w-32 h-12 border rounded px-0.5 py-0.5 mb-2"
-                  style={{ borderColor: "#6D0D26" }}
+                  style={{ borderColor: "#3573BA" }}
                 >
                   <div
                     className="w-full h-full rounded flex items-center justify-center"
-                    style={{ backgroundColor: "#6D0D2629" }}
+                    style={{ backgroundColor: "#3573BA29" }}
                   >
                     <div className="flex items-center justify-center">
                       <img
@@ -96,13 +96,13 @@ function FeatureBannersPicker({ onSelect }) {
               >
                 <div
                   className="w-32 h-12 border rounded px-0.5 py-0.5 mb-2"
-                  style={{ borderColor: "#6D0D26" }}
+                  style={{ borderColor: "#3573BA" }}
                 >
                   <div className="w-full h-full rounded flex">
                     <div className="w-1/2 bg-white rounded-l flex items-center justify-center"></div>
                     <div
                       className="w-1/2 rounded-r flex items-center justify-center"
-                      style={{ backgroundColor: "#6D0D2629" }}
+                      style={{ backgroundColor: "#3573BA29" }}
                     >
                       <img
                         src="/icons/addbannerimage.svg"
@@ -133,12 +133,12 @@ function FeatureBannersPicker({ onSelect }) {
               >
                 <div
                   className="w-32 h-12 border rounded px-0.5 py-0.5 mb-2"
-                  style={{ borderColor: "#6D0D26" }}
+                  style={{ borderColor: "#3573BA" }}
                 >
                   <div className="w-full h-full rounded flex">
                     <div
                       className="w-1/2 rounded-l flex items-center justify-center"
-                      style={{ backgroundColor: "#6D0D2629" }}
+                      style={{ backgroundColor: "#3573BA29" }}
                     >
                       <img
                         src="/icons/addbannerimage.svg"

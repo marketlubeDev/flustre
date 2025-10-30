@@ -18,7 +18,6 @@ function AdminLayout() {
   const [searchTerm, setSearchTerm] = useState("");
   const { menuCounts } = useMenuCounts();
 
-
   const menuItems = [
     {
       name: "Dashboard",
@@ -227,12 +226,12 @@ function AdminLayout() {
         className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } sm:translate-x-0 border-r border-gray-200 shadow-lg`}
-        style={{ backgroundColor: "#6D0D2605" }}
+        style={{ backgroundColor: "#3573ba11" }}
         aria-label="Sidebar"
       >
         <div
           className="h-full pl-6 pr-4 pb-4 overflow-y-auto scrollbar-hide"
-          style={{ backgroundColor: "#6D0D2605" }}
+          style={{ backgroundColor: "#3573BA05" }}
         >
           {/* Logo Section */}
           <div className="pt-6 pb-4 border-b border-gray-200 mb-6">
@@ -278,9 +277,9 @@ function AdminLayout() {
                       style={
                         isActiveRoute(item.path)
                           ? {
-                              backgroundColor: "#6D0D260D",
-                              borderLeftColor: "#6D0D26",
-                              color: "#6D0D26",
+                              backgroundColor: "#3573BA0D",
+                              borderLeftColor: "#3573BA",
+                              color: "#3573BA",
                             }
                           : {}
                       }
@@ -296,7 +295,7 @@ function AdminLayout() {
                           style: {
                             ...item.icon.props.style,
                             filter: isActiveRoute(item.path)
-                              ? "brightness(0) saturate(100%) invert(9%) sepia(100%) saturate(3207%) hue-rotate(316deg) brightness(98%) contrast(95%)"
+                              ? "brightness(0) saturate(100%) invert(39%) sepia(24%) saturate(1256%) hue-rotate(175deg) brightness(90%) contrast(97%)"
                               : item.icon.props.style?.filter ||
                                 "brightness(0) saturate(100%) invert(47%) sepia(8%) saturate(1077%) hue-rotate(185deg) brightness(95%) contrast(88%)",
                           },
@@ -307,8 +306,8 @@ function AdminLayout() {
                         <div
                           className="px-2 py-1 text-xs font-medium rounded-full min-w-[20px] text-center"
                           style={{
-                            backgroundColor: "#6D0D261F",
-                            color: "#6D0D26",
+                            backgroundColor: "#3573BA1F",
+                            color: "#3573BA",
                           }}
                         >
                           {item.count}

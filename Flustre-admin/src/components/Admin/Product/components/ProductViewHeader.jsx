@@ -114,8 +114,8 @@ const ProductViewHeader = ({
             onClick={onImportCSV}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             style={{
-              color: "#6D0D26",
-              backgroundColor: "#6D0D261A",
+              color: "#3573BA",
+              backgroundColor: "#3573BA1A",
             }}
           >
             <img
@@ -132,10 +132,10 @@ const ProductViewHeader = ({
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             style={{
               borderRadius: "8px",
-              borderBottom: "1px solid #B3536C",
+              borderBottom: "1px solid #6C9BC8",
               background:
-                "linear-gradient(180deg, #6D0D26 30.96%, #A94962 100%)",
-              boxShadow: "0 1px 2px 0 rgba(189, 93, 118, 0.69)",
+                "linear-gradient(180deg, #3573BA 30.96%, #6FA0D5 100%)",
+              boxShadow: "0 1px 2px 0 rgba(92, 139, 189, 0.5)",
             }}
           >
             <svg

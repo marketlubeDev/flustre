@@ -123,14 +123,14 @@ export default function Addproduct() {
 
   // Custom focus style for burgundy color
   const customFocusStyle = {
-    "--tw-ring-color": "#6D0D26",
+    "--tw-ring-color": "#3573BA",
     "--tw-ring-opacity": "0.5",
   };
 
   const handleFocus = (e) => {
-    e.target.style.borderColor = "#6D0D26";
+    e.target.style.borderColor = "#3573BA";
     e.target.style.outline = "none";
-    e.target.style.boxShadow = "0 0 0 3px rgba(109, 13, 38, 0.1)";
+    e.target.style.boxShadow = "0 0 0 3px rgba(53, 115, 186, 0.1)";
   };
 
   const handleBlur = (e) => {
@@ -431,7 +431,7 @@ export default function Addproduct() {
             <div className="text-center">
               <div
                 className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-                style={{ borderBottomColor: "#6D0D26" }}
+                style={{ borderBottomColor: "#3573BA" }}
               ></div>
               <p className="text-gray-600 font-medium">
                 Loading product details...

@@ -24,7 +24,6 @@ app.use(
       "http://localhost:5174",
       "http://localhost:5175",
       "http://localhost:5173",
-     
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -46,7 +45,7 @@ app.all("*", (req, res, next) => {
 //error handling middleware
 app.use(globalErrorHandler);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 app.listen(port, (err) => {
   if (err) {
     console.log(err);

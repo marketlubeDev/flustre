@@ -24,9 +24,9 @@ const CouponApplicabilityValidity = ({
         type="button"
         onClick={() => setValidityOpen((v) => !v)}
         className="w-full flex items-center justify-between  px-4 py-2 text-left"
-        style={{ background: "rgba(109, 13, 38, 0.06)" }}
+        style={{ background: "rgba(53, 115, 186, 0.06)" }}
       >
-        <span className="inline-flex items-center gap-2 text-sm font-medium text-[#6D0D26]">
+        <span className="inline-flex items-center gap-2 text-sm font-medium text-[#3573BA]">
           Applicability & Validity
           <span className="text-[#000000]">
             {validityOpen ? <IoIosArrowDown /> : <IoIosArrowUp />}
@@ -44,7 +44,7 @@ const CouponApplicabilityValidity = ({
               <select
                 value={formData.applyTo}
                 onChange={handleApplyToChange}
-                className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+                className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
               >
                 <option value="" disabled hidden>
                   Apply coupon to
@@ -61,7 +61,7 @@ const CouponApplicabilityValidity = ({
                     type="text"
                     value={productSearchTerm}
                     onChange={(e) => handleProductSearch(e.target.value)}
-                    className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+                    className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
                     placeholder="Search product by name or SKU"
                   />
                   {Array.isArray(formData.productIds) &&
@@ -132,7 +132,7 @@ const CouponApplicabilityValidity = ({
                   onChange={(e) =>
                     setFormData({ ...formData, categoryId: e.target.value })
                   }
-                  className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+                  className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
                 >
                   <option value="">Select category</option>
                   {categories.map((cat) => (
@@ -152,7 +152,7 @@ const CouponApplicabilityValidity = ({
                       subcategoryId: e.target.value,
                     })
                   }
-                  className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+                  className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
                 >
                   <option value="">Select subcategory</option>
                   {subcategories.map((sub) => (
@@ -194,7 +194,7 @@ const CouponApplicabilityValidity = ({
                   setFormData({ ...formData, expiryDate: e.target.value })
                 }
                 min={minDate}
-                className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+                className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
                 required
               />
             </div>
@@ -212,7 +212,7 @@ const CouponApplicabilityValidity = ({
                   onChange={(e) =>
                     setFormData({ ...formData, usageLimit: e.target.value })
                   }
-                  className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6D0D26] focus:border-transparent"
+                  className="w-full rounded-[0.7rem] border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
                   placeholder="Set usage limit"
                   min="0"
                 />

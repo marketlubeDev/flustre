@@ -17,7 +17,7 @@ function VariantAttributesSection({
   } = useVariantContext();
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <h2 className="text-sm font-semibold text-[#6D0D26] bg-[#6D0D261A] px-4 py-3 rounded-t-lg flex-shrink-0">
+      <h2 className="text-sm font-semibold text-[#3573BA] bg-[#3573BA1A] px-4 py-3 rounded-t-lg flex-shrink-0">
         VARIANT ATTRIBUTE
       </h2>
 

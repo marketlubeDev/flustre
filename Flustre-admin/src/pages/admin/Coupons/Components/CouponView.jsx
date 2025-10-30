@@ -8,10 +8,10 @@ const CollapsibleSection = ({ title, children, defaultOpen = true }) => {
     <div className="border-b border-gray-200">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 flex items-center justify-between  text-[#6D0D26]"
-        style={{ background: "rgba(109, 13, 38, 0.06)" }}
+        className="w-full px-4 py-2 flex items-center justify-between  text-[#3573BA]"
+        style={{ background: "rgba(53, 115, 186, 0.06)" }}
       >
-        <span className="inline-flex items-center gap-2 text-sm font-medium text-[#6D0D26]">
+        <span className="inline-flex items-center gap-2 text-sm font-medium text-[#3573BA]">
           {title}{" "}
           <span className="text-[#000000]">
             {isOpen ? <IoIosArrowDown /> : <IoIosArrowUp />}
@@ -26,7 +26,8 @@ const CollapsibleSection = ({ title, children, defaultOpen = true }) => {
 const CouponView = ({ coupon, onToggleStatus }) => {
   const usageCount = coupon?.usedCount ?? 0;
   const usageLimit = coupon?.usageLimit ?? 0;
-  const displayLimit = usageLimit && usageLimit > 0 ? `${usageCount}/${usageLimit}` : "-";
+  const displayLimit =
+    usageLimit && usageLimit > 0 ? `${usageCount}/${usageLimit}` : "-";
 
   // Format applicable to field
   const formatApplicableTo = () => {
@@ -113,7 +114,7 @@ const CouponView = ({ coupon, onToggleStatus }) => {
                 onToggleStatus && onToggleStatus(coupon?._id, !coupon?.isActive)
               }
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                coupon?.isActive ? "bg-[#6D0D26]" : "bg-gray-200"
+                coupon?.isActive ? "bg-[#3573BA]" : "bg-gray-200"
               }`}
             >
               <span

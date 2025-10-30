@@ -188,8 +188,8 @@ function Label() {
         <div className="px-6 py-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#E8D8DC] rounded-xl">
-                <FaTags className="w-6 h-6 text-[#6D0D26]" />
+              <div className="p-3 bg-blue-50 rounded-xl">
+                <FaTags className="w-6 h-6 text-[#3573BA]" />
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ function Label() {
               <button
                 onClick={() => setShowModal(true)}
                 className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl"
-                style={{ backgroundColor: "#6D0D26" }}
+                style={{ backgroundColor: "#3573BA" }}
               >
                 <FaPlus className="w-4 h-4" />
                 Add New Label
@@ -327,7 +327,7 @@ function Label() {
                           <div className="flex items-center gap-3">
                             <div
                               className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                              style={{ backgroundColor: "#6D0D26" }}
+                              style={{ backgroundColor: "#3573BA" }}
                             >
                               <FaTags className="w-4 h-4 text-white" />
                             </div>
@@ -377,7 +377,7 @@ function Label() {
                             <button
                               onClick={() => handleViewProducts(label)}
                               className="px-3 py-1.5 text-xs font-medium text-white rounded-lg"
-                              style={{ backgroundColor: "#6D0D26" }}
+                              style={{ backgroundColor: "#3573BA" }}
                               title="View products"
                             >
                               View Products

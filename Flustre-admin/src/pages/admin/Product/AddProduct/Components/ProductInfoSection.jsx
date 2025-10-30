@@ -21,7 +21,7 @@ function ProductInfoSection({
   return (
     <div>
       <div className="px-0 py-0">
-        <h2 className="text-sm font-semibold mb-6 bg-[#6D0D261A] text-[#6D0D26] px-4 py-3 rounded-t-lg">
+        <h2 className="text-sm font-semibold mb-6 bg-[#3573BA1A] text-[#3573BA] px-4 py-3 rounded-t-lg">
           PRODUCT INFO
         </h2>
 

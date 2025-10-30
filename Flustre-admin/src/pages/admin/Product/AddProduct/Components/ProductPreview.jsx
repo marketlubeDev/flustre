@@ -14,19 +14,28 @@ function ProductPreview({
   // Force re-render when variants change
   const [forceRender, setForceRender] = useState(0);
   useEffect(() => {
-    setForceRender(prev => prev + 1);
+    setForceRender((prev) => prev + 1);
   }, [variants]);
 
   // Debug: Log Redux state when Preview renders
-  console.log('Preview - Redux variants state:', variants?.map((v, idx) => ({
-    index: idx,
-    name: v.name,
-    images: v.images,
-    imagesLength: v.images?.length,
-    imagesFiltered: v.images?.filter(Boolean)?.length,
-    imageValues: v.images?.map((img, imgIdx) => ({ imgIdx, value: img, isTruthy: Boolean(img) })),
-    rawImages: v.images
-  })), 'forceRender:', forceRender);
+  console.log(
+    "Preview - Redux variants state:",
+    variants?.map((v, idx) => ({
+      index: idx,
+      name: v.name,
+      images: v.images,
+      imagesLength: v.images?.length,
+      imagesFiltered: v.images?.filter(Boolean)?.length,
+      imageValues: v.images?.map((img, imgIdx) => ({
+        imgIdx,
+        value: img,
+        isTruthy: Boolean(img),
+      })),
+      rawImages: v.images,
+    })),
+    "forceRender:",
+    forceRender
+  );
 
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
@@ -63,13 +72,13 @@ function ProductPreview({
       <div className="space-y-6">
         {/* Product Info Section */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="bg-[#6D0D261A] px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <h4 className="text-xs font-medium text-[#6D0D26] uppercase tracking-wide">
+          <div className="bg-[#3573BA1A] px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+            <h4 className="text-xs font-medium text-[#3573BA] uppercase tracking-wide">
               PRODUCT INFO
             </h4>
             <button
               onClick={onEditProductInfo}
-              className="text-[#6D0D26] text-sm hover:underline flex items-center gap-1"
+              className="text-[#3573BA] text-sm hover:underline flex items-center gap-1"
             >
               <svg
                 className="w-3 h-3"
@@ -133,13 +142,13 @@ function ProductPreview({
 
         {/* Features Section */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="bg-[#6D0D261A] px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <h4 className="text-xs font-medium text-[#6D0D26] uppercase tracking-wide">
+          <div className="bg-[#3573BA1A] px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+            <h4 className="text-xs font-medium text-[#3573BA] uppercase tracking-wide">
               FEATURES
             </h4>
             <button
               onClick={onEditFeatures}
-              className="text-[#6D0D26] text-sm hover:underline flex items-center gap-1"
+              className="text-[#3573BA] text-sm hover:underline flex items-center gap-1"
             >
               <svg
                 className="w-3 h-3"
@@ -248,13 +257,13 @@ function ProductPreview({
 
         {/* Variant Info Section */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="bg-[#6D0D261A] px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <h4 className="text-xs font-medium text-[#6D0D26] uppercase tracking-wide">
+          <div className="bg-[#3573BA1A] px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+            <h4 className="text-xs font-medium text-[#3573BA] uppercase tracking-wide">
               VARIANT INFO
             </h4>
             <button
               onClick={onEditVariants}
-              className="text-[#6D0D26] text-sm hover:underline flex items-center gap-1"
+              className="text-[#3573BA] text-sm hover:underline flex items-center gap-1"
             >
               <svg
                 className="w-3 h-3"
@@ -318,23 +327,34 @@ function ProductPreview({
                               const imgs = Array.isArray(variant.images)
                                 ? variant.images.filter(Boolean)
                                 : [];
-                              
+
                               // Debug: Log variant images in preview
-                              console.log(`Preview - Variant: ${variant.name}`, {
-                                images: imgs,
-                                imagesLength: imgs.length,
-                                variantImages: variant.images,
-                                variantImageValues: variant.images?.map((img, imgIdx) => ({ imgIdx, value: img, isTruthy: Boolean(img) })),
-                                forceRender: forceRender,
-                                rawImages: variant.images,
-                                // Detailed inspection
-                                image0: variant.images?.[0],
-                                image1: variant.images?.[1],
-                                image2: variant.images?.[2],
-                                image3: variant.images?.[3],
-                                allImagesTruthy: variant.images?.map(img => Boolean(img))
-                              });
-                              
+                              console.log(
+                                `Preview - Variant: ${variant.name}`,
+                                {
+                                  images: imgs,
+                                  imagesLength: imgs.length,
+                                  variantImages: variant.images,
+                                  variantImageValues: variant.images?.map(
+                                    (img, imgIdx) => ({
+                                      imgIdx,
+                                      value: img,
+                                      isTruthy: Boolean(img),
+                                    })
+                                  ),
+                                  forceRender: forceRender,
+                                  rawImages: variant.images,
+                                  // Detailed inspection
+                                  image0: variant.images?.[0],
+                                  image1: variant.images?.[1],
+                                  image2: variant.images?.[2],
+                                  image3: variant.images?.[3],
+                                  allImagesTruthy: variant.images?.map((img) =>
+                                    Boolean(img)
+                                  ),
+                                }
+                              );
+
                               const toSrc = (img) =>
                                 typeof img === "string"
                                   ? img

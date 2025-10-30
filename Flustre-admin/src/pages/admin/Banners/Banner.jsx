@@ -8,7 +8,10 @@ import {
   editBanner,
   getBanners,
 } from "../../../sevices/bannerApis";
-import { triggerBannerCreated, triggerBannerDeleted } from "../../../utils/menuCountUtils";
+import {
+  triggerBannerCreated,
+  triggerBannerDeleted,
+} from "../../../utils/menuCountUtils";
 
 function Banner() {
   const [showModal, setShowModal] = useState(false);
@@ -139,10 +142,10 @@ function Banner() {
     try {
       await deleteBanner(id);
       toast.success("Banner deleted successfully");
-      
+
       // Trigger menu count update for deleted banner
       triggerBannerDeleted();
-      
+
       fetchBanners();
     } catch (error) {
       toast.error("Failed to delete banner");
@@ -185,7 +188,7 @@ function Banner() {
             <button
               onClick={() => setShowModal(true)}
               className="inline-flex items-center px-4 py-2 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-              style={{ backgroundColor: "#6D0D26" }}
+              style={{ backgroundColor: "#3573BA" }}
             >
               <FaPlus className="mr-2" size={14} />
               Add New Banner

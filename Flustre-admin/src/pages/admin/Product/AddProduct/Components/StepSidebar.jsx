@@ -21,7 +21,7 @@ export default function StepSidebar({ steps, currentStep, goToStep }) {
                     style={{
                       width: "3px",
                       height: "35px",
-                      backgroundColor: "#6D0D26",
+                      backgroundColor: "#3573BA",
                       borderTopLeftRadius: "8px",
                       borderBottomLeftRadius: "8px",
                     }}
@@ -34,7 +34,7 @@ export default function StepSidebar({ steps, currentStep, goToStep }) {
                         ? "text-[#00000066]"
                         : "text-[#00000066]"
                     }`}
-                    style={currentStep === step.id ? { color: "#6D0D26" } : {}}
+                    style={currentStep === step.id ? { color: "#3573BA" } : {}}
                   >
                     Step {step.id}/{steps.length}
                   </span>

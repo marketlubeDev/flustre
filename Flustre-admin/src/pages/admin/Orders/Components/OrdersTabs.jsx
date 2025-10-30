@@ -18,12 +18,12 @@ const OrdersTabs = ({ activeTab, onTabChange, orderCounts }) => {
             onClick={() => onTabChange(tab.key)}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === tab.key
-                ? "border-[#6D0D26] text-[#6D0D26]"
+                ? "border-[#3573BA] text-[#3573BA]"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
             {tab.label}{" "}
-            <span className="ml-2 bg-[#6D0D261F] text-[#6D0D26] py-1 px-2 rounded-full text-xs">
+            <span className="ml-2 bg-[#3573BA1F] text-[#3573BA] py-1 px-2 rounded-full text-xs">
               {tab.count}
             </span>
           </button>
