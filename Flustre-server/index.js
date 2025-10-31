@@ -26,8 +26,9 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5174",
-      "http://localhost:5175",
       "http://localhost:5173",
+      "https://flustre-5zs1.vercel.app",
+      "https://www.flustre.com",
       // Add your deployed domains below
       process.env.ALLOWED_ORIGIN_1,
       process.env.ALLOWED_ORIGIN_2,
