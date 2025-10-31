@@ -3,23 +3,28 @@
 export const categories = [
   {
     name: "Living",
-    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category1+(re).jpg",
+    image:
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category1+(re).jpg",
   },
   {
     name: "Bedroom",
-    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category2+(re).jpg",
+    image:
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category2+(re).jpg",
   },
   {
     name: "Dining & Kitchen",
-    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category3+(re).jpg",
+    image:
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category3+(re).jpg",
   },
   {
     name: "Office",
-    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category4+(re).jpg",
+    image:
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category4+(re).jpg",
   },
   {
     name: "Outdoor",
-    image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category5+(re).jpg",
+    image:
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/category/category5+(re).jpg",
   },
 ];
 
@@ -78,6 +83,30 @@ export const bestSellers = [
 ];
 
 export const featuredProducts = [
+  {
+    id: 1,
+    name: "Modern 3-Seater Sofa",
+    category: "Sofas",
+    rating: 4.7,
+    description:
+      "Plush 3-seater fabric sofa with solid wood frame, high-density foam, and ergonomic armrests. Perfect for contemporary living rooms.",
+    price: "₹ 2,999",
+    originalPrice: "₹ 3,499",
+    image:
+      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/finest/featured7+(re).jpg",
+  },
+  {
+    id: 2,
+    name: "Luxury 2-Seater Sofa",
+    category: "Sofas",
+    rating: 4.5,
+    description:
+      "Elegant 2-seater sofa with leather upholstery, wood frame, and deep seat cushions. Ideal for formal living spaces.",
+    price: "₹ 2,499",
+    originalPrice: "₹ 3,199",
+    image:
+      "https://marketlube-website-assets.s3.ap-south-1.amazonaws.com/Souqalmart/bestseller/8613516cf28a3fde364291c8bf09a4eb.jpg",
+  },
   {
     id: 1,
     name: "Modern 3-Seater Sofa",
@@ -697,7 +726,7 @@ export const serviceBenefits = [
   },
   {
     icon: "/cash3.svg",
-      titleKey: "24x7 Support",
+    titleKey: "24x7 Support",
     alt: "24x7 Support",
   },
   {

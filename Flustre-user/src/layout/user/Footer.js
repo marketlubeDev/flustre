@@ -4,15 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import useCategories from "../../lib/hooks/useCategories";
 
 // You can move this to a separate constants file if needed
-const navigationLinks = [
-  "Living Room",
-  "Bedroom",
-  "Dining & Kitchen",
-  "Office",
-  "Outdoors",
-];
 
 const socialLinks = [
   { name: "X (Twitter)", icon: "/link1.svg", href: "#" },
@@ -24,6 +18,10 @@ const socialLinks = [
 export default function Footer() {
   const router = useRouter();
   const [hoveredSocial, setHoveredSocial] = useState(null);
+  const { categories, loading: categoriesLoading } = useCategories();
+  const navigationLinks = Array.isArray(categories)
+    ? categories.map((c) => c?.name).filter(Boolean)
+    : [];
 
   const normalizeSlug = (value) =>
     String(value)

@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 // import useCart from "@/lib/hooks/useCart"; // Removed API integration
 // Note: Using static products for the Best Sellers section
+import useProductsByLabelName from "@/lib/hooks/useProductsByLabelName";
 
 // Product Card Component
 const ProductCard = ({ product, onAddToCart, onProductClick }) => {
@@ -93,13 +94,19 @@ const ProductCard = ({ product, onAddToCart, onProductClick }) => {
             className="text-xs md:text-sm lg:text-base font-bold"
             style={{ color: "var(--color-primary)" }}
           >
-            <span className="align-baseline text-[9px] md:text-[10px] lg:text-xs" style={{ color: "#2B73B8" }}>
+            <span
+              className="align-baseline text-[9px] md:text-[10px] lg:text-xs"
+              style={{ color: "#2B73B8" }}
+            >
               ₹
             </span>
             <span className="ml-1">{product.price.toLocaleString()}</span>
           </span>
           <span className="relative inline-flex items-center text-gray-500">
-            <span className="align-baseline text-[9px] md:text-[10px] lg:text-xs" style={{ color: "#2B73B8" }}>
+            <span
+              className="align-baseline text-[9px] md:text-[10px] lg:text-xs"
+              style={{ color: "#2B73B8" }}
+            >
               ₹
             </span>
             <span className="text-[10px] md:text-xs lg:text-sm ml-1">
@@ -141,101 +148,59 @@ export default function BestSellersSection() {
   const router = useRouter();
   const scrollerRef = useRef(null);
   const isPausedRef = useRef(false);
+  const [isScrollable, setIsScrollable] = useState(false);
   // Static cart function - no API integration
   const addToCart = (item) => {
-    console.log('Added to cart (static):', item);
+    console.log("Added to cart (static):", item);
     // You can add localStorage functionality here if needed
   };
-  // Static furniture products using local bestseller images
-  const products = useMemo(
-    () => [
-      {
-        id: 1,
-        name: "Modern Fabric Sofa",
-        category: "Furniture",
-        price: 899,
-        originalPrice: 1199,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller1+(re).jpg",
-        badge: "#1",
-      },
-      {
-        id: 2,
-        name: "Walnut Coffee Table",
-        category: "Furniture",
-        price: 329,
-        originalPrice: 429,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller2(re).jpg",
-        badge: "#2",
-      },
-      {
-        id: 3,
-        name: "Ergonomic Desk Chair",
-        category: "Furniture",
-        price: 299,
-        originalPrice: 399,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller3+(re).jpg",
-        badge: "#3",
-      },
-      {
-        id: 4,
-        name: "Solid Wood Sideboard",
-        category: "Furniture",
-        price: 749,
-        originalPrice: 949,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller4(re).jpg",
-      },
-      {
-        id: 5,
-        name: "Minimalist Bookshelf",
-        category: "Furniture",
-        price: 259,
-        originalPrice: 329,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller5+(re).jpg",
-      },
-      {
-        id: 6,
-        name: "Accent Lounge Chair",
-        category: "Furniture",
-        price: 389,
-        originalPrice: 499,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller6+(re).jpg",
-      },
-      {
-        id: 7,
-        name: "Round Dining Table",
-        category: "Furniture",
-        price: 679,
-        originalPrice: 849,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller7(re).jpg",
-      },
-      {
-        id: 8,
-        name: "Velvet Ottoman",
-        category: "Furniture",
-        price: 189,
-        originalPrice: 249,
-        image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/bestsellers/bestseller8+(re).jpg",
-      },
-    ],
-    []
+  // Fetch products labeled "Best Sellers" and compute badges for top 3
+  const { products: fetchedProducts, loading } = useProductsByLabelName(
+    "Best Sellers",
+    { page: 1, limit: 24 }
   );
-  const isLoading = false;
+  const products = useMemo(() => {
+    const list = Array.isArray(fetchedProducts) ? fetchedProducts : [];
+    return list.map((p, idx) => ({
+      ...p,
+      badge: idx < 3 ? `#${idx + 1}` : undefined,
+    }));
+  }, [fetchedProducts]);
+  const isLoading = loading;
 
   // Duplicate products for infinite scroll effect
   const duplicatedProducts = useMemo(() => {
+    if (!isScrollable || products.length <= 1) return products;
     // Triple the array for seamless infinite scrolling
     return [...products, ...products, ...products];
-  }, [products]);
+  }, [products, isScrollable]);
+
+  // Initialize scroll position to middle set for seamless infinite scroll
+  useEffect(() => {
+    // Determine if content overflows to enable scroll behavior
+    const el = scrollerRef.current;
+    if (!el) return;
+    const checkOverflow = () => {
+      setIsScrollable(el.scrollWidth > el.clientWidth);
+    };
+    const timer = setTimeout(checkOverflow, 100);
+    window.addEventListener("resize", checkOverflow);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkOverflow);
+    };
+  }, [products.length]);
 
   // Initialize scroll position to middle set for seamless infinite scroll
   useEffect(() => {
     if (typeof window === "undefined") return;
     const el = scrollerRef.current;
-    if (!el || products.length === 0) return;
+    if (!el || products.length === 0 || !isScrollable || products.length <= 1)
+      return;
 
     // Wait for layout to complete
     const timer = setTimeout(() => {
-      const cardWidth = el.querySelector('.product-card')?.offsetWidth || 0;
+      const cardWidth = el.querySelector(".product-card")?.offsetWidth || 0;
       const gap = 16;
       // Start at the beginning of the second set (middle)
       const initialScroll = (cardWidth + gap) * products.length;
@@ -243,26 +208,27 @@ export default function BestSellersSection() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [products.length]);
+  }, [products.length, isScrollable]);
 
   // Handle infinite scroll loop - seamlessly jump when reaching boundaries
   useEffect(() => {
     if (typeof window === "undefined") return;
     const el = scrollerRef.current;
-    if (!el || products.length === 0) return;
+    if (!el || products.length === 0 || !isScrollable || products.length <= 1)
+      return;
 
     let scrollTimer;
     const handleScroll = () => {
       el.classList.add("scrolling");
       if (scrollTimer) clearTimeout(scrollTimer);
-      
+
       scrollTimer = setTimeout(() => {
         el.classList.remove("scrolling");
-        
-        const cardWidth = el.querySelector('.product-card')?.offsetWidth || 0;
+
+        const cardWidth = el.querySelector(".product-card")?.offsetWidth || 0;
         const gap = 16;
         const oneSetWidth = (cardWidth + gap) * products.length;
-        
+
         // If we've scrolled past the second set, jump back to the first set
         if (el.scrollLeft >= oneSetWidth * 2) {
           el.scrollLeft = el.scrollLeft - oneSetWidth;
@@ -280,46 +246,50 @@ export default function BestSellersSection() {
       el.removeEventListener("scroll", handleScroll);
       if (scrollTimer) clearTimeout(scrollTimer);
     };
-  }, [products.length]);
+  }, [products.length, isScrollable]);
 
   // Auto-scroll with pause on hover/touch - continuous scrolling
   useEffect(() => {
     if (typeof window === "undefined") return;
     const el = scrollerRef.current;
-    if (!el || products.length === 0) return;
+    if (!el || products.length === 0 || !isScrollable || products.length <= 1)
+      return;
 
     const intervalMs = 3500;
     let timerId = null;
-    
+
     const scrollToNext = () => {
       if (!isPausedRef.current) {
-        const cardWidth = el.querySelector('.product-card')?.offsetWidth || 0;
+        const cardWidth = el.querySelector(".product-card")?.offsetWidth || 0;
         const gap = 16; // gap-4 = 16px
-        
+
         // Determine number of cards to scroll based on screen width
         const screenWidth = window.innerWidth;
         let cardsToScroll = 2; // default for mobile
-        
-        if (screenWidth >= 1280) { // xl and above
+
+        if (screenWidth >= 1280) {
+          // xl and above
           cardsToScroll = 4;
-        } else if (screenWidth >= 1024) { // lg
+        } else if (screenWidth >= 1024) {
+          // lg
           cardsToScroll = 3;
-        } else if (screenWidth >= 768) { // md
+        } else if (screenWidth >= 768) {
+          // md
           cardsToScroll = 3;
         }
-        
+
         const scrollAmount = (cardWidth + gap) * cardsToScroll;
-        
+
         // Just scroll forward - the boundary detection will handle looping
         el.scrollBy({ left: scrollAmount, behavior: "smooth" });
       }
     };
-    
+
     const start = () => {
       if (timerId) return;
       timerId = setInterval(scrollToNext, intervalMs);
     };
-    
+
     const stop = () => {
       if (timerId) {
         clearInterval(timerId);
@@ -333,7 +303,7 @@ export default function BestSellersSection() {
     const handleEnter = () => {
       isPausedRef.current = true;
     };
-    
+
     const handleLeave = () => {
       isPausedRef.current = false;
     };
@@ -351,7 +321,7 @@ export default function BestSellersSection() {
       el.removeEventListener("touchstart", handleEnter);
       el.removeEventListener("touchend", handleLeave);
     };
-  }, [products.length]);
+  }, [products.length, isScrollable]);
 
   const handleProductClick = (productId) => {
     router.push(`/products/${productId}`);
@@ -376,9 +346,7 @@ export default function BestSellersSection() {
             onClick={handleViewAll}
             aria-label="View all best sellers"
           >
-            <span className="text-sm md:text-base">
-              View all
-            </span>
+            <span className="text-sm md:text-base">View all</span>
             <span
               className="inline-flex"
               style={{ cursor: "pointer" }}
@@ -411,8 +379,11 @@ export default function BestSellersSection() {
         <div
           id="best-sellers-scroller"
           ref={scrollerRef}
-          className="overflow-x-auto pb-2 md:pb-4"
-          style={{ WebkitOverflowScrolling: "touch" }}
+          className="pb-2 md:pb-4"
+          style={{
+            WebkitOverflowScrolling: "touch",
+            overflowX: isScrollable && products.length > 1 ? "auto" : "hidden",
+          }}
         >
           {isLoading && (
             <div className="py-6 text-sm text-gray-600">Loading...</div>
@@ -424,8 +395,8 @@ export default function BestSellersSection() {
           {!isLoading && (
             <div className="flex gap-4 md:gap-5">
               {duplicatedProducts.map((product, idx) => (
-                <div 
-                  key={`${product.id}-${idx}`} 
+                <div
+                  key={`${product.id}-${idx}`}
                   className="product-card flex-shrink-0 w-[calc(50%-8px)] md:w-[calc(33.333%-13.33px)] lg:w-[calc(25%-12px)] xl:w-[calc(25%-12px)] 2xl:w-[calc(25%-12px)]"
                 >
                   <ProductCard
@@ -441,8 +412,13 @@ export default function BestSellersSection() {
 
         {/* Hide scrollbar for the scroller (scoped) */}
         <style jsx>{`
-          #best-sellers-scroller { -ms-overflow-style: none; scrollbar-width: none; }
-          #best-sellers-scroller::-webkit-scrollbar { display: none; }
+          #best-sellers-scroller {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          #best-sellers-scroller::-webkit-scrollbar {
+            display: none;
+          }
         `}</style>
 
         {/* Separator */}

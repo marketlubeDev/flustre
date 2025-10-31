@@ -1,10 +1,9 @@
 "use client";
 import FeaturedProductCard from "./FeaturedProductCard";
-import { featuredProducts } from "../../../../lib/data";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
- 
+import useProductsByLabelName from "@/lib/hooks/useProductsByLabelName";
 
 export default function FeaturedProductsSection({ isProductPage = false }) {
   const router = useRouter();
@@ -16,16 +15,12 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
   const containerRef = useRef(null);
   const autoSlideRef = useRef(null);
 
-  // Force the first two cards to use static images from public/featured
-  const productsForDisplay = featuredProducts.map((p, i) => ({
-    ...p,
-    image:
-      i === 0
-        ? "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/finest/featured7+(re).jpg"
-        : i === 1
-        ? "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/finest/featured4+(re).jpg"
-        : p.image,
-  }));
+  // Fetch products labeled "Finest Furniture" and show only two
+  const { products, loading } = useProductsByLabelName("Finest Furniture", {
+    page: 1,
+    limit: 24,
+  });
+  const productsForDisplay = (products || []).slice(0, 2);
 
   // Ensure client-side rendering
   useEffect(() => {
@@ -33,12 +28,15 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
   }, []);
 
   const nextSlide = useCallback(() => {
+    if (!productsForDisplay.length) return;
     setCurrentSlide((prev) => (prev + 1) % productsForDisplay.length);
   }, [productsForDisplay.length]);
 
   const prevSlide = useCallback(() => {
+    if (!productsForDisplay.length) return;
     setCurrentSlide(
-      (prev) => (prev - 1 + productsForDisplay.length) % productsForDisplay.length
+      (prev) =>
+        (prev - 1 + productsForDisplay.length) % productsForDisplay.length
     );
   }, [productsForDisplay.length]);
 
@@ -101,21 +99,22 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
 
   // Auto-slide functionality
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || !productsForDisplay.length) return;
 
     startAutoSlide();
 
     return () => clearAutoSlide();
-  }, [isClient, startAutoSlide, clearAutoSlide]);
+  }, [isClient, productsForDisplay.length, startAutoSlide, clearAutoSlide]);
 
   // Scroll to current slide
   useEffect(() => {
-    if (!containerRef.current || !isClient) return;
+    if (!containerRef.current || !isClient || !productsForDisplay.length)
+      return;
 
     const container = containerRef.current;
     const cardWidth = container.offsetWidth;
     container.scrollLeft = cardWidth * currentSlide;
-  }, [currentSlide, isClient]);
+  }, [currentSlide, isClient, productsForDisplay.length]);
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
@@ -174,9 +173,7 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
             style={{ color: "var(--color-primary)" }}
             onClick={() => router.push("/products")}
           >
-            <span className="text-sm sm:text-base">
-              View All
-            </span>
+            <span className="text-sm sm:text-base">View All</span>
             <span
               onClick={(e) => {
                 e.stopPropagation();
@@ -221,14 +218,15 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
               onMouseUp={isDragging ? handleMouseUp : undefined}
               onMouseLeave={isDragging ? handleMouseUp : undefined}
             >
-              {productsForDisplay.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex-shrink-0 w-full snap-start"
-                >
-                  <FeaturedProductCard product={product} />
-                </div>
-              ))}
+              {!loading &&
+                productsForDisplay.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-shrink-0 w-full snap-start"
+                  >
+                    <FeaturedProductCard product={product} />
+                  </div>
+                ))}
             </div>
 
             {/* Navigation Arrows - Only for tablets */}
@@ -274,9 +272,10 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
 
           {/* Desktop: Grid Layout */}
           <div className="hidden md:flex flex-row gap-6 w-full">
-            {productsForDisplay.map((product) => (
-              <FeaturedProductCard key={product.id} product={product} />
-            ))}
+            {!loading &&
+              productsForDisplay.map((product) => (
+                <FeaturedProductCard key={product.id} product={product} />
+              ))}
           </div>
         </div>
 
@@ -288,7 +287,9 @@ export default function FeaturedProductsSection({ isProductPage = false }) {
               <div
                 className="h-1 bg-[var(--color-primary)] rounded-full transition-all duration-500"
                 style={{
-                  width: `${(currentSlide + 1) * (100 / productsForDisplay.length)}%`,
+                  width: `${
+                    (currentSlide + 1) * (100 / productsForDisplay.length)
+                  }%`,
                 }}
               />
             </div>
