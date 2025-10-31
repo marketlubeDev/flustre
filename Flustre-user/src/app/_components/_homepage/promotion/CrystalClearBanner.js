@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 // import { useTranslation } from "@/lib/hooks/useTranslation"; // Removed API integration
-// import { useFeaturedPromotionBanners } from "@/lib/hooks/useBanners"; // Removed API integration
+import { useFeaturedPromotionBanners } from "@/lib/hooks/useBanners";
 
 export default function CrystalClearBanner() {
   // Static translation function - no API integration
@@ -12,37 +13,59 @@ export default function CrystalClearBanner() {
   const language = "EN";
   const router = useRouter();
 
-  // Static data - no API integration
-  const bannersData = null;
-  const isLoading = false;
-  const error = null;
+  // Fetch featured promotion banners (singleOffer)
+  const { data: bannersData, isLoading, error } = useFeaturedPromotionBanners();
 
-  // Fallback banner data in case API fails or no data
-  const fallbackBanner = {
-    id: 1,
-    title: "Luxury Furniture Collection, 20% OFF!",
+  // No fallback banner: render nothing if no API data
+
+  // Normalize and filter to singleOffer banners
+  const items = Array.isArray(bannersData?.data)
+    ? bannersData.data
+    : Array.isArray(bannersData)
+    ? bannersData
+    : [];
+
+  const offers = useMemo(() => {
+    return items.filter((it) => {
+      const flag = it?.bannerfor ?? it?.bannerFor ?? it?.banner_for;
+      return flag === "singleOffer";
+    });
+  }, [items]);
+
+  // Carousel state (must be declared unconditionally before any returns)
+  const [current, setCurrent] = useState(0);
+  const total = offers.length;
+
+  useEffect(() => {
+    if (total < 2) return;
+    const timer = setInterval(() => {
+      setCurrent((idx) => (idx + 1) % total);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [total]);
+
+  const goNext = useCallback(() => {
+    setCurrent((idx) => (idx + 1) % total);
+  }, [total]);
+
+  const goPrev = useCallback(() => {
+    setCurrent((idx) => (idx - 1 + total) % total);
+  }, [total]);
+
+  const active = offers[current] || offers[0];
+  if (!offers || offers.length === 0 || !active) {
+    return null;
+  }
+  const banner = {
+    id: active._id || active.id,
+    title: active.title || "",
     description:
-      "Premium furniture essentials for comfortable, stylish living. Limited time offer",
-    image:
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/crystal/crystabanner1+(1).jpg",
-    productLink: "/category/skin-care",
-    percentage: 20,
+      active.description ||
+      (active.percentage ? `${active.percentage}% off` : ""),
+    image: active.image,
+    productLink: active.productLink || null,
+    percentage: active.percentage,
   };
-
-  // Use API data if available, otherwise use fallback
-  const banner =
-    bannersData?.data?.length > 0
-      ? {
-          id: bannersData.data[0]._id,
-          title: bannersData.data[0].title,
-          description:
-            bannersData.data[0].description ||
-            "Premium skincare essentials for radiant, healthy skin. Limited time offer",
-          image: bannersData.data[0].image,
-          productLink: bannersData.data[0].productLink || "/category/skin-care",
-          percentage: bannersData.data[0].percentage,
-        }
-      : fallbackBanner;
 
   const handleShopNowClick = () => {
     if (banner.productLink) {
@@ -118,11 +141,47 @@ export default function CrystalClearBanner() {
                 onClick={handleShopNowClick}
                 className="bg-transparent hover:bg-white/10 text-white border-white hover:scale-105 focus:ring-white/50 focus:ring-offset-transparent text-sm sm:text-base rounded"
               >
-               Shop Now
+                Shop Now
               </Button>
             </div>
           </div>
         </div>
+
+        {/* Controls */}
+        {total > 1 && (
+          <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 sm:px-4 z-10">
+            <button
+              aria-label="Previous"
+              onClick={goPrev}
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60"
+            >
+              ‹
+            </button>
+            <button
+              aria-label="Next"
+              onClick={goNext}
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60"
+            >
+              ›
+            </button>
+          </div>
+        )}
+
+        {/* Dots */}
+        {total > 1 && (
+          <div className="absolute z-10 bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+            {offers.map((_, i) => (
+              <button
+                key={i}
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => setCurrent(i)}
+                className={`h-2.5 w-2.5 rounded-full ${
+                  i === current ? "bg-white" : "bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Divider */}

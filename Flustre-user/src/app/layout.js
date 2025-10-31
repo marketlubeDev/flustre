@@ -4,7 +4,7 @@ import Footer from "../layout/user/Footer";
 import { WishlistProvider } from "./_components/context/WishlistContext";
 import { Toaster } from "sonner";
 import ReduxProvider from "../providers/ReduxProvider";
-// import ReactQueryProvider from "../providers/ReactQueryProvider"; // Removed - no API calls needed
+import ReactQueryProvider from "../providers/ReactQueryProvider";
 export const metadata = {
   title: "Flustre",
   description: "Flustre storefront",
@@ -23,11 +23,13 @@ export default function RootLayout({ children }) {
       </head>
       <body className="antialiased">
         <ReduxProvider>
-          <WishlistProvider>
-            <Nav />
-            {children}
-            <Footer />
-          </WishlistProvider>
+          <ReactQueryProvider>
+            <WishlistProvider>
+              <Nav />
+              {children}
+              <Footer />
+            </WishlistProvider>
+          </ReactQueryProvider>
         </ReduxProvider>
         <Toaster position="top-center" richColors closeButton />
       </body>
