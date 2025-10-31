@@ -25,6 +25,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "http://localhost:3001",
       "http://localhost:5174",
       "http://localhost:5173",
       "https://flustre-5zs1.vercel.app",

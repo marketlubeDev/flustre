@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "@/app/_components/common/Button";
+import useBanner from "@/lib/hooks/useBanner";
 
 export default function HeroBanner() {
   const router = useRouter();
@@ -19,44 +20,17 @@ export default function HeroBanner() {
   const [isMobile, setIsMobile] = useState(false);
   const intervalRef = useRef(null);
 
-  // STATIC BANNERS: Using local images from public/banner
-  // Desktop and mobile versions for responsive design
-  const banners = [
-    {
-      id: 1,
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner1(re).jpeg",
-      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner2+(1).jpg",
-      title: "Living Room Furniture",
-      subtitle: "Sofas, sectionals, coffee tables",
-      description: "Design a cozy living space with modern, durable pieces.",
-    },
-    {
-      id: 2,
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner2+(re).jpg",
-      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner3+(1).jpg",
-      title: "Bedroom Collections",
-      subtitle: "Beds, wardrobes, nightstands",
-      description: "Sleep better with thoughtfully crafted bedroom essentials.",
-    },
-    {
-      id: 3,
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner3(re).jpeg",
-      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner4+(1).jpg",
-      title: "Dining & Kitchen",
-      subtitle: "Dining sets, chairs, storage",
-      description: "Gather in style with functional dining furniture.",
-    },
-    {
-      id: 4,
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/newbanner5+(re).jpg",
-      mobileImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Banners/mob-banner5+(1).jpg",
-      title: "Office & Study",
-      subtitle: "Desks, ergonomic chairs, shelves",
-      description: "Work comfortably with smart, space‑saving designs.",
-    },
-  ];
+  // No static fallback; rely solely on backend
 
-  console.log(banners, "hero-banners-static");
+  const {
+    banners: apiBanners,
+    loading,
+    error,
+  } = useBanner({ bannerFor: "hero" });
+
+  const effectiveBanners = Array.isArray(apiBanners) ? apiBanners : [];
+
+  // Note: Avoid early returns before hooks below; render fallback banners while loading
 
   // Detect mobile screen size
   useEffect(() => {
@@ -76,9 +50,9 @@ export default function HeroBanner() {
 
   // Auto-slide functionality (unchanged from original implementation)
   useEffect(() => {
-    if (isAutoPlaying && banners.length > 0) {
+    if (isAutoPlaying && effectiveBanners.length > 0) {
       intervalRef.current = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % banners.length);
+        setCurrentSlide((prev) => (prev + 1) % effectiveBanners.length);
       }, 5000);
     }
 
@@ -87,7 +61,12 @@ export default function HeroBanner() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isAutoPlaying, banners.length]);
+  }, [isAutoPlaying, effectiveBanners.length]);
+
+  // Reset slide index if banner set changes
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [effectiveBanners.length]);
 
   const handleSlideChange = (newSlide) => {
     setIsAutoPlaying(false);
@@ -100,21 +79,23 @@ export default function HeroBanner() {
   };
 
   const nextSlide = () => {
-    handleSlideChange((currentSlide + 1) % banners.length);
+    handleSlideChange((currentSlide + 1) % effectiveBanners.length);
   };
 
   const prevSlide = () => {
-    handleSlideChange((currentSlide - 1 + banners.length) % banners.length);
+    handleSlideChange(
+      (currentSlide - 1 + effectiveBanners.length) % effectiveBanners.length
+    );
   };
 
   const goToSlide = (index) => {
     handleSlideChange(index);
   };
 
-  const currentBanner = banners[currentSlide];
+  const currentBanner = effectiveBanners[currentSlide];
 
   // Ensure there is at least one banner
-  if (!banners || banners.length === 0) {
+  if (!effectiveBanners || effectiveBanners.length === 0) {
     return null;
   }
 
@@ -128,7 +109,9 @@ export default function HeroBanner() {
         <div
           className="absolute inset-0 transition-all duration-500 ease-in-out"
           style={{
-            backgroundImage: `url('${isMobile ? currentBanner.mobileImage : currentBanner.image}')`,
+            backgroundImage: `url('${
+              isMobile ? currentBanner.mobileImage : currentBanner.image
+            }')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -230,7 +213,7 @@ export default function HeroBanner() {
         {/* Progress indicator with responsive sizing */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
           <div className="flex gap-1 md:gap-2">
-            {banners.map((_, index) => (
+            {effectiveBanners.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
@@ -240,7 +223,7 @@ export default function HeroBanner() {
                     : "bg-[rgba(51,51,51,0.2)] md:bg-gray-300"
                 } ${
                   // Responsive widths
-                  banners.length <= 4
+                  effectiveBanners.length <= 4
                     ? "w-16 md:w-16 lg:w-20"
                     : "w-12 md:w-14 lg:w-16"
                 }`}
