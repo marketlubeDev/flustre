@@ -100,7 +100,7 @@ export default function ProductSection() {
   // Fetch products with label "Best Sellers"
   const { products, loading } = useProductsByLabelName("Best Sellers", {
     page: 1,
-    limit: 4,
+    limit: 24,
   });
 
   console.log(products, "productssddsdsdds");

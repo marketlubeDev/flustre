@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 
-// import { useProductBanners } from "@/lib/hooks/useBanners"; // Removed API integration
+import useBanner from "@/lib/hooks/useBanner";
 
 export default function PromotionalBanner({ fullWidth = false }) {
   const router = useRouter();
@@ -14,35 +14,11 @@ export default function PromotionalBanner({ fullWidth = false }) {
   const [touchEnd, setTouchEnd] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const bannerRef = useRef(null);
- 
 
-  // Static data - no API integration
-  const bannersData = null;
-  const isLoading = false;
-  // Fallback banners in case API fails or no data
-  const fallbackBanners = [
-    {
-      id: 1,
-      productId: "2",
-      title: "Luxury Chairs, Limited Time 15% OFF!",
-      description: "Premium comfort and timeless style combined",
-      image: "/promo-banner/promo1.png",
-      alt: "Skincare Products Promo Banner",
-      background: "linear-gradient(94deg, rgba(224, 155, 91, 0.16) 24.06%, rgba(137, 47, 0, 0.16) 86.39%), #FFFAF2",
-      buttonText: "Shop Now",
-    },
-    {
-      id: 2,
-      productId: "1",
-      title: "Sit Better, Save More — 15% OFF!",
-      description:"Crafted for comfort, designed for elegance.",
-      image: "/promo-banner/promo2.png",
-      alt: "Anti-Aging Products Promo Banner",
-      background: "linear-gradient(90deg, #E3EBFF 0%, #ECF1FF 100%)",
-      borderRadius: "4px 0 0 4px",
-      buttonText: "Shop Now",
-    },
-  ];
+  // Load banners filtered by bannerFor === "product"
+  const { banners: fetchedBanners, loading: isLoading } = useBanner({
+    bannerFor: "product",
+  });
 
   // Generate gradient colors based on index
   function getGradientColor(index, isSecondary = false) {
@@ -57,24 +33,21 @@ export default function PromotionalBanner({ fullWidth = false }) {
     return isSecondary ? gradient[1] : gradient[0];
   }
 
-  // Transform API data to match component structure
-  const banners =
-    bannersData?.data?.length > 0
-      ? bannersData.data.map((banner, index) => ({
-          id: banner._id,
-          productId: banner.productLink || `product-${index + 1}`,
-          title: banner.title,
-          description: banner.description || "",
-          image: banner.image,
-          mobileImage: banner.mobileImage,
-          alt: banner.title,
-          background: `linear-gradient(90deg, ${getGradientColor(
-            index
-          )}, ${getGradientColor(index, true)})`,
-          buttonText: "Shop Now",
-          productLink: banner.productLink,
-        }))
-      : fallbackBanners;
+  // Normalize fetched data to component structure
+  const banners = (fetchedBanners || []).map((banner, index) => ({
+    id: banner.id,
+    productId: banner.productLink || undefined,
+    title: banner.title,
+    description: banner.description || "",
+    image: banner.image,
+    mobileImage: banner.mobileImage,
+    alt: banner.title,
+    background: `linear-gradient(90deg, ${getGradientColor(
+      index
+    )}, ${getGradientColor(index, true)})`,
+    buttonText: "Shop Now",
+    productLink: banner.productLink,
+  }));
 
   const handleShopNowClick = (banner) => {
     if (banner.productLink) {
@@ -86,8 +59,10 @@ export default function PromotionalBanner({ fullWidth = false }) {
         router.push(banner.productLink);
       }
     } else {
-      // Fallback to product page
-      router.push(`/products/${banner.productId}`);
+      // Navigate to product page if productId is available
+      if (banner.productId) {
+        router.push(`/products/${banner.productId}`);
+      }
     }
   };
 
