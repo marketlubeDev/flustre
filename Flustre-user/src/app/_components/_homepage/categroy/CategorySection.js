@@ -3,15 +3,14 @@
 import { useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { categories as staticCategories } from "../../../../lib/data";
-
+import useCategories from "@/lib/hooks/useCategories";
 
 const CategorySection = () => {
   const router = useRouter();
 
-
-  // Use static categories defined in lib/data.js
-  const categories = staticCategories;
+  // Load categories from API only (no static fallback)
+  const { categories: apiCategories, loading, error } = useCategories();
+  const categories = apiCategories || [];
 
   // Utility function to normalize slug
   const normalizeSlug = useCallback((value) => {
@@ -29,12 +28,12 @@ const CategorySection = () => {
     [router, normalizeSlug]
   );
 
-  // Show loading state while categories are being fetched
-
   // Loading State:
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center w-full overflow-hidden container mx-auto py-10 px-4 md:px-10">
-      <h2 className="text-[#333333] text-center text-xl sm:text-2xl md:text-[26px] lg:text-[28px] font-bold leading-normal tracking-[-0.28px] mb-6">Shop by Category</h2>
+      <h2 className="text-[#333333] text-center text-xl sm:text-2xl md:text-[26px] lg:text-[28px] font-bold leading-normal tracking-[-0.28px] mb-6">
+        Shop by Category
+      </h2>
       <div className="flex justify-center items-center w-full h-32">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
       </div>
@@ -44,14 +43,16 @@ const CategorySection = () => {
   // Error State:
   const ErrorState = () => (
     <div className="flex flex-col items-center justify-center w-full overflow-hidden container mx-auto py-10 px-4 md:px-10">
-      <h2 className="text-center text-xl sm:text-2xl md:text-[26px] lg:text-[28px] font-bold leading-normal tracking-[-0.28px] mb-6">Shop by Category</h2>
+      <h2 className="text-center text-xl sm:text-2xl md:text-[26px] lg:text-[28px] font-bold leading-normal tracking-[-0.28px] mb-6">
+        Shop by Category
+      </h2>
       <div className="text-red-500 text-center">
         Failed to load categories. Please try again later.
       </div>
     </div>
   );
 
-  // No loading/error states needed for static data
+  // Render loading/error states when using API
 
   // Category item component
   const CategoryItem = ({ category, index }) => (
@@ -113,53 +114,59 @@ const CategorySection = () => {
 
       {/* Categories Grid - Responsive Layout */}
       <div className="w-full">
-        {/* Mobile Layout (< sm) - Special 3+2 layout */}
-        <div className="sm:hidden w-full space-y-2">
-          {/* First row - 3 categories */}
-          <div className="flex justify-between gap-2">
-            {firstRowCategories.map((category, index) => (
-              <CategoryItem
-                key={`mobile-first-${index}`}
-                category={category}
-                index={index}
-              />
-            ))}
-          </div>
+        {loading && <LoadingState />}
+        {!loading && error && <ErrorState />}
+        {!loading && !error && (
+          <>
+            {/* Mobile Layout (< sm) - Special 3+2 layout */}
+            <div className="sm:hidden w-full space-y-2">
+              {/* First row - 3 categories */}
+              <div className="flex justify-between gap-2">
+                {firstRowCategories.map((category, index) => (
+                  <CategoryItem
+                    key={`mobile-first-${index}`}
+                    category={category}
+                    index={index}
+                  />
+                ))}
+              </div>
 
-          {/* Second row - 2 categories centered */}
-          <div className="flex justify-center gap-2">
-            {secondRowCategories.map((category, index) => (
-              <CategoryItem
-                key={`mobile-second-${index}`}
-                category={category}
-                index={index + 3}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Tablet Layout (sm to lg) - Flexbox wrap */}
-        <div className="hidden sm:flex lg:hidden flex-wrap justify-center items-center gap-2 md:gap-3 w-full">
-          {categories.map((category, index) => (
-            <div
-              key={`tablet-${index}`}
-              className="flex-[0_0_calc(33.333%-8px)] mb-4"
-            >
-              <CategoryItem category={category} index={index} />
+              {/* Second row - 2 categories centered */}
+              <div className="flex justify-center gap-2">
+                {secondRowCategories.map((category, index) => (
+                  <CategoryItem
+                    key={`mobile-second-${index}`}
+                    category={category}
+                    index={index + 3}
+                  />
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
 
-        {/* Desktop Layout (lg+) - Horizontal flex */}
-        <div className="hidden lg:flex justify-center items-center gap-3 xl:gap-6 w-full">
-          {categories.map((category, index) => (
-            <CategoryItem
-              key={`desktop-${index}`}
-              category={category}
-              index={index}
-            />
-          ))}
-        </div>
+            {/* Tablet Layout (sm to lg) - Flexbox wrap */}
+            <div className="hidden sm:flex lg:hidden flex-wrap justify-center items-center gap-2 md:gap-3 w-full">
+              {categories.map((category, index) => (
+                <div
+                  key={`tablet-${index}`}
+                  className="flex-[0_0_calc(33.333%-8px)] mb-4"
+                >
+                  <CategoryItem category={category} index={index} />
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Layout (lg+) - Horizontal flex */}
+            <div className="hidden lg:flex justify-center items-center gap-3 xl:gap-6 w-full">
+              {categories.map((category, index) => (
+                <CategoryItem
+                  key={`desktop-${index}`}
+                  category={category}
+                  index={index}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Bottom divider */}

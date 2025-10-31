@@ -14,8 +14,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" type="image/svg+xml" href="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Favicon.svg" />
-        <link rel="alternate icon" href="/favicon.ico" />
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Favicon.svg"
+        />
+        {/* <link rel="alternate icon" href="/favicon.ico" /> */}
       </head>
       <body className="antialiased">
         <ReduxProvider>

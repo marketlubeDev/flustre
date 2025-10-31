@@ -1,68 +1,35 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Head from "next/head";
-// import useInstaCarousel from "@/lib/hooks/useInstaCarousel"; // Removed API integration
+import { fetchInstaCarouselVideos } from "@/lib/services/instaCarouselService";
 
 export default function InstagramPage() {
-  const [playingVideo, setPlayingVideo] = useState(null);
+  // API state
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  const handlePlayClick = (videoId) => {
-    setPlayingVideo(videoId);
-  };
-
-  const handleVideoEnd = () => {
-    setPlayingVideo(null);
-  };
-
-  const handleMouseEnter = (videoId) => {
-    setPlayingVideo(videoId);
-  };
-
-  const handleMouseLeave = () => {
-    setPlayingVideo(null);
-  };
-
-  // Static data - no API integration
-  const data = null;
-  const isLoading = false;
-  const isError = false;
-
-  // Static fallback videos from public/featured/insta
-  const staticVideoData = useMemo(
-    () => [
-      {
-        id: "static-1",
-        thumbnail: "/placeholder-thumbnail.jpg",
-        video: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/videos/insta1+(1).mp4",
-        alt: "Instagram Video 1",
-      },
-      {
-        id: "static-2",
-        thumbnail: "/placeholder-thumbnail.jpg",
-        video: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/videos/insta2+(1).mp4",
-        alt: "Instagram Video 2",
-      },
-      {
-        id: "static-3",
-        thumbnail: "/placeholder-thumbnail.jpg",
-        video: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/videos/insta3+(1).mp4",
-        alt: "Instagram Video 3",
-      },
-      {
-        id: "static-4",
-        thumbnail: "/placeholder-thumbnail.jpg",
-        video: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/videos/insta4+(1).mp4",
-        alt: "Instagram Video 4",
-      },
-      {
-        id: "static-5",
-        thumbnail: "/placeholder-thumbnail.jpg",
-        video: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/videos/insta5+(1).mp4",
-        alt: "Instagram Video 5",
-      },
-    ],
-    []
-  );
+  useEffect(() => {
+    const controller = new AbortController();
+    async function load() {
+      try {
+        setIsLoading(true);
+        setIsError(false);
+        const response = await fetchInstaCarouselVideos({
+          signal: controller.signal,
+        });
+        setData(response);
+      } catch (err) {
+        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
+          setIsError(true);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+    return () => controller.abort();
+  }, []);
 
   const apiVideoData = useMemo(() => {
     const apiItems = data?.data || [];
@@ -74,50 +41,83 @@ export default function InstagramPage() {
     }));
   }, [data]);
 
-  // Prefer API results when available, otherwise fall back to static videos
-  const videoData = apiVideoData.length > 0 ? apiVideoData : staticVideoData;
+  // Use API videos only (no static fallback)
+  const videoData = apiVideoData;
 
   const shouldDuplicate = videoData.length >= 6;
 
-  const VideoThumbnail = ({ data, isInteractive = true }) => (
-    <div
-      className="relative flex-shrink-0 rounded-lg overflow-hidden w-[180px] h-[320px] sm:w-[200px] sm:h-[360px] md:w-[220px] md:h-[400px] lg:w-[253px] lg:h-[450px] cursor-pointer transition-transform duration-300 hover:scale-105"
-      style={{
-        aspectRatio: "122/217",
-      }}
-      onMouseEnter={isInteractive ? () => handleMouseEnter(data.id) : undefined}
-      onMouseLeave={isInteractive ? handleMouseLeave : undefined}
-    >
-      {/* Always render the video element; autoplay only when active */}
-      <video
-        src={data.video}
-        className="w-full h-full object-cover"
-        autoPlay={isInteractive && playingVideo === data.id}
-        muted
-        onEnded={handleVideoEnd}
-        loop
-        playsInline
-        preload="metadata"
-      />
-      {/* Play Button Overlay (shown when not actively playing) */}
-      {isInteractive && playingVideo !== data.id && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-white transition-all duration-200 hover:scale-110"
-            onClick={() => handlePlayClick(data.id)}
-          >
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-gray-800 ml-0.5 sm:ml-1"
-              fill="currentColor"
-              viewBox="0 0 24 24"
+  const VideoThumbnail = ({ data, isInteractive = true }) => {
+    const videoRef = useRef(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const onMouseEnter = isInteractive
+      ? () => {
+          const el = videoRef.current;
+          if (!el) return;
+          el.muted = true;
+          el.play().catch(() => {});
+        }
+      : undefined;
+
+    const onMouseLeave = isInteractive
+      ? () => {
+          const el = videoRef.current;
+          if (!el) return;
+          el.pause();
+          el.currentTime = 0;
+        }
+      : undefined;
+
+    const onClickPlay = isInteractive
+      ? () => {
+          const el = videoRef.current;
+          if (!el) return;
+          el.muted = true;
+          el.play().catch(() => {});
+        }
+      : undefined;
+
+    return (
+      <div
+        className="relative flex-shrink-0 rounded-lg overflow-hidden w-[180px] h-[320px] sm:w-[200px] sm:h-[360px] md:w-[220px] md:h-[400px] lg:w-[253px] lg:h-[450px] cursor-pointer transition-transform duration-300 hover:scale-105"
+        style={{
+          aspectRatio: "122/217",
+        }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <video
+          ref={videoRef}
+          src={data.video}
+          className="w-full h-full object-cover"
+          // muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={data.thumbnail}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+        />
+        {isInteractive && !isPlaying && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-white transition-all duration-200 hover:scale-110"
+              onClick={onClickPlay}
             >
-              <path d="M8 5v14l11-7z" />
-            </svg>
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-gray-800 ml-0.5 sm:ml-1"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   // Hide section when API returns an empty list
   if (!isLoading && !isError && videoData.length === 0) {
@@ -150,9 +150,7 @@ export default function InstagramPage() {
             }}
           >
             Follow us on{" "}
-            <span className="text-[var(--color-primary)]">
-              Instagram
-            </span>
+            <span className="text-[var(--color-primary)]">Instagram</span>
           </h1>
 
           {/* Auto Scrolling Instagram Thumbnails */}
@@ -206,7 +204,9 @@ export default function InstagramPage() {
                 <div className="text-center py-8 w-full">Loading...</div>
               )}
               {isError && apiVideoData.length === 0 && (
-                <div className="text-center py-8 w-full">Showing featured videos.</div>
+                <div className="text-center py-8 w-full">
+                  Showing featured videos.
+                </div>
               )}
               {!isLoading &&
                 videoData.map((data) => (

@@ -6,8 +6,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import NavigationBar from "./NavigationBar";
 import CartSidebar from "../../app/_components/cart/CartSidebar";
-// import useCategories from "../../lib/hooks/useCategories"; // Removed API integration
- 
+import useCategories from "../../lib/hooks/useCategories";
+
 import LocationModal from "../../app/_components/common/LocationModal";
 
 // Import your data
@@ -44,10 +44,10 @@ function NavContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   const [authToken, setAuthToken] = useState(null);
   const [userData, setUserData] = useState(null);
-  
+
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("UAE");
@@ -58,48 +58,20 @@ function NavContent() {
   // Language removed; default to LTR/static text
   const isRTL = false;
 
-  // Helper: map country to flag path
-  const getFlagSrc = (country) => {
-    switch (country) {
-      case "UAE":
-        return "/arabicicon.svg";
-      case "KSA":
-        return "/ksa.svg";
-      case "Egypt":
-        return "/Egypt.svg";
-      case "Kuwait":
-        return "/Kuwait.svg";
-      case "Bahrain":
-        return "/Bahrain.svg";
-      case "Qatar":
-        return "/Qatar.svg";
-      case "Oman":
-        return "/Oman.svg";
-      default:
-        return "/arabicicon.svg";
-    }
-  };
-
   // Refs
   const resultsRef = useRef(null);
-  
-  const locationRef = useRef(null);
 
   // Hooks
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isBigTablet = useBigTablet();
-  // Static categories - no API integration
-  const categories = [
-    { name: "Living", image: "/category/category1.jpg" },
-    { name: "Bedroom", image: "/category/category2.jpg" },
-    { name: "Dining & Kitchen", image: "/category/category3.jpg" },
-    { name: "Office", image: "/category/category4.jpg" },
-    { name: "Outdoor", image: "/category/category5.jpg" }
-  ];
-  const categoriesLoading = false;
-  const categoriesError = null;
+  // Categories from API
+  const {
+    categories,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories();
 
   // Initialize authentication state
   useEffect(() => {
@@ -209,8 +181,6 @@ function NavContent() {
     };
   }, [showSearchBar]);
 
-  
-
   // Close desktop dropdowns on outside click
   useEffect(() => {
     function handleOutsideClick(e) {
@@ -218,19 +188,13 @@ function NavContent() {
       const isOutsideUserDropdown = !e.target.closest(".user-dropdown");
       const isOutsideLocationDropdown = !e.target.closest(".location-dropdown");
 
-      if (
-        isOutsideUserDropdown &&
-        isOutsideLocationDropdown
-      ) {
+      if (isOutsideUserDropdown && isOutsideLocationDropdown) {
         setIsUserDropdownOpen(false);
         setIsLocationDropdownOpen(false);
       }
     }
 
-    if (
-      isUserDropdownOpen ||
-      isLocationDropdownOpen
-    ) {
+    if (isUserDropdownOpen || isLocationDropdownOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
       document.addEventListener("touchstart", handleOutsideClick);
     }
@@ -309,8 +273,6 @@ function NavContent() {
   const toggleDropdown = (dropdownName) => {
     setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
   };
-
-  
 
   const toggleUserDropdown = () => {
     setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -408,8 +370,6 @@ function NavContent() {
     </div>
   );
 
-  
-
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
   };
@@ -462,85 +422,9 @@ function NavContent() {
       },
     ];
 
-    // Static categories and subcategories
-    const staticCategories = [
-      {
-        name: "Living",
-        subcategories: [
-          "Sofas & Sectionals",
-          "Coffee Tables",
-          "TV Units / Entertainment Centers",
-          "Recliners",
-          "Side Tables",
-          "Console Tables",
-          "Ottomans & Stools",
-        ],
-      },
-      {
-        name: "Bedroom",
-        subcategories: [
-          "Beds (King, Queen, Single)",
-          "Wardrobes & Closets",
-          "Dressers & Mirrors",
-          "Nightstands",
-          "Bedside Tables",
-          "Mattresses",
-          "Headboards",
-        ],
-      },
-      {
-        
-        name: "Dining & Kitchen",
-        subcategories: [
-          "Kitchen Cabinets",
-          "Kitchen Appliances",
-          "Kitchen Storage",
-          "Kitchen Tools",
-          "Kitchen Decor",
-          "Dining Tables",
-          "Dining Chairs",
-          "Dining Sets",
-          "Bar Units",
-          "Sideboards / Buffets",
-        ],
-      },
-      {
-        name: "Office",
-        subcategories: [
+    // No static categories; rely solely on API categories
 
-          
-          "Office Chairs",
-          "Office Desks",
-          "Conference Tables",
-          "File Cabinets",
-          "Bookcases",
-          "Reception Desks",
-        ],
-      },
-      {
-        name: "Outdoor",
-        subcategories: [
-          "Patio Chairs & Tables",
-          "Garden Benches",
-          "Hammocks",
-          "Outdoor Sofas & Loungers",
-          "Umbrellas & Gazebos",
-        ],
-      },
-   
-   
-    ];
-
-    // Add static categories first
-    staticCategories.forEach((category) => {
-      const hasSubcategories = Array.isArray(category.subcategories) && category.subcategories.length > 0;
-      items.push({
-        label: category.name,
-        hasDropdown: hasSubcategories,
-        href: `/products?category=${encodeURIComponent(category.name)}`,
-        submenu: hasSubcategories ? category.subcategories : [],
-      });
-    });
+    // No static fallback; if API returns empty, keep only default items
 
     // Add categories from API
     if (categories && categories.length > 0) {
@@ -575,7 +459,9 @@ function NavContent() {
       >
         {/* Main Header */}
         <div className="bg-white">
-          <div className={`container mx-auto px-4 sm:px-6 md:px-6 lg:px-8 xl:px-12 2xl:px-16 text-left`}>
+          <div
+            className={`container mx-auto px-4 sm:px-6 md:px-6 lg:px-8 xl:px-12 2xl:px-16 text-left`}
+          >
             <div className={`flex items-center h-3 lg:h-16 justify-between`}>
               {/* Desktop Logo */}
               <div className="flex-shrink-0 pr-6 hidden lg:block">
@@ -589,8 +475,6 @@ function NavContent() {
                   />
                 </Link>
               </div>
-
-            
 
               {/* Desktop Search Bar */}
               <div className="hidden lg:flex lg:items-center flex-1 justify-center">
@@ -710,7 +594,6 @@ function NavContent() {
                     isRTL ? "space-x-reverse space-x-2" : "space-x-2"
                   }`}
                 >
-                  
                   {/* Wishlist */}
                   <Link
                     href="/wishlist"
@@ -888,7 +771,7 @@ function NavContent() {
                                 navigateToTab("privacy-policy");
                                 setIsUserDropdownOpen(false);
                               }}
-                                className="flex items-center w-full text-left px-4 py-2 text-gray-700 transition-colors duration-200 cursor-pointer hover:bg-red-50 hover:text-[#2B73B8]"
+                              className="flex items-center w-full text-left px-4 py-2 text-gray-700 transition-colors duration-200 cursor-pointer hover:bg-red-50 hover:text-[#2B73B8]"
                             >
                               <svg
                                 className="w-4 h-4 mr-3"
@@ -987,7 +870,9 @@ function NavContent() {
           <NavigationBar navigationItems={navigationItems} />
 
           {/* Mobile Layout */}
-          <div className={`lg:hidden flex items-center justify-between w-full h-12 px-3 md:px-6`}>
+          <div
+            className={`lg:hidden flex items-center justify-between w-full h-12 px-3 md:px-6`}
+          >
             {/* Left Group - Hamburger and Logo */}
             <div className={`flex items-center ${isRTL ? "ml-2" : "ml-2"}`}>
               <button
@@ -1027,7 +912,7 @@ function NavContent() {
               </button>
 
               {!showSearchBar && (
-              <div className={`flex items-center ml-2`}>
+                <div className={`flex items-center ml-2`}>
                   <Link href="/" className="flex items-center">
                     <Image
                       src="https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/Logo/Asset+1.svg"
@@ -1158,12 +1043,10 @@ function NavContent() {
                 </button>
               )}
 
-              
-
               {/* Mobile Wishlist - Hidden on small screens */}
               <Link
                 href="/wishlist"
-                  className="relative p-1.5 text-gray-600 hover:text-[#2B73B8] transition-colors duration-200 cursor-pointer"
+                className="relative p-1.5 text-gray-600 hover:text-[#2B73B8] transition-colors duration-200 cursor-pointer"
                 aria-label="Wishlist"
               >
                 <Image
@@ -1200,47 +1083,6 @@ function NavContent() {
             </div>
           </div>
         </div>
-
-        {/* Mobile Deliver-To Strip (below navbar) */}
-        {/* <div className="lg:hidden w-full bg-white border-t border-b border-gray-200">
-          <button
-            onClick={openLocationModal}
-            className={`container mx-auto px-3 md:px-6 h-8 w-full flex items-center ${
-              isRTL ? "flex-row-reverse" : ""
-            } text-gray-700`}
-            aria-label="Delivery Location"
-            style={{
-              paddingLeft: "1.8rem",
-            }}
-          >
-            <Image
-              src={getFlagSrc(selectedLocation)}
-              alt="Location Flag"
-              width={16}
-              height={12}
-              className={`w-4 h-3 rounded-sm ${
-                isRTL ? "ml-2" : "mr-2"
-              } object-cover`}
-            />
-            <span className="text-xs text-gray-600">Deliver to</span>
-            <span
-              className={`text-xs font-semibold ${isRTL ? "mr-1" : "ml-1"}`}
-            >
-              {selectedLocation}
-            </span>
-            <Image
-              src="/dropdownicon.svg"
-              alt="dropdown"
-              width={10}
-              height={6}
-              className={`w-[10px] h-[6px] ${
-                isRTL ? "mr-1" : "ml-1"
-              } transition-transform duration-200 ${
-                isLocationModalOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-        </div> */}
 
         {/* Mobile Menu */}
         <div
@@ -1326,7 +1168,6 @@ function NavContent() {
               <div className="space-y-2">
                 {/* Wishlist - moved here, icon first */}
 
-                
                 {isAuthenticated ? (
                   <>
                     <button
@@ -1359,7 +1200,7 @@ function NavContent() {
                         isRTL ? "space-x-reverse space-x-3" : "space-x-3"
                       } py-2 text-gray-700 transition-colors duration-200 cursor-pointer w-full ${
                         isRTL ? "text-right" : "text-left"
-                        } hover:text-[#2B73B8]`}
+                      } hover:text-[#2B73B8]`}
                     >
                       <Image
                         src="/icon6.svg"
@@ -1529,7 +1370,6 @@ function NavContent() {
                       />
                       <span>Login</span>
                     </button>
-               
                   </>
                 )}
               </div>
