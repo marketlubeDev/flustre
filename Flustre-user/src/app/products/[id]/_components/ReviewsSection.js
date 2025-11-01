@@ -1,60 +1,67 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Modal, Rate, Input, Button } from "antd";
+import { useMemo, useState, useEffect } from "react";
+import { Modal, Rate, Input, Button, message } from "antd";
 import { MdAttachFile } from "react-icons/md";
 import Image from "next/image";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchProductReviews, submitReview } from "@/lib/services/reviewService";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
 export default function ReviewsSection({ product, selectedImage }) {
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const productId = useMemo(() => product?._id || product?.id, [product]);
-  
-  // Static mock reviews data
-  const reviewsData = {
-    stats: {
-      averageRating: product?.ratingStats?.average || 4.5,
-      totalRatings: product?.ratingStats?.total || 128,
-      ratingCounts: product?.ratingStats?.distribution || {
-        5: 45,
-        4: 38,
-        3: 25,
-        2: 12,
-        1: 8
-      }
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?._id || currentUser?.id;
+
+  // Fetch reviews from API
+  const {
+    data: reviewsData,
+    isLoading,
+    refetch: refetchReviews,
+  } = useQuery({
+    queryKey: ["product-reviews", productId],
+    queryFn: () => fetchProductReviews(productId),
+    enabled: !!productId,
+    staleTime: 30000, // 30 seconds
+  });
+
+  // Find current user's review
+  const userReview = useMemo(() => {
+    if (!currentUserId || !reviewsData?.reviews) return null;
+    return reviewsData.reviews.find(
+      (r) => r.userId?._id === currentUserId || r.userId?._id === currentUserId.toString()
+    );
+  }, [currentUserId, reviewsData?.reviews]);
+
+  // Submit/Update review mutation
+  const submitReviewMutation = useMutation({
+    mutationFn: submitReview,
+    onSuccess: async () => {
+      message.success(userReview ? "Review updated successfully!" : "Review added successfully!");
+      setIsSubmitting(false); // Reset submitting state
+      setIsReviewModalVisible(false);
+      setRating(0);
+      setReviewText("");
+      setSelectedImages([]);
+      // Refetch reviews immediately
+      await refetchReviews();
+      // Also invalidate product query to update rating stats
+      queryClient.invalidateQueries({ queryKey: ["product", productId] });
     },
-    reviews: [
-      {
-        _id: "review1",
-        rating: 5,
-        review: "Excellent product! The quality is outstanding and it works exactly as described. Highly recommended!",
-        userId: { username: "Sarah M." },
-        createdAt: "2024-01-15T10:30:00Z",
-        images: []
-      },
-      {
-        _id: "review2", 
-        rating: 4,
-        review: "Very good product, fast delivery. The packaging was secure and the product arrived in perfect condition.",
-        userId: { username: "John D." },
-        createdAt: "2024-01-10T14:20:00Z",
-        images: []
-      },
-      {
-        _id: "review3",
-        rating: 5,
-        review: "Amazing quality! I've been using this for a week now and I can already see the difference. Worth every penny!",
-        userId: { username: "Emma L." },
-        createdAt: "2024-01-08T09:15:00Z",
-        images: []
-      }
-    ]
-  };
-  
-  const isLoading = false;
+    onError: (error) => {
+      message.error(
+        error?.response?.data?.message || "Failed to submit review. Please try again."
+      );
+      setIsSubmitting(false);
+    },
+  });
 
   // Early return if product is not available
   if (!product) {
@@ -69,7 +76,39 @@ export default function ReviewsSection({ product, selectedImage }) {
     );
   }
 
+  // Load user's existing review into form when opening modal
+  useEffect(() => {
+    if (isReviewModalVisible) {
+      // Always reset submitting state when modal opens
+      setIsSubmitting(false);
+
+      if (userReview) {
+        setRating(userReview.rating || 0);
+        setReviewText(userReview.review || "");
+        // Convert existing image URLs to preview format
+        const existingImages = (userReview.images || []).map((imgUrl) => ({
+          url: imgUrl,
+          preview: imgUrl,
+          isExisting: true,
+        }));
+        setSelectedImages(existingImages);
+      } else {
+        // Reset form for new review
+        setRating(0);
+        setReviewText("");
+        setSelectedImages([]);
+      }
+    }
+  }, [isReviewModalVisible, userReview]);
+
   const showReviewModal = () => {
+    // Check if user is logged in
+    if (!currentUserId) {
+      message.warning("Please log in to add a review");
+      return;
+    }
+    // Reset submitting state before opening modal
+    setIsSubmitting(false);
     setIsReviewModalVisible(true);
     document.body.style.overflow = "hidden"; // Prevent background scrolling
   };
@@ -79,13 +118,39 @@ export default function ReviewsSection({ product, selectedImage }) {
     setRating(0);
     setReviewText("");
     setSelectedImages([]);
+    setIsSubmitting(false);
     document.body.style.overflow = "unset"; // Restore background scrolling
   };
 
-  const handleReviewSubmit = () => {
-    // Static review submission - just show success message
-    alert("Thank you for your review! (This is a demo - review not actually submitted)");
-    handleReviewModalCancel();
+  const handleReviewSubmit = async () => {
+    if (!rating || !reviewText.trim()) {
+      message.warning("Please provide a rating and review text");
+      return;
+    }
+
+    if (!currentUserId) {
+      message.warning("Please log in to submit a review");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Separate new files from existing image URLs
+      const newFiles = selectedImages
+        .filter((img) => img.file && !img.isExisting)
+        .map((img) => img.file);
+
+      await submitReviewMutation.mutateAsync({
+        productId,
+        rating,
+        review: reviewText.trim(),
+        files: newFiles,
+      });
+    } catch (error) {
+      // Error handling is done in onError callback
+      console.error("Error submitting review:", error);
+    }
   };
 
   const clearRating = () => {
@@ -107,8 +172,10 @@ export default function ReviewsSection({ product, selectedImage }) {
 
   const removeImage = (index) => {
     setSelectedImages((prev) => {
-      const newImages = prev.filter((_, i) => i !== index);
-      return newImages;
+      const imageToRemove = prev[index];
+      // If removing an existing image, we'll just remove it from the preview
+      // The backend will handle which images to keep when updating
+      return prev.filter((_, i) => i !== index);
     });
   };
 
@@ -129,7 +196,9 @@ export default function ReviewsSection({ product, selectedImage }) {
                 className="text-3xl font-bold mr-2"
                 style={{ color: "var(--color-primary)" }}
               >
-                {Number(reviewsData?.stats?.averageRating || 0).toFixed(1)}
+                {isLoading
+                  ? "0.0"
+                  : Number(reviewsData?.stats?.averageRating || 0).toFixed(1)}
               </span>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -149,7 +218,9 @@ export default function ReviewsSection({ product, selectedImage }) {
               </div>
             </div>
             <span className="text-gray-600 mb-4 text-sm">
-              {`Based on ${reviewsData?.stats?.totalRatings || 0} reviews`}
+              {isLoading
+                ? "Loading reviews..."
+                : `Based on ${reviewsData?.stats?.totalRatings || 0} reviews`}
             </span>
             {/* Ratings Bar */}
             <div className="w-full max-w-xs space-y-1 mb-4 md:max-w-none">
@@ -180,12 +251,19 @@ export default function ReviewsSection({ product, selectedImage }) {
                 );
               })}
             </div>
-            <button
-              onClick={showReviewModal}
-              className="mt-2 px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded font-medium hover:bg-[var(--color-primary)] hover:text-white transition text-sm cursor-pointer"
-            >
-              Rate Product
-            </button>
+            {currentUserId && (
+              <button
+                onClick={showReviewModal}
+                className="mt-2 px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded font-medium hover:bg-[var(--color-primary)] hover:text-white transition text-sm cursor-pointer"
+              >
+                {userReview ? "Update Review" : "Rate Product"}
+              </button>
+            )}
+            {!currentUserId && (
+              <p className="mt-2 text-sm text-gray-500">
+                Log in to add a review
+              </p>
+            )}
           </div>
 
           {/* Right: Review Images & Customer Reviews */}
@@ -209,35 +287,90 @@ export default function ReviewsSection({ product, selectedImage }) {
                   Review Images
                 </h5>
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                  {Array.from({ length: 6 }).map((_, idx) => {
-                    // Get a valid image source or use placeholder
-                    const getImageSource = () => {
-                      if (product?.featureImages && product.featureImages.length > 0) {
-                        const imageIndex = selectedImage < product.featureImages.length ? selectedImage : 0;
-                        const imageSrc = product.featureImages[imageIndex];
-                        return imageSrc || "/shop2.png";
-                      }
-                      return product?.image || "/shop2.png";
-                    };
-                    
-                    const imageSrc = getImageSource();
-                    
-                    return (
-                      <Image
-                        key={idx}
-                        src={imageSrc}
-                        alt="Selected product"
-                        width={64}
-                        height={64}
-                        className="w-16 h-16 rounded object-cover border border-gray-200"
-                        onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/64x64?text=Product";
-                        }}
-                        unoptimized={imageSrc?.includes("amazonaws.com")}
-                      />
-                    );
-                  })}
+                  {isLoading ? (
+                    <p className="text-sm text-gray-500">Loading images...</p>
+                  ) : (
+                    <>
+                      {reviewsData?.reviews?.length > 0 ? (
+                        // Collect all images from reviews
+                        (() => {
+                          const allReviewImages = [];
+                          reviewsData.reviews.forEach((review) => {
+                            if (Array.isArray(review.images)) {
+                              review.images.forEach((img) => {
+                                if (img && img.trim() && !allReviewImages.includes(img)) {
+                                  allReviewImages.push(img);
+                                }
+                              });
+                            }
+                          });
+                          // Show up to 6 review images, or product images as fallback
+                          if (allReviewImages.length > 0) {
+                            return allReviewImages.slice(0, 6).map((img, idx) => (
+                              <Image
+                                key={`review-img-${idx}`}
+                                src={img}
+                                alt={`Review image ${idx + 1}`}
+                                width={64}
+                                height={64}
+                                className="w-16 h-16 rounded object-cover border border-gray-200"
+                                onError={(e) => {
+                                  e.target.src =
+                                    "https://via.placeholder.com/64x64?text=Review";
+                                }}
+                                unoptimized={img?.includes("amazonaws.com") || img?.includes("marketlube")}
+                              />
+                            ));
+                          } else {
+                            // Fallback to product images if no review images
+                            const fallbackImages = product?.featureImages || (product?.image ? [product.image] : []);
+                            return fallbackImages.slice(0, 6).map((img, idx) => (
+                              <Image
+                                key={`product-img-${idx}`}
+                                src={img}
+                                alt={`Product image ${idx + 1}`}
+                                width={64}
+                                height={64}
+                                className="w-16 h-16 rounded object-cover border border-gray-200"
+                                onError={(e) => {
+                                  e.target.src =
+                                    "https://via.placeholder.com/64x64?text=Product";
+                                }}
+                                unoptimized={img?.includes("amazonaws.com") || img?.includes("marketlube")}
+                              />
+                            ));
+                          }
+                        })()
+                      ) : (
+                        // Show product images as placeholder when no reviews
+                        (() => {
+                          const fallbackImages = product?.featureImages || (product?.image ? [product.image] : []);
+                          if (fallbackImages.length > 0) {
+                            return fallbackImages.slice(0, 6).map((img, idx) => (
+                              <Image
+                                key={`placeholder-${idx}`}
+                                src={img}
+                                alt={`Product image ${idx + 1}`}
+                                width={64}
+                                height={64}
+                                className="w-16 h-16 rounded object-cover border border-gray-200"
+                                onError={(e) => {
+                                  e.target.src =
+                                    "https://via.placeholder.com/64x64?text=Product";
+                                }}
+                                unoptimized={img?.includes("amazonaws.com") || img?.includes("marketlube")}
+                              />
+                            ));
+                          }
+                          return (
+                            <p className="text-sm text-gray-500">
+                              No review images yet
+                            </p>
+                          );
+                        })()
+                      )}
+                    </>
+                  )}
                 </div>
                 <hr
                   style={{
@@ -267,48 +400,66 @@ export default function ReviewsSection({ product, selectedImage }) {
               >
                 Customer Reviews
               </h4>
-              <div className="space-y-6">
-                {(reviewsData?.reviews || []).map((r, idx) => (
-                  <div key={r._id || idx}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#17632D] text-white text-xs font-semibold">
-                        <span className="mr-0.5">{r.rating}</span>
-                        <Image
-                          src="/whitestar.svg"
-                          alt="star"
-                          width={12}
-                          height={12}
-                          className="w-3 h-3 inline"
-                        />
-                      </span>
-                      <span className="text-gray-800 text-sm font-medium">
-                        {r?.userId?.username || r?.userId?.name || "User"}
-                      </span>
-                      <span className="text-xs text-gray-500 ml-auto">
-                        {new Date(r.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {Array.isArray(r.images) && r.images.length > 0 && (
-                      <div className="flex gap-2 mt-2">
-                        {r.images.filter(img => img && img.trim() !== "").map((img, i) => (
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Loading reviews...</p>
+                </div>
+              ) : reviewsData?.reviews?.length > 0 ? (
+                <div className="space-y-6">
+                  {reviewsData.reviews.map((r, idx) => (
+                    <div key={r._id || idx}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#17632D] text-white text-xs font-semibold">
+                          <span className="mr-0.5">{r.rating}</span>
                           <Image
-                            key={i}
-                            src={img}
-                            alt={`review-${i}`}
-                            width={48}
-                            height={48}
-                            className="w-12 h-12 rounded object-cover border border-gray-200"
-                            unoptimized={String(img).includes("amazonaws.com")}
+                            src="/whitestar.svg"
+                            alt="star"
+                            width={12}
+                            height={12}
+                            className="w-3 h-3 inline"
                           />
-                        ))}
+                        </span>
+                        <span className="text-gray-800 text-sm font-medium">
+                          {r?.userId?.username || r?.userId?.name || "User"}
+                        </span>
+                        {(r.userId?._id === currentUserId || r.userId?._id === currentUserId?.toString()) && (
+                          <span className="text-xs text-[var(--color-primary)] font-medium">
+                            (Your review)
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-500 ml-auto">
+                          {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
+                        </span>
                       </div>
-                    )}
-                    {r.review && (
-                      <p className="text-sm text-gray-700 mt-2">{r.review}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      {Array.isArray(r.images) && r.images.length > 0 && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {r.images.filter((img) => img && img.trim() !== "").map((img, i) => (
+                            <Image
+                              key={i}
+                              src={img}
+                              alt={`review-${i}`}
+                              width={48}
+                              height={48}
+                              className="w-12 h-12 rounded object-cover border border-gray-200"
+                              unoptimized={
+                                String(img).includes("amazonaws.com") ||
+                                String(img).includes("marketlube")
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {r.review && (
+                        <p className="text-sm text-gray-700 mt-2">{r.review}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No reviews yet. Be the first to review this product!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -316,7 +467,7 @@ export default function ReviewsSection({ product, selectedImage }) {
 
       {/* Review Modal */}
       <Modal
-        title="Add Review"
+        title={userReview ? "Update Your Review" : "Add Review"}
         open={isReviewModalVisible}
         onCancel={handleReviewModalCancel}
         footer={null}
@@ -430,7 +581,8 @@ export default function ReviewsSection({ product, selectedImage }) {
             <Button
               type="primary"
               onClick={handleReviewSubmit}
-              disabled={!rating || !reviewText.trim()}
+              disabled={!rating || !reviewText.trim() || isSubmitting}
+              loading={isSubmitting}
               style={{
                 backgroundColor: "var(--color-primary)",
                 borderColor: "var(--color-primary)",
@@ -440,7 +592,11 @@ export default function ReviewsSection({ product, selectedImage }) {
                 fontWeight: "600",
               }}
             >
-              Rate Product
+              {isSubmitting
+                ? "Submitting..."
+                : userReview
+                ? "Update Review"
+                : "Rate Product"}
             </Button>
           </div>
         </div>
