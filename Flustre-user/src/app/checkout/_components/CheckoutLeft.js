@@ -6,12 +6,7 @@ import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 import { Modal } from "antd";
 import { toast } from "sonner";
-// import axiosInstance from "@/lib/axios/axiosInstance"; // Removed API integration
-// import {
-//   placeOrder,
-//   getServerCart,
-//   addItemToServerCart,
-// } from "@/lib/services/orderService"; // Removed API integration
+import { placeOrder } from "@/lib/services/orderService";
 
 export default function CheckoutLeft({
   cartItems,
@@ -25,15 +20,89 @@ export default function CheckoutLeft({
   paymentMethod,
 }) {
   const [orderSummaryOpen, setOrderSummaryOpen] = useState(true);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const router = useRouter();
 
   const handleProceedToPay = async () => {
-    try {
-      const addressId =
-        typeof window !== "undefined"
-          ? window.localStorage.getItem("currentAddressId")
-          : null;
+    if (isPlacingOrder) return; // Prevent multiple submissions
 
+    try {
+      // Validate cart items
+      if (!cartItems || cartItems.length === 0) {
+        toast.error("Your cart is empty. Please add items to cart.");
+        return;
+      }
+
+      // Get address ID or address object from localStorage
+      let address = null;
+      if (typeof window !== "undefined") {
+        const addressId = window.localStorage.getItem("currentAddressId");
+        const currentAddress = window.localStorage.getItem("currentAddress");
+        const checkoutAddressOverride = window.localStorage.getItem(
+          "checkoutAddressOverride"
+        );
+
+        // Prefer address ID if available (MongoDB ObjectId)
+        if (addressId) {
+          address = addressId;
+        } else if (checkoutAddressOverride) {
+          // If checkout override exists, use it
+          try {
+            const overrideData = JSON.parse(checkoutAddressOverride);
+            // Convert to backend expected format
+            address = {
+              fullName:
+                overrideData.fullName ||
+                `${overrideData.firstName || ""} ${overrideData.lastName || ""}`.trim(),
+              phoneNumber: overrideData.phone || "",
+              houseApartmentName: overrideData.houseApartment || "",
+              street: overrideData.street || "",
+              landmark: overrideData.landmark || "",
+              city: overrideData.city || "",
+              state: overrideData.state || "",
+              pincode: overrideData.pincode || "",
+              saveAddress: true, // Optionally save this address
+            };
+          } catch (e) {
+            console.error("Failed to parse checkout address override:", e);
+          }
+        } else if (currentAddress) {
+          // Try to parse the current address
+          try {
+            const addrData = JSON.parse(currentAddress);
+            // If it has _id, use it as address ID
+            if (addrData._id) {
+              address = addrData._id;
+            } else {
+              // Otherwise use the address object
+              address = {
+                fullName: addrData.fullName || "",
+                phoneNumber: addrData.phoneNumber || "",
+                houseApartmentName: addrData.houseApartmentName || "",
+                street: addrData.street || "",
+                landmark: addrData.landmark || "",
+                city: addrData.city || "",
+                state: addrData.state || "",
+                pincode: addrData.pincode || "",
+                saveAddress: false,
+              };
+            }
+          } catch (e) {
+            console.error("Failed to parse current address:", e);
+          }
+        }
+      }
+
+      if (!address) {
+        toast.error("Please select a delivery address.");
+        Modal.info({
+          title: "Address Required",
+          content: "Please add or select a delivery address to continue.",
+        });
+        return;
+      }
+
+      // Handle online payment (not fully implemented yet)
       if (paymentMethod === "online") {
         Modal.info({
           title: "Online payment",
@@ -43,71 +112,93 @@ export default function CheckoutLeft({
         return;
       }
 
-      // Static cart functionality - no API integration
-      const ensureServerCart = async () => {
-        console.log("Cart sync (static mode)");
-        return;
-      };
+      setIsPlacingOrder(true);
 
-      await ensureServerCart();
+      // Convert payment method to backend format (COD or ONLINE)
+      const backendPaymentMethod =
+        paymentMethod === "cod" ? "COD" : "ONLINE";
 
-      // Static order placement - save to localStorage
-      const orderData = {
-        _id: `ORD${Date.now()}`,
-        products: cartItems.map((item) => ({
-          productId: {
-            name: item.name,
-            image: item.image,
-          },
-          quantity: quantities[item.id] || 1,
-          price: item.price * (quantities[item.id] || 1),
-        })),
-        totalAmount: total - couponDiscount,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : "Online",
-        subtotal: subtotal,
-        discount: discount,
-        couponDiscount: couponDiscount,
-      };
+      // Prepare quantities array for the backend
+      // Format: [{ productId, variantId (optional), quantity }]
+      const quantitiesArray = cartItems.map((item) => {
+        const quantity = quantities[item.id] || item.quantity || 1;
 
-      // Save order to localStorage
-      try {
-        if (typeof window !== "undefined") {
-          const existingOrders = JSON.parse(
-            window.localStorage.getItem("userOrders") || "[]"
-          );
-          existingOrders.unshift(orderData); // Add new order at the beginning
-          window.localStorage.setItem(
-            "userOrders",
-            JSON.stringify(existingOrders)
-          );
+        // Extract productId and variantId from item
+        // item.id might be in format: "productId" or "productId_variantId"
+        let productId = item.productId;
+        let variantId = item.variantId;
+
+        // If productId is not directly available, try to extract from id
+        if (!productId && item.id) {
+          const idParts = item.id.toString().split('_');
+          productId = idParts[0];
+          if (idParts.length > 1) {
+            variantId = idParts[1];
+          }
         }
-      } catch (error) {
-        console.error("Failed to save order:", error);
+
+        // If still no productId, use item.id as fallback
+        if (!productId) {
+          productId = item.id;
+        }
+
+        const payload = {
+          productId: productId,
+          quantity: quantity,
+        };
+
+        // Add variantId if available
+        if (variantId) {
+          payload.variantId = variantId;
+        }
+
+        return payload;
+      });
+
+      // Call the placeOrder API
+      const response = await placeOrder({
+        address: address,
+        paymentMethod: backendPaymentMethod,
+        quantities: quantitiesArray,
+      });
+
+      if (response.success) {
+        toast.success(response.message || "Order placed successfully");
+
+        // Clear cart from localStorage after successful order
+        try {
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem("cartItems");
+            window.localStorage.removeItem("cartCoupon");
+            // Notify listeners (Nav, CartSidebar, etc.)
+            window.dispatchEvent(new Event("coupon-updated"));
+            window.dispatchEvent(new Event("cart-updated"));
+            window.dispatchEvent(new Event("orders-updated")); // Notify orders updated
+          }
+        } catch (error) {
+          console.error("Error clearing cart:", error);
+        }
+
+        // Redirect to My Orders after a short delay
+        setTimeout(() => {
+          router.push("/my-account?tab=my-orders");
+        }, 1000);
+      } else {
+        throw new Error(response.message || "Failed to place order");
       }
-
-      toast.success("Order placed successfully");
-
-      try {
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem("cartItems");
-          window.localStorage.removeItem("cartCoupon");
-          // Notify listeners (Nav, CartSidebar, etc.)
-          window.dispatchEvent(new Event("coupon-updated"));
-          window.dispatchEvent(new Event("cart-updated"));
-          window.dispatchEvent(new Event("orders-updated")); // Notify orders updated
-        }
-      } catch {}
-
-      // redirect to My Orders
-      router.push("/my-account?tab=my-orders");
     } catch (error) {
+      console.error("Error placing order:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to place order. Please try again.";
+      toast.error(errorMessage);
       Modal.error({
         title: "Failed to place order",
-        content:
-          error?.response?.data?.message || "Please try again in a moment.",
+        content: errorMessage,
       });
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
 
@@ -310,17 +401,24 @@ export default function CheckoutLeft({
         <Button
           variant="primary"
           size="large"
-          className="w-[80%] text-white py-3 px-4 rounded font-medium transition-colors cursor-pointer"
+          className="w-[80%] text-white py-3 px-4 rounded font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: "var(--color-primary)" }}
           onClick={handleProceedToPay}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.background = "var(--color-primary)")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.background = "var(--color-primary)")
-          }
+          disabled={isPlacingOrder}
+          onMouseOver={(e) => {
+            if (!isPlacingOrder) {
+              e.currentTarget.style.background = "var(--color-primary)";
+            }
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = "var(--color-primary)";
+          }}
         >
-          {paymentMethod === "cod" ? "Place Order" : "Proceed to Pay"}
+          {isPlacingOrder
+            ? "Placing Order..."
+            : paymentMethod === "cod"
+            ? "Place Order"
+            : "Proceed to Pay"}
         </Button>
       </div>
     </div>

@@ -53,6 +53,8 @@ export default function CheckoutPage() {
         } else {
           byId.set(id, {
             id: it.id,
+            productId: it.productId || (it.id && it.id.toString().split('_')[0]),
+            variantId: it.variantId || (it.id && it.id.includes('_') ? it.id.toString().split('_')[1] : null),
             name: it.name,
             variantOptions:
               it.variantOptions ||

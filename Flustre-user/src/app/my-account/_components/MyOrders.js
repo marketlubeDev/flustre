@@ -1,35 +1,106 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-// import { useQuery } from "@tanstack/react-query"; // Removed API integration
-// import { getUserOrders } from "@/lib/services/orderService"; // Removed API integration
+import { getUserOrders } from "@/lib/services/orderService";
+import { toast } from "sonner";
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  // Load orders from localStorage
+  // Fetch orders from API
   useEffect(() => {
-    const loadOrders = () => {
+    const fetchOrders = async () => {
       try {
-        if (typeof window !== "undefined") {
-          const storedOrders = window.localStorage.getItem("userOrders");
-          if (storedOrders) {
-            setOrders(JSON.parse(storedOrders));
+        setIsLoading(true);
+        setIsError(false);
+
+        // Check if user is authenticated
+        const token =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem("token") ||
+              window.localStorage.getItem("userToken")
+            : null;
+
+        if (!token) {
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await getUserOrders();
+
+        if (response && response.orders) {
+          // Format orders for display
+          const formattedOrders = response.orders.map((order) => ({
+            _id: order._id,
+            totalAmount: order.totalAmount || 0,
+            // Use order status, fallback to "pending" if not set
+            status: order.status || "pending",
+            paymentStatus: order.paymentStatus || "pending",
+            createdAt: order.createdAt,
+            products: (order.products || []).map((product) => ({
+              productId: {
+                name:
+                  product.productId?.name ||
+                  product.product?.name ||
+                  "Product",
+                image:
+                  product.productId?.images?.[0] ||
+                  product.product?.images?.[0] ||
+                  product.variantId?.images?.[0] ||
+                  "/placeholder.png",
+              },
+              quantity: product.quantity || 1,
+              price: product.price || 0,
+              variantId: product.variantId,
+            })),
+            deliveryAddress: order.deliveryAddress,
+            paymentMethod: order.paymentMethod,
+            paymentStatus: order.paymentStatus,
+          }));
+
+          setOrders(formattedOrders);
+
+          // Also update localStorage for fallback
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(
+              "userOrders",
+              JSON.stringify(formattedOrders)
+            );
           }
+        } else {
+          setOrders([]);
         }
       } catch (error) {
-        console.error("Failed to load orders:", error);
+        console.error("Failed to fetch orders:", error);
+        setIsError(true);
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to load orders. Please try again."
+        );
+
+        // Fallback to localStorage if API fails
+        try {
+          if (typeof window !== "undefined") {
+            const storedOrders = window.localStorage.getItem("userOrders");
+            if (storedOrders) {
+              setOrders(JSON.parse(storedOrders));
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load orders from localStorage:", e);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadOrders();
+    fetchOrders();
 
-    // Listen for order updates
+    // Listen for order updates (when new order is placed)
     const handleOrdersUpdate = () => {
-      loadOrders();
+      fetchOrders();
     };
 
     if (typeof window !== "undefined") {
@@ -39,8 +110,6 @@ export default function MyOrders() {
       };
     }
   }, []);
-
-  const isError = false;
 
   const getStatusColor = (status) => {
     switch ((status || "").toLowerCase()) {
@@ -133,7 +202,7 @@ export default function MyOrders() {
                 </div>
                 <div className="sm:text-right">
                   <p className="font-medium text-gray-900 text-sm sm:text-base">
-                    ₹{order.totalAmount}
+                    ₹{(order.totalAmount || 0).toLocaleString()}
                   </p>
                   <span
                     className={`px-2 py-1 text-[10px] sm:text-xs rounded-full ${getStatusColor(
@@ -146,18 +215,24 @@ export default function MyOrders() {
               </div>
 
               <div className="space-y-2">
-                {(order.products || []).map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between text-xs sm:text-sm"
-                  >
-                    <span className="text-gray-600">
-                      {item?.productId?.name || "Product"} (Qty: {item.quantity}
-                      )
-                    </span>
-                    <span className="text-gray-900">₹{item.price}</span>
-                  </div>
-                ))}
+                {(order.products || []).map((item, index) => {
+                  // Calculate item total (price * quantity)
+                  const itemTotal = (item.price || 0) * (item.quantity || 1);
+                  return (
+                    <div
+                      key={index}
+                      className="flex justify-between text-xs sm:text-sm"
+                    >
+                      <span className="text-gray-600">
+                        {item?.productId?.name || "Product"} (Qty:{" "}
+                        {item.quantity || 1})
+                      </span>
+                      <span className="text-gray-900">
+                        ₹{itemTotal.toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">

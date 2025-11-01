@@ -255,13 +255,15 @@ const getCart = catchAsync(async (req, res, next) => {
 
   const utilites = await utilitesModel.find();
 
-  if (cart.totalPrice < utilites[0].minimumOrderAmount) {
-    deliveryCharges = utilites[0].deliveryCharges;
-    responseData.formattedCart.subTotal = responseData.formattedCart.totalPrice;
-    responseData.formattedCart.totalPrice =
-      responseData.formattedCart.totalPrice + deliveryCharges;
+  if (utilites && utilites.length > 0 && utilites[0]) {
+    if (cart.totalPrice < utilites[0].minimumOrderAmount) {
+      deliveryCharges = utilites[0].deliveryCharges;
+      responseData.formattedCart.subTotal = responseData.formattedCart.totalPrice;
+      responseData.formattedCart.totalPrice =
+        responseData.formattedCart.totalPrice + deliveryCharges;
 
-    responseData.finalAmount = responseData.finalAmount + deliveryCharges;
+      responseData.finalAmount = responseData.finalAmount + deliveryCharges;
+    }
   }
 
   responseData.deliveryCharges = deliveryCharges;

@@ -84,9 +84,11 @@ const payment = catchAsync(async (req, res, next) => {
   }
   const utilites = await utilitesModel.find();
 
-  if (totalAmount < utilites[0].minimumOrderAmount) {
-    deliveryCharges = utilites[0].deliveryCharges;
-    totalAmount = totalAmount + deliveryCharges;
+  if (utilites && utilites.length > 0 && utilites[0]) {
+    if (totalAmount < utilites[0].minimumOrderAmount) {
+      deliveryCharges = utilites[0].deliveryCharges;
+      totalAmount = totalAmount + deliveryCharges;
+    }
   }
 
   // //the 5% off on total amount
@@ -229,7 +231,7 @@ const verifyPayment = catchAsync(async (req, res, next) => {
 
 const placeOrder = catchAsync(async (req, res, next) => {
   const userId = req.user;
-  const { address, paymentMethod } = req.body;
+  const { address, paymentMethod, quantities } = req.body;
 
   let deliveryAddress;
   if (mongoose.Types.ObjectId.isValid(address)) {
@@ -253,6 +255,17 @@ const placeOrder = catchAsync(async (req, res, next) => {
   let totalAmount = 0;
   const validatedProducts = [];
 
+  // Create a map of quantities if provided (productId_variantId or productId -> quantity)
+  const quantityMap = {};
+  if (quantities && Array.isArray(quantities)) {
+    quantities.forEach((qty) => {
+      const key = qty.variantId
+        ? `${qty.productId}_${qty.variantId}`
+        : qty.productId;
+      quantityMap[key] = qty.quantity;
+    });
+  }
+
   for (const item of cart.items) {
     const product = await productModel
       .findById(item.product)
@@ -260,6 +273,16 @@ const placeOrder = catchAsync(async (req, res, next) => {
 
     if (!product) {
       return next(new AppError(`Product not found: ${item.product}`, 404));
+    }
+
+    // Use quantity from request body if provided, otherwise use cart item quantity
+    const key = item.variant
+      ? `${item.product}_${item.variant}`
+      : item.product;
+    const orderQuantity = quantityMap[key] || item.quantity;
+
+    if (orderQuantity < 1) {
+      continue; // Skip items with zero quantity
     }
 
     let price;
@@ -274,10 +297,10 @@ const placeOrder = catchAsync(async (req, res, next) => {
         return next(new AppError(`Variant not found: ${item.variant}`, 404));
       }
 
-      if (variant.stock < item.quantity) {
+      if (variant.stock < orderQuantity) {
         return next(
           new AppError(
-            `Insufficient stock for variant ${variant.attributes.title} of ${product.name}`,
+            `Insufficient stock for variant ${variant.attributes.title} of ${product.name}. Available: ${variant.stock}, Requested: ${orderQuantity}`,
             400
           )
         );
@@ -287,12 +310,15 @@ const placeOrder = catchAsync(async (req, res, next) => {
       stock = variant.stock;
 
       await Variant.findByIdAndUpdate(variant._id, {
-        $inc: { stock: -item.quantity },
+        $inc: { stock: -orderQuantity },
       });
     } else {
-      if (product.stock < item.quantity) {
+      if (product.stock < orderQuantity) {
         return next(
-          new AppError(`Insufficient stock for product ${product.name}`, 400)
+          new AppError(
+            `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${orderQuantity}`,
+            400
+          )
         );
       }
 
@@ -300,17 +326,17 @@ const placeOrder = catchAsync(async (req, res, next) => {
       stock = product.stock;
 
       await productModel.findByIdAndUpdate(product._id, {
-        $inc: { stock: -item.quantity },
+        $inc: { stock: -orderQuantity },
       });
     }
 
-    const itemTotal = price * item.quantity;
+    const itemTotal = price * orderQuantity;
     totalAmount += itemTotal;
 
     validatedProducts.push({
       productId: product._id,
       variantId: item.variant || null,
-      quantity: item.quantity,
+      quantity: orderQuantity,
       price: price,
     });
   }
@@ -325,9 +351,11 @@ const placeOrder = catchAsync(async (req, res, next) => {
 
   const utilites = await utilitesModel.find();
 
-  if (cart.totalPrice < utilites[0].minimumOrderAmount) {
-    deliveryCharges = utilites[0].deliveryCharges;
-    finalAmount = finalAmount + deliveryCharges;
+  if (utilites && utilites.length > 0 && utilites[0]) {
+    if (cart.totalPrice < utilites[0].minimumOrderAmount) {
+      deliveryCharges = utilites[0].deliveryCharges;
+      finalAmount = finalAmount + deliveryCharges;
+    }
   }
 
   let newOrder;

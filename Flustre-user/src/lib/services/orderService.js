@@ -1,9 +1,10 @@
 import axiosInstance from "../axios/axiosInstance";
 
-export async function placeOrder({ address, paymentMethod }) {
+export async function placeOrder({ address, paymentMethod, quantities }) {
   const response = await axiosInstance.post("/order/placeorder", {
     address: address ?? null,
     paymentMethod,
+    quantities: quantities ?? null,
   });
   return response.data;
 }
