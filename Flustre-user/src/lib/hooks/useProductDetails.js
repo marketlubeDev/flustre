@@ -68,7 +68,5 @@ export default function useProductDetails(productId) {
     return () => controller.abort();
   }, [productId]);
 
-  console.log(product, "productdsdsdsdsd");
-
   return { product, loading, error };
 }
