@@ -7,17 +7,19 @@ import Button from "@/app/_components/common/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { startOtpTimer } from "@/features/user/userSlice";
 import { toast } from "sonner";
-// import { useVerifyOtp } from "@/lib/hooks/useLogin"; // Removed API integration
+import { useVerifyOtp } from "@/lib/hooks/useLogin";
+import axiosInstance from "@/lib/axios/axiosInstance";
 
 export default function OTPPage() {
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const dispatch = useDispatch();
   const otpExpiresAt = useSelector((state) => state.user.otpExpiresAt);
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const router = useRouter();
   const { emailForVerification } = useSelector((state) => state.user);
+  const { mutate: verifyOtp, isPending: isVerifying } = useVerifyOtp();
   useEffect(() => {
     if (!emailForVerification) {
       // If email is cleared because OTP succeeded, token should be present
@@ -103,32 +105,46 @@ export default function OTPPage() {
       return;
     }
 
-    setIsVerifying(true);
-    
-    // Simulate OTP verification
-    setTimeout(() => {
-      setIsVerifying(false);
-      toast.success("OTP verified successfully!");
-      
-      // Store demo user data
-      const demoUser = {
-        username: "Demo User",
-        email: emailForVerification,
-        phonenumber: "",
-      };
-      
-      if (typeof window !== "undefined") {
-        localStorage.setItem("token", "demo-token");
-        localStorage.setItem("user", JSON.stringify(demoUser));
-      }
-      
-      // Navigate to my-account
-      router.push("/my-account");
-    }, 1500);
+    if (!emailForVerification) {
+      toast.error("Email not found. Please go back to login page.");
+      router.push("/login");
+      return;
+    }
+
+    // Verify OTP via API
+    verifyOtp({
+      otp: otpString,
+      email: emailForVerification,
+    });
   };
 
-  const handleResendOTP = () => {
-    dispatch(startOtpTimer(30));
+  const handleResendOTP = async () => {
+    if (!emailForVerification) {
+      toast.error("Email not found. Please go back to login page.");
+      router.push("/login");
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      const response = await axiosInstance.post("/user/resend-otp", {
+        email: emailForVerification,
+      });
+
+      if (response.data.status === "Success") {
+        // Reset timer to 10 minutes (600 seconds)
+        dispatch(startOtpTimer(600));
+        toast.success("New OTP has been sent successfully!");
+        // Clear OTP inputs
+        setOtp(["", "", "", ""]);
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to resend OTP. Please try again."
+      );
+    } finally {
+      setIsResending(false);
+    }
   };
 
   const onEditEmail = () => {
@@ -349,9 +365,10 @@ export default function OTPPage() {
               <button
                 type="button"
                 onClick={handleResendOTP}
-                className="text-sm text-gray-600 hover:text-gray-700 font-medium cursor-pointer"
+                disabled={isResending}
+                className="text-sm text-gray-600 hover:text-gray-700 font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Resend OTP
+                {isResending ? "Resending..." : "Resend OTP"}
               </button>
             ) : (
               <p className="text-sm text-gray-600 cursor-not-allowed">

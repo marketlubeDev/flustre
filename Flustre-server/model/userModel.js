@@ -37,6 +37,8 @@ const userSchema = new Schema(
       type: String,
       validate: {
         validator: function (v) {
+          // Only validate if a value is provided (not null or undefined)
+          if (v == null || v === "") return true;
           return /^\+?[0-9]{7,15}$/.test(v);
         },
         message: (props) => `${props.value} is not a valid phone number!`,

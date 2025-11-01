@@ -7,38 +7,53 @@ import { useDispatch } from "react-redux";
 import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 import { toast } from "sonner";
-import { setEmailForVerification, startOtpTimer } from "@/features/user/userSlice";
-// import { useLogin } from "@/lib/hooks/useLogin"; // Removed API integration
+import {
+  setEmailForVerification,
+  startOtpTimer,
+} from "@/features/user/userSlice";
+import { useLogin } from "@/lib/hooks/useLogin";
 
 export default function LoginPage() {
   const [emailOrPhone, setEmailOrPhone] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const { mutate: sendOtp, isPending: isLoading } = useLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!emailOrPhone.trim()) {
-      toast.error("Email or phone number is required");
+      toast.error("Email address is required");
       return;
     }
 
-    setIsLoading(true);
-    
-    // Store email/phone in Redux for OTP page
-    dispatch(setEmailForVerification(emailOrPhone));
-    
-    // Start OTP timer (30 seconds)
-    dispatch(startOtpTimer(30));
-    
-    // Simulate sending OTP
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("OTP sent successfully!");
-      // Navigate to OTP page
-      router.push("/login/otp");
-    }, 1000);
+    // Validate email format
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(emailOrPhone.trim())) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Send OTP via API
+    sendOtp(
+      { emailOrPhone: emailOrPhone.trim() },
+      {
+        onSuccess: (data) => {
+          const email = data?.content?.email || emailOrPhone.trim();
+          // Store email in Redux for OTP page
+          dispatch(setEmailForVerification(email));
+          // Start OTP timer (10 minutes = 600 seconds, backend sets expiry to 10 minutes)
+          dispatch(startOtpTimer(600));
+          toast.success("OTP sent successfully!");
+          // Navigate to OTP page
+          router.push("/login/otp");
+        },
+        onError: (error) => {
+          // Error is handled by the hook, but we can add additional handling here if needed
+          console.error("Failed to send OTP:", error);
+        },
+      }
+    );
   };
 
   return (
@@ -85,9 +100,7 @@ export default function LoginPage() {
             className="sm:text-[40px]"
           >
             Welcome{" "}
-            <span style={{ color: "var(--color-primary)" }}>
-              Shoppers
-            </span>
+            <span style={{ color: "var(--color-primary)" }}>Shoppers</span>
           </h2>
 
           <p
@@ -114,7 +127,7 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
         >
           <div className="space-y-3 sm:space-y-4">
-            {/* Email/Phone Input */}
+            {/* Email Input */}
             <div>
               <label
                 htmlFor="emailOrPhone"
@@ -130,12 +143,12 @@ export default function LoginPage() {
                   letterSpacing: "-0.52px",
                 }}
               >
-                Email or Phone Number
+                Email Address
               </label>
               <input
                 id="emailOrPhone"
                 name="emailOrPhone"
-                type="text"
+                type="email"
                 required
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
@@ -154,7 +167,7 @@ export default function LoginPage() {
                   (e.target.style.borderColor = "var(--color-primary)")
                 }
                 onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
-                placeholder="Enter your email or phone number"
+                placeholder="Enter your email address"
               />
               <style jsx>{`
                 #emailOrPhone::placeholder {
@@ -185,9 +198,7 @@ export default function LoginPage() {
               loading={isLoading}
               className="w-full sm:text-[16px] rounded-md cursor-pointer"
             >
-              {isLoading
-                ? "Sending OTP..."
-                : "Send OTP"}
+              {isLoading ? "Sending OTP..." : "Send OTP"}
             </Button>
           </div>
 

@@ -81,18 +81,38 @@ const register = catchAsync(async (req, res, next) => {
 const sendOtp = catchAsync(async (req, res, next) => {
   const { email } = req.body;
 
-  const [response, status, otp] = await otpToEmail(email);
-  otpStore.set(email, {
+  if (!email) {
+    return next(new AppError("Email is required to send OTP", 400));
+  }
+
+  const emailToSend = email.trim();
+
+  // Validate email format
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(emailToSend)) {
+    return next(new AppError("Please provide a valid email address", 400));
+  }
+
+  const [response, status, otp] = await otpToEmail(emailToSend);
+
+  if (status !== "OK") {
+    return next(new AppError("Failed to send OTP. Please try again.", 500));
+  }
+
+  // Store identifier (email) and user data
+  otpStore.set(emailToSend, {
     otp,
     expires: Date.now() + 10 * 60 * 1000,
-    userData: req.body,
+    userData: {
+      email: emailToSend,
+    },
   });
 
   res.status(200).json({
     status: "Success",
     message: "OTP has been sent successfully to your email",
     content: {
-      email,
+      email: emailToSend,
     },
   });
 });
@@ -134,6 +154,10 @@ const listUsers = catchAsync(async (req, res, next) => {
 const verifyOtp = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
 
+  if (!email || !otp) {
+    return next(new AppError("Email and OTP are required", 400));
+  }
+
   // Get stored OTP data
   const storedOtpData = otpStore.get(email);
   if (!storedOtpData) {
@@ -150,48 +174,72 @@ const verifyOtp = catchAsync(async (req, res, next) => {
   if (storedOtpData.otp !== otp) {
     return next(new AppError("Incorrect OTP. Check your inbox again...", 400));
   }
+
+  // Check if user exists (by email)
   const userExists = await NormalUser.findOne({ email });
+
   if (!userExists) {
-    const newUser = new NormalUser(storedOtpData.userData);
-    if (!newUser) {
-      return next(new AppError("Failed to create user", 500));
-    }
+    // New user - create account
+    // Prepare user data with defaults
+    const userData = {
+      email: storedOtpData.userData.email,
+      username:
+        storedOtpData.userData.username ||
+        storedOtpData.userData.email.split("@")[0] ||
+        "User",
+      // No password needed for OTP-based authentication
+      // No phonenumber - using email only
+      isEmailVerified: true,
+    };
+
+    const newUser = new NormalUser(userData);
     const savedUser = await newUser.save();
+
+    // Remove password from response
+    const userObj = savedUser.toObject();
+    delete userObj.password;
 
     const token = createToken(savedUser._id);
 
+    // Clear OTP after successful verification
+    otpStore.delete(email);
+
     res.status(200).json({
       status: "Success",
-      message: "User created successfully",
+      message: "Account created and logged in successfully",
       content: {
-        user: savedUser,
+        user: userObj,
       },
       token,
     });
   } else {
+    // Existing user - login
+    // Remove password from response
+    const userObj = userExists.toObject();
+    delete userObj.password;
+
     const token = createToken(userExists._id);
+
+    // Clear OTP after successful verification
+    otpStore.delete(email);
+
     res.status(200).json({
       status: "Success",
+      message: "Logged in successfully",
       content: {
-        user: userExists,
+        user: userObj,
       },
       token,
     });
   }
-
-  // const savedUser = await newUser.save();
-  // Create cart for the user
-
-  // Save user
-
-  // Clear OTP after successful verification
-  // otpStore.delete(email);
-
-  // sendToken(newUser, 201, res);
 });
 
 const resendOtp = catchAsync(async (req, res, next) => {
   const { email } = req.body;
+
+  if (!email) {
+    return next(new AppError("Email is required", 400));
+  }
 
   // Get stored OTP data
   const storedOtpData = otpStore.get(email);

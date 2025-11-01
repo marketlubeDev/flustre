@@ -23,18 +23,10 @@ async function verifyOtpRequest({ otp, email }) {
 }
 
 export const useLogin = () => {
-  const router = useRouter();
-  const dispatch = useDispatch();
   return useMutation({
     mutationFn: loginRequest,
-    onSuccess: (data) => {
-      const email = data?.content?.email || data?.data?.email;
-      dispatch(setEmailForVerification(email));
-      dispatch(startOtpTimer(3 * 60));
-      router.push(`/login/otp`);
-    },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "Failed to login");
+      toast.error(error?.response?.data?.message || "Failed to send OTP");
     },
   });
 };
@@ -64,10 +56,11 @@ export const useVerifyOtp = () => {
       dispatch(clearEmailForVerification());
 
       // Check if there's an intended checkout URL to redirect to
-      const intendedCheckoutUrl = typeof window !== "undefined" 
-        ? window.localStorage.getItem("intendedCheckoutUrl") 
-        : null;
-      
+      const intendedCheckoutUrl =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("intendedCheckoutUrl")
+          : null;
+
       if (intendedCheckoutUrl) {
         // Clear the intended URL and redirect to checkout
         window.localStorage.removeItem("intendedCheckoutUrl");
