@@ -14,14 +14,11 @@ import BestSellersSection from "../../_components/_homepage/bestSeller/BestSelle
 import RecommendedSection from "./_components/RecommendedSection";
 import ReviewsSection from "./_components/ReviewsSection";
 import CategoryFeaturesSection from "./_components/CategoryFeaturesSection";
-import ProductVideoSection from "./_components/ProductVideoSection";
-import ProductFeaturesSection from "./_components/ProductFeaturesSection";
-import ProductFeaturesBanner from "./_components/ProductFeaturesBanner";
 import ProductImagesSection from "./_components/ProductImagesSection";
 import ProductInfoSection from "./_components/ProductInfoSection";
-import ProductFeaturesSection2 from "./_components/ProductFeaturesSection2";
-import ProductFeaturesSection3 from "./_components/ProductFeaturesSection3";
+import DynamicFeaturesSection from "./_components/DynamicFeaturesSection";
 import CartSidebar from "../../_components/cart/CartSidebar";
+import useProductDetails from "@/lib/hooks/useProductDetails";
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -37,92 +34,78 @@ export default function ProductDetailPage() {
   const [cartLoading, setCartLoading] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Static mock product data
-  const product = {
-    id: productId || "1",
-    name: "Premium Organic Face Serum",
-    price: 299,
-    originalPrice: 399,
-    description: "A luxurious organic face serum enriched with vitamin C and hyaluronic acid. This premium formula helps reduce fine lines, brightens skin tone, and provides deep hydration for a radiant complexion.",
-    images: [
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg", 
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg"
-    ],
-    featureImages: [
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg", 
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
-      "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg"
-    ],
-    primaryImage: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-    category: "Skincare",
-    label: "Premium",
-    specifications: {
-      Volume: "30ml",
-      SkinType: "All Skin Types",
-      Ingredients: "Vitamin C, Hyaluronic Acid, Organic Extracts",
-      Formulation: "Serum",
-      Packaging: "Glass Bottle with Dropper"
-    },
-    featuresSections: [
-      {
-        title: "Key Benefits",
-        features: [
-          "Reduces fine lines and wrinkles",
-          "Brightens and evens skin tone", 
-          "Provides deep hydration",
-          "Improves skin texture",
-          "Antioxidant protection"
-        ]
-      },
-      {
-        title: "How to Use",
-        features: [
-          "Apply 2-3 drops to clean face",
-          "Gently massage in upward motions",
-          "Use morning and evening",
-          "Follow with moisturizer",
-          "Use sunscreen during day"
-        ]
-      }
-    ],
-    variants: [
-      {
-        _id: "variant1",
-        name: "30ml",
-        price: 299,
-        compareAtPrice: 399,
-        images: ["https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg"]
-      },
-      {
-        _id: "variant2", 
-        name: "50ml",
-        price: 449,
-        compareAtPrice: 599,
-        images: ["https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg"]
-      }
-    ],
-    ratingStats: {
-      average: 4.5,
-      total: 128,
-      distribution: {
-        5: 45,
-        4: 38,
-        3: 25,
-        2: 12,
-        1: 8
-      }
-    },
-    returnPolicyDays: 30,
-    returnPolicyText: "30-day return policy for unopened products",
-    profit: 150,
-    costPerItem: 149
+  // Fetch product details from API
+  const { product: apiProduct, loading, error } = useProductDetails(productId);
+  console.log(apiProduct, "apiProducsdsdsdsdt");
+  // Build a product object compatible with existing UI components
+  const firstVariant =
+    Array.isArray(apiProduct?.variants) && apiProduct.variants.length > 0
+      ? apiProduct.variants[0]
+      : null;
+
+  // Helper to safely extract displayable text from possibly-object values
+  const extractText = (value) => {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") {
+      return (
+        value.name ||
+        value.title ||
+        value.label ||
+        value.value ||
+        value.text ||
+        ""
+      );
+    }
+    return "";
   };
 
-  const loading = false;
-  const error = null;
+  // Normalize API response into displayable fields
+  const mappedFromApi = apiProduct
+    ? {
+        id: apiProduct.id || apiProduct._id || productId,
+        name: apiProduct.name,
+        price: firstVariant?.price ?? apiProduct.price ?? 0,
+        originalPrice:
+          firstVariant?.compareAtPrice ??
+          apiProduct.compareAtPrice ??
+          firstVariant?.price ??
+          apiProduct.price ??
+          0,
+        description: extractText(apiProduct.description),
+        images: Array.isArray(firstVariant?.images)
+          ? firstVariant.images
+          : Array.isArray(apiProduct.featureImages)
+          ? apiProduct.featureImages
+          : [],
+        featureImages: Array.isArray(apiProduct.featureImages)
+          ? apiProduct.featureImages
+          : Array.isArray(firstVariant?.images)
+          ? firstVariant.images
+          : [],
+        primaryImage:
+          (apiProduct.primaryImage && String(apiProduct.primaryImage)) ||
+          (Array.isArray(apiProduct.featureImages) &&
+            apiProduct.featureImages[0]) ||
+          (Array.isArray(firstVariant?.images) && firstVariant.images[0]) ||
+          "/placeholder.png",
+        category: extractText(apiProduct.category),
+        label: extractText(apiProduct.label),
+        specifications: apiProduct.specifications || {},
+        featuresSections: apiProduct.featuresSections || [],
+        variants: Array.isArray(apiProduct.variants) ? apiProduct.variants : [],
+        ratingStats: {
+          average: apiProduct.averageRating || 0,
+          total: apiProduct.totalRatings || 0,
+          distribution: apiProduct.ratingDistribution || {},
+        },
+        returnPolicyDays: apiProduct.returnPolicyDays,
+        returnPolicyText: apiProduct.returnPolicyText,
+        profit: apiProduct.profit,
+        costPerItem: apiProduct.costPerItem,
+      }
+    : null;
+
+  const product = mappedFromApi;
 
   useEffect(() => {
     setMounted(true);
@@ -133,24 +116,18 @@ export default function ProductDetailPage() {
     setSelectedImage(0);
   }, [selectedVariant]);
 
-  // Volume options
-  const defaultVolumes = ["30ml", "50ml", "100ml"];
-  const initialVolume = product?.specifications?.Volume || defaultVolumes[0];
-  const volumes = Array.from(new Set([initialVolume, ...defaultVolumes]));
-  const [selectedVolume, setSelectedVolume] = useState(initialVolume);
-
   // Static wishlist functions
   const toggleWishlistItem = (product) => {
-    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    const isInWishlist = wishlistItems.some((item) => item.id === product.id);
     if (isInWishlist) {
-      setWishlistItems(prev => prev.filter(item => item.id !== product.id));
+      setWishlistItems((prev) => prev.filter((item) => item.id !== product.id));
     } else {
-      setWishlistItems(prev => [...prev, product]);
+      setWishlistItems((prev) => [...prev, product]);
     }
   };
 
   const isInWishlist = (id) => {
-    return wishlistItems.some(item => item.id === id);
+    return wishlistItems.some((item) => item.id === id);
   };
   const coupons = [
     {
@@ -179,8 +156,8 @@ export default function ProductDetailPage() {
     setCartLoading(true);
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Get the selected variant ID if available
       const variantId =
         product?.variants && product.variants.length > 0
@@ -197,17 +174,20 @@ export default function ProductDetailPage() {
         price: product.price,
         originalPrice: product.originalPrice,
         quantity: quantity,
-        category: product.category
+        category: product.category,
       };
 
       // Get existing cart items
-      const existingCart = typeof window !== "undefined" 
-        ? JSON.parse(localStorage.getItem("cartItems") || "[]") 
-        : [];
-      
+      const existingCart =
+        typeof window !== "undefined"
+          ? JSON.parse(localStorage.getItem("cartItems") || "[]")
+          : [];
+
       // Check if item already exists
-      const existingItemIndex = existingCart.findIndex(item => item.id === cartItem.id);
-      
+      const existingItemIndex = existingCart.findIndex(
+        (item) => item.id === cartItem.id
+      );
+
       if (existingItemIndex >= 0) {
         // Update quantity if item exists
         existingCart[existingItemIndex].quantity += quantity;
@@ -224,10 +204,9 @@ export default function ProductDetailPage() {
       }
 
       console.log("Added to cart:", cartItem);
-      
+
       // Open cart sidebar
       setIsCartOpen(true);
-      
     } catch (err) {
       console.error("Failed to add to cart", err);
       alert("Failed to add to cart");
@@ -239,6 +218,10 @@ export default function ProductDetailPage() {
   const buyNow = () => {
     if (!mounted) return; // Don't allow buy now operations during SSR
 
+    // Get the selected variant if available
+    const variant = product?.variants?.[selectedVariant];
+    const variantOptions = variant?.options || {};
+
     // Static authentication check - always redirect to checkout for demo
     try {
       const checkoutItems = [
@@ -246,9 +229,9 @@ export default function ProductDetailPage() {
           id: product?.id,
           name: product?.name,
           color: product?.category,
-          plug: selectedVolume || "Default",
-          price: product?.price,
-          originalPrice: product?.originalPrice,
+          variant: variantOptions,
+          price: variant?.price || product?.price,
+          originalPrice: variant?.compareAtPrice || product?.originalPrice,
           image:
             product?.primaryImage ||
             (product?.featureImages && product?.featureImages[0]) ||
@@ -265,6 +248,30 @@ export default function ProductDetailPage() {
       console.error("Error preparing checkout:", err);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Loading product...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Failed to load product.
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Product not found.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -290,9 +297,6 @@ export default function ProductDetailPage() {
             showMoreCoupons={showMoreCoupons}
             setShowMoreCoupons={setShowMoreCoupons}
             remainingCoupons={remainingCoupons}
-            volumes={volumes}
-            selectedVolume={selectedVolume}
-            setSelectedVolume={setSelectedVolume}
             selectedVariant={selectedVariant}
             setSelectedVariant={setSelectedVariant}
             quantity={quantity}
@@ -304,21 +308,14 @@ export default function ProductDetailPage() {
             setShowMoreDetails={setShowMoreDetails}
           />
         </div>
-        <ProductFeaturesBanner product={product} />
-        <ProductFeaturesSection product={product} />
-        <ProductFeaturesSection2 product={product} />
-        <ProductVideoSection product={product} />
-        {/* <ProductFeaturesSection3 productType={product?.type} /> */}
+        <DynamicFeaturesSection product={product} />
         <FeaturedProductsSection isProductPage={true} />
         <ReviewsSection product={product} selectedImage={selectedImage} />
         <RecommendedSection />
       </div>
-      
+
       {/* Cart Sidebar */}
-      <CartSidebar 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-      />
+      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }

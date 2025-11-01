@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
-// import useCategories from "@/lib/hooks/useCategories"; // Removed API integration
+import useCategories from "@/lib/hooks/useCategories";
 
 export default function ProductSidebar({
   selectedCategory,
@@ -15,18 +15,9 @@ export default function ProductSidebar({
   const router = useRouter();
   const [sessionData, setSessionData] = useState({});
 
-  // Static data - no API integration
-  const apiCategories = [];
-  const categoriesLoading = false;
-
-  // Static main categories
-  const mainCategories = [
-    "Living Room",
-    "Bedroom", 
-    "Dining & Kitchen",
-    "Office",
-    "Outdoors"
-  ];
+  // Live categories
+  const { categories: apiCategories, loading: categoriesLoading } =
+    useCategories();
 
   const discountOptions = [
     "Discount 10",
@@ -78,18 +69,18 @@ export default function ProductSidebar({
           Categories
         </h3>
         <div className="space-y-0">
-          {mainCategories.map((category) => (
+          {(categoriesLoading ? [] : apiCategories).map((cat) => (
             <button
-              key={category}
-              onClick={() => handleCategoryClick(category)}
+              key={cat?.id || cat?.name}
+              onClick={() => handleCategoryClick(cat?.name)}
               className={`w-full text-left px-3 py-2 rounded-md transition-colors cursor-pointer ${
-                selectedCategory === category
+                selectedCategory === cat?.name
                   ? "bg-[#f7f3f4]"
                   : "hover:bg-gray-50"
               }`}
               style={{
                 color:
-                  selectedCategory === category
+                  selectedCategory === cat?.name
                     ? "var(--color-primary)"
                     : "rgba(51, 51, 51, 0.70)",
                 fontSize: "16px",
@@ -98,7 +89,7 @@ export default function ProductSidebar({
                 letterSpacing: "-0.16px",
               }}
             >
-              {category}
+              {cat?.name}
             </button>
           ))}
         </div>
@@ -266,9 +257,7 @@ export default function ProductSidebar({
             />
           </div>
 
-          <div
-            className="flex justify-start items-center gap-1 mt-2"
-          >
+          <div className="flex justify-start items-center gap-1 mt-2">
             <div
               style={{
                 display: "flex",
@@ -286,7 +275,8 @@ export default function ProductSidebar({
                 letterSpacing: "-0.14px",
               }}
             >
-              <span style={{ color: "rgba(51, 51, 51, 0.70)" }}>₹</span> {priceRange.min.toLocaleString()}
+              <span style={{ color: "rgba(51, 51, 51, 0.70)" }}>₹</span>{" "}
+              {priceRange.min.toLocaleString()}
             </div>
             <Image
               src="/doublearrow.svg"
@@ -312,17 +302,15 @@ export default function ProductSidebar({
                 letterSpacing: "-0.14px",
               }}
             >
-              <span style={{ color: "rgba(51, 51, 51, 0.70)" }}>₹</span> {priceRange.max.toLocaleString()}
+              <span style={{ color: "rgba(51, 51, 51, 0.70)" }}>₹</span>{" "}
+              {priceRange.max.toLocaleString()}
             </div>
           </div>
         </div>
 
         {/* Predefined Price Ranges */}
         <div className="space-y-0 px-0">
-          <div
-            className="max-w-[200px]"
-            style={{ margin: "0 auto 0 0" }}
-          >
+          <div className="max-w-[200px]" style={{ margin: "0 auto 0 0" }}>
             {priceRanges.map((range) => (
               <button
                 key={range}

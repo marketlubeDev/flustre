@@ -4,16 +4,16 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import ProductCard from "../_components/_homepage/ProductCard";
 import ProductSidebar from "./_components/ProductSidebar";
 import ProductGrid from "./_components/ProductGrid";
-// Removed API hooks - using static data instead
+import useProducts from "@/lib/hooks/useProducts";
+import useCategories from "@/lib/hooks/useCategories";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-
 function ProductsPageContent() {
-  
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedDiscount, setSelectedDiscount] = useState("");
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 12999 });
+  const DEFAULT_PRICE_RANGE = { min: 0, max: 12999 };
+  const [priceRange, setPriceRange] = useState({ ...DEFAULT_PRICE_RANGE });
   const [sortBy, setSortBy] = useState("Featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -21,190 +21,43 @@ function ProductsPageContent() {
   const lastScrollY = useRef(0);
   const searchParams = useSearchParams();
 
-  // Static product data
-  const staticProducts = [
-    {
-      id: 1,
-      name: "Modern Sofa Set",
-      price: 2500,
-      originalPrice: 3000,
-      discount: 17,
-      category: "Living Room",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      rating: 4.5,
-      reviews: 128,
-      inStock: true,
-      description: "Comfortable 3-seater sofa with modern design"
-    },
-    {
-      id: 2,
-      name: "King Size Bed Frame",
-      price: 1800,
-      originalPrice: 2200,
-      discount: 18,
-      category: "Bedroom",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg",
-      rating: 4.3,
-      reviews: 95,
-      inStock: true,
-      description: "Solid wood king size bed frame with storage"
-    },
-    {
-      id: 3,
-      name: "Dining Table Set",
-      price: 1200,
-      originalPrice: 1500,
-      discount: 20,
-      category: "Dining & Kitchen",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
-      rating: 4.7,
-      reviews: 67,
-      inStock: true,
-      description: "6-seater dining table with matching chairs"
-    },
-    {
-      id: 4,
-      name: "Office Desk",
-      price: 800,
-      originalPrice: 1000,
-      discount: 20,
-      category: "Office",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg",
-      rating: 4.2,
-      reviews: 43,
-      inStock: true,
-      description: "Ergonomic office desk with drawers"
-    },
-    {
-      id: 5,
-      name: "Garden Chair Set",
-      price: 600,
-      originalPrice: 750,
-      discount: 20,
-      category: "Outdoors",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product5+(1).jpg",
-      rating: 4.4,
-      reviews: 29,
-      inStock: true,
-      description: "Weather-resistant outdoor chair set"
-    },
-    {
-      id: 6,
-      name: "Coffee Table",
-      price: 450,
-      originalPrice: 600,
-      discount: 25,
-      category: "Living Room",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      rating: 4.6,
-      reviews: 84,
-      inStock: true,
-      description: "Glass top coffee table with wooden legs"
-    },
-    {
-      id: 7,
-      name: "Wardrobe",
-      price: 2200,
-      originalPrice: 2800,
-      discount: 21,
-      category: "Bedroom",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg",
-      rating: 4.5,
-      reviews: 56,
-      inStock: true,
-      description: "Large 4-door wardrobe with mirror"
-    },
-    {
-      id: 8,
-      name: "Kitchen Island",
-      price: 1500,
-      originalPrice: 1900,
-      discount: 21,
-      category: "Dining & Kitchen",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product31+(1).jpg",
-      rating: 4.8,
-      reviews: 72,
-      inStock: true,
-      description: "Multi-functional kitchen island with storage"
-    },
-    {
-      id: 9,
-      name: "Office Chair",
-      price: 350,
-      originalPrice: 450,
-      discount: 22,
-      category: "Office",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product4+(1).jpg",
-      rating: 4.3,
-      reviews: 91,
-      inStock: true,
-      description: "Ergonomic office chair with lumbar support"
-    },
-    {
-      id: 10,
-      name: "Patio Table",
-      price: 900,
-      originalPrice: 1200,
-      discount: 25,
-      category: "Outdoors",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product5+(1).jpg",
-      rating: 4.4,
-      reviews: 38,
-      inStock: true,
-      description: "Weather-resistant outdoor dining table"
-    },
-    {
-      id: 11,
-      name: "TV Stand",
-      price: 650,
-      originalPrice: 850,
-      discount: 24,
-      category: "Living Room",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product1+(1).jpg",
-      rating: 4.2,
-      reviews: 47,
-      inStock: true,
-      description: "Modern TV stand with cable management"
-    },
-    {
-      id: 12,
-      name: "Nightstand",
-      price: 280,
-      originalPrice: 350,
-      discount: 20,
-      category: "Bedroom",
-      image: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/product/product2+(1).jpg",
-      rating: 4.5,
-      reviews: 63,
-      inStock: true,
-      description: "Bedside table with drawer and shelf"
-    }
-  ];
+  // Categories and products from API
+  const { categories, loading: categoriesLoading } = useCategories();
+  const selectedCategoryId = categories.find(
+    (c) => c.name?.toLowerCase() === selectedCategory?.toLowerCase()
+  )?.id;
 
-  // Static categories (matching the sidebar)
-  const staticCategories = [
-    { id: 1, name: "Living Room" },
-    { id: 2, name: "Bedroom" },
-    { id: 3, name: "Dining & Kitchen" },
-    { id: 4, name: "Office" },
-    { id: 5, name: "Outdoors" }
-  ];
+  const isPriceFilterActive =
+    priceRange.min !== DEFAULT_PRICE_RANGE.min ||
+    priceRange.max !== DEFAULT_PRICE_RANGE.max;
+
+  const requestOptions = {
+    page: 1,
+    limit: 24,
+  };
+  if (selectedCategoryId) requestOptions.categoryId = selectedCategoryId;
+  if (isPriceFilterActive) {
+    requestOptions.minPrice = priceRange.min;
+    requestOptions.maxPrice = priceRange.max;
+  }
+
+  const {
+    products,
+    loading: productsLoading,
+    error,
+  } = useProducts(requestOptions);
+
+  // Live categories used in mobile filter sheet
 
   // Mobile filter UI state
-  const [activeFilterTab, setActiveFilterTab] = useState(
-    "Categories"
-  );
+  const [activeFilterTab, setActiveFilterTab] = useState("Categories");
   const [snapshot, setSnapshot] = useState({
     selectedCategory: "",
     selectedDiscount: "",
-    priceRange: { min: 0, max: 12999 },
+    priceRange: { ...DEFAULT_PRICE_RANGE },
   });
-  const [pendingSort, setPendingSort] = useState(
-    "Featured"
-  );
-  const [sortSnapshot, setSortSnapshot] = useState(
-    "Featured"
-  );
+  const [pendingSort, setPendingSort] = useState("Featured");
+  const [sortSnapshot, setSortSnapshot] = useState("Featured");
   const [draggingHandle, setDraggingHandle] = useState(null); // 'min' or 'max' or null
 
   const sortOptions = [
@@ -231,26 +84,30 @@ function ProductsPageContent() {
     "Over 4000",
   ];
 
-  // Filter and sort products based on static data
+  // Filter and sort products based on fetched data
   const getFilteredProducts = () => {
-    let filtered = [...staticProducts];
+    let filtered = Array.isArray(products) ? [...products] : [];
 
     // Filter by category
     if (selectedCategory) {
-      filtered = filtered.filter(product => 
-        product.category.toLowerCase() === selectedCategory.toLowerCase()
+      filtered = filtered.filter(
+        (product) =>
+          product.category.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
     // Filter by price range
-    filtered = filtered.filter(product => 
-      product.price >= priceRange.min && product.price <= priceRange.max
+    filtered = filtered.filter(
+      (product) =>
+        product.price >= priceRange.min && product.price <= priceRange.max
     );
 
     // Filter by discount
     if (selectedDiscount) {
-      const discountValue = parseInt(selectedDiscount.replace(/\D/g, ''));
-      filtered = filtered.filter(product => product.discount >= discountValue);
+      const discountValue = parseInt(selectedDiscount.replace(/\D/g, ""));
+      filtered = filtered.filter(
+        (product) => product.discount >= discountValue
+      );
     }
 
     // Sort products
@@ -262,12 +119,14 @@ function ProductsPageContent() {
         filtered.sort((a, b) => b.price - a.price);
         break;
       case "Newest":
-        // For demo, sort by ID descending (newer products have higher IDs)
-        filtered.sort((a, b) => b.id - a.id);
+        // If there is no createdAt, fallback to id
+        filtered.sort(
+          (a, b) => (b.createdAt || b.id || 0) - (a.createdAt || a.id || 0)
+        );
         break;
       case "Popular":
         // Sort by rating and reviews
-        filtered.sort((a, b) => (b.rating * b.reviews) - (a.rating * a.reviews));
+        filtered.sort((a, b) => b.rating * b.reviews - a.rating * a.reviews);
         break;
       default: // Featured
         // Keep original order
@@ -399,7 +258,7 @@ function ProductsPageContent() {
   const clearAllFilters = () => {
     setSelectedCategory("");
     setSelectedDiscount("");
-    setPriceRange({ min: 0, max: 20000 });
+    setPriceRange({ ...DEFAULT_PRICE_RANGE });
   };
 
   const discardFilters = () => {
@@ -508,9 +367,7 @@ function ProductsPageContent() {
             className="flex items-center justify-between px-4 py-3"
             style={{ borderBottom: "1px solid rgba(0, 0, 0, 0.10)" }}
           >
-            <h3 className="text-base font-semibold text-gray-900">
-              Filters
-            </h3>
+            <h3 className="text-base font-semibold text-gray-900">Filters</h3>
             <button
               onClick={clearAllFilters}
               className="text-red-600 text-sm font-medium"
@@ -522,11 +379,7 @@ function ProductsPageContent() {
           <div className="flex flex-1 overflow-hidden">
             {/* Left Tabs */}
             <div className="w-5/12 bg-gray-50 overflow-y-auto">
-              {[
-                "Categories",
-                "Discount",
-                "Price Range",
-              ].map((tab) => (
+              {["Categories", "Discount", "Price Range"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveFilterTab(tab)}
@@ -548,7 +401,7 @@ function ProductsPageContent() {
             >
               {activeFilterTab === "Categories" && (
                 <div className="space-y-0">
-                  {staticCategories.map((cat) => (
+                  {(categoriesLoading ? [] : categories).map((cat) => (
                     <div
                       key={cat?.id || cat?.name}
                       style={{
@@ -804,9 +657,7 @@ function ProductsPageContent() {
             className="flex items-center justify-between px-4 py-3"
             style={{ borderBottom: "1px solid rgba(0, 0, 0, 0.10)" }}
           >
-            <h3 className="text-base font-semibold text-gray-900">
-              Sort By
-            </h3>
+            <h3 className="text-base font-semibold text-gray-900">Sort By</h3>
             <button
               onClick={() => setPendingSort("Featured")}
               className="text-red-600 text-sm font-medium"

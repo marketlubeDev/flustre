@@ -7,29 +7,15 @@ import PurchaseActions from "./PurchaseActions";
 import Button from "@/app/_components/common/Button";
 import Image from "next/image";
 
-// Static categories based on your provided list
-const STATIC_CATEGORIES = [
-  "Living Room",
-  "Bedroom", 
-  "Dining & Kitchen",
-  "Office",
-  "Outdoors"
-];
-
-// Static product details
-const STATIC_PRODUCT_NAME = "Premium Home Furniture Collection";
-const STATIC_ABOUT_PRODUCT = "Experience the perfect blend of style and functionality with our premium home furniture collection. Crafted with the finest materials and attention to detail, this collection brings elegance and comfort to your living space. Our furniture is designed to complement modern interiors while providing exceptional durability and timeless appeal. Each piece is carefully selected to ensure it meets our high standards of quality and design excellence.";
-const STATIC_SPECIFICATIONS = {
-  "Material": "High-quality wood and premium upholstery",
-  "Dimensions": "Various sizes available",
-  "Weight": "Lightweight and easy to move",
-  "Assembly": "Easy assembly with included tools",
-  "Warranty": "2 years manufacturer warranty",
-  "Care Instructions": "Wipe clean with damp cloth",
-  "Color Options": "Multiple color variants available",
-  "Delivery": "Free delivery within city limits"
+// Fallback static data (only used if API data is missing)
+const FALLBACK_ABOUT =
+  "Experience the perfect blend of style and functionality with our premium collection. Crafted with the finest materials and attention to detail, this collection brings elegance and comfort to your space.";
+const FALLBACK_SPECIFICATIONS = {
+  Material: "High-quality materials",
+  "Care Instructions": "Follow product care guidelines",
 };
-const STATIC_RETURN_POLICY = "Returns are accepted within 7 days for unused items in original packaging. Damaged or incorrect products are eligible for a full refund or replacement. Refunds are processed after inspection. To start a return, contact our support team with your order ID.";
+const FALLBACK_RETURN_POLICY =
+  "Returns are accepted within 7 days for unused items in original packaging. Contact our support team with your order ID for returns.";
 
 export default function ProductInfoSection({
   product,
@@ -39,9 +25,6 @@ export default function ProductInfoSection({
   showMoreCoupons,
   setShowMoreCoupons,
   remainingCoupons,
-  volumes,
-  selectedVolume,
-  setSelectedVolume,
   selectedVariant,
   setSelectedVariant,
   quantity,
@@ -52,7 +35,6 @@ export default function ProductInfoSection({
   showMoreDetails,
   setShowMoreDetails,
 }) {
-
   // Calculate discount percentage dynamically
   const calculateDiscountPercentage = () => {
     let currentPrice, originalPrice;
@@ -87,6 +69,13 @@ export default function ProductInfoSection({
   const discountPercentage = calculateDiscountPercentage();
 
   console.log(product, "kgsakdgskgksh");
+
+  // Extract category name - handle both string and object
+  const categoryName =
+    typeof product?.category === "string"
+      ? product.category
+      : product?.category?.name || "Product";
+
   return (
     <div className="space-y-6">
       <div>
@@ -94,7 +83,7 @@ export default function ProductInfoSection({
           className="text-gray-600 mb-1"
           style={{ fontSize: "clamp(12px, 2vw, 16px)" }}
         >
-          {STATIC_CATEGORIES[0]} {/* Using "Living Room" as default static category */}
+          {categoryName}
         </p>
         <h1
           className="mb-2"
@@ -108,7 +97,7 @@ export default function ProductInfoSection({
             textTransform: "capitalize",
           }}
         >
-          {STATIC_PRODUCT_NAME}
+          {product?.name || "Product Name"}
         </h1>
 
         {/* Rating Section */}
@@ -227,8 +216,8 @@ export default function ProductInfoSection({
           About Product
         </h3>
         {(() => {
-          // Use static description
-          const currentDescription = STATIC_ABOUT_PRODUCT;
+          // Use API data or fallback
+          const currentDescription = product?.about || FALLBACK_ABOUT;
 
           // Split description into words to control preview length
           const words = currentDescription.split(" ");
@@ -268,9 +257,35 @@ export default function ProductInfoSection({
           Specifications
         </h3>
         <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm sm:text-base">
-          {Object.entries(STATIC_SPECIFICATIONS).map(([key, value], index) => (
-            <li key={index}><strong>{key}:</strong> {value}</li>
-          ))}
+          {(() => {
+            // Handle specifications - can be array or object
+            const specs = product?.specifications;
+
+            if (Array.isArray(specs) && specs.length > 0) {
+              // If it's an array of strings
+              return specs.map((spec, index) => <li key={index}>{spec}</li>);
+            } else if (
+              specs &&
+              typeof specs === "object" &&
+              !Array.isArray(specs)
+            ) {
+              // If it's an object with key-value pairs
+              return Object.entries(specs).map(([key, value], index) => (
+                <li key={index}>
+                  <strong>{key}:</strong> {value}
+                </li>
+              ));
+            } else {
+              // Fallback
+              return Object.entries(FALLBACK_SPECIFICATIONS).map(
+                ([key, value], index) => (
+                  <li key={index}>
+                    <strong>{key}:</strong> {value}
+                  </li>
+                )
+              );
+            }
+          })()}
         </ul>
       </div>
 
@@ -281,7 +296,10 @@ export default function ProductInfoSection({
           Return & Refund Policy
         </h3>
         <p className="text-gray-700 mb-2 text-sm sm:text-base">
-          {STATIC_RETURN_POLICY}
+          {product?.returnPolicyText ||
+            (product?.returnPolicyDays
+              ? `Returns accepted within ${product.returnPolicyDays} days. ${FALLBACK_RETURN_POLICY}`
+              : FALLBACK_RETURN_POLICY)}
         </p>
       </div>
     </div>

@@ -2,17 +2,23 @@
 
 import Image from "next/image";
 
-export default function ProductFeaturesBanner() {
-  // Static banner sections
-  const staticBannerSections = [
+export default function ProductFeaturesBanner({ product }) {
+  // Use API data if available, otherwise use static fallback
+  const bannerSections = product?.featuresSections?.filter(
+    (section) => section.layout === "banner"
+  ) || [
     {
       id: 1,
       title: "Premium Quality Materials",
-      imageUrl: "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/feature-banner1+(1).jpg",
-      alt: "Premium Quality Materials"
-    }
- 
+      mediaUrl:
+        "https://marketlube-ecommerce.s3.ap-south-1.amazonaws.com/Flustre/featured/feature-banner1+(1).jpg",
+      alt: "Premium Quality Materials",
+    },
   ];
+
+  if (!bannerSections || bannerSections.length === 0) {
+    return null;
+  }
 
   return (
     <div className="my-8">
@@ -31,14 +37,14 @@ export default function ProductFeaturesBanner() {
       </div>
 
       <div className="space-y-6">
-        {staticBannerSections.map((section) => (
+        {bannerSections.map((section, index) => (
           <div
-            key={section.id}
+            key={section.id || index}
             className="w-full rounded-lg overflow-hidden border border-gray-200 bg-white flex justify-center items-center"
           >
             <Image
-              src={section.imageUrl}
-              alt={section.alt}
+              src={section.mediaUrl || section.imageUrl}
+              alt={section.title || section.alt || "Product Feature"}
               width={1500}
               height={500}
               className="w-full max-w-[1500px] object-cover object-center h-48 sm:h-56 md:h-72 lg:h-[500px]"
