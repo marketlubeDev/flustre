@@ -12,7 +12,7 @@ import Image from "next/image";
 function ProductsPageContent() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedDiscount, setSelectedDiscount] = useState("");
-  const DEFAULT_PRICE_RANGE = { min: 0, max: 12999 };
+  const DEFAULT_PRICE_RANGE = { min: 0, max: 100000 };
   const [priceRange, setPriceRange] = useState({ ...DEFAULT_PRICE_RANGE });
   const [sortBy, setSortBy] = useState("Featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -46,6 +46,8 @@ function ProductsPageContent() {
     loading: productsLoading,
     error,
   } = useProducts(requestOptions);
+
+  console.log("productsasdsad", products);
 
   // Live categories used in mobile filter sheet
 
@@ -88,26 +90,20 @@ function ProductsPageContent() {
   const getFilteredProducts = () => {
     let filtered = Array.isArray(products) ? [...products] : [];
 
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(
-        (product) =>
-          product.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    // Filter by price range
-    filtered = filtered.filter(
-      (product) =>
-        product.price >= priceRange.min && product.price <= priceRange.max
-    );
-
     // Filter by discount
     if (selectedDiscount) {
       const discountValue = parseInt(selectedDiscount.replace(/\D/g, ""));
-      filtered = filtered.filter(
-        (product) => product.discount >= discountValue
-      );
+      filtered = filtered.filter((product) => {
+        // Calculate discount percentage
+        if (product.originalPrice && product.originalPrice > product.price) {
+          const discount = Math.round(
+            ((product.originalPrice - product.price) / product.originalPrice) *
+              100
+          );
+          return discount >= discountValue;
+        }
+        return false;
+      });
     }
 
     // Sort products
@@ -301,7 +297,7 @@ function ProductsPageContent() {
         {/* Main Content - 70% width */}
         <div className="lg:w-[80%] 2xl:w-[80%] 2xl:mr-auto">
           <div
-            className="px-0 pb-10 sm:px-6 md:px-8 py-8 pb-0 lg:pb-8"
+            className="px-0 sm:px-6 md:px-8 py-8 lg:pb-8"
             style={{
               overscrollBehavior: "contain",
             }}

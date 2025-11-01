@@ -19,21 +19,22 @@ export default function CartSidebar({ isOpen, onClose }) {
   // Static data - no backend dependencies
   const isLoggedIn = false; // Static for demo
   const cartLoading = false; // Static for demo
-  
+
   // Static remove from cart function
   const removeFromCart = async (itemId) => {
     try {
-      const existingCart = typeof window !== "undefined" 
-        ? JSON.parse(localStorage.getItem("cartItems") || "[]") 
-        : [];
-      
-      const updatedCart = existingCart.filter(item => item.id !== itemId);
-      
+      const existingCart =
+        typeof window !== "undefined"
+          ? JSON.parse(localStorage.getItem("cartItems") || "[]")
+          : [];
+
+      const updatedCart = existingCart.filter((item) => item.id !== itemId);
+
       if (typeof window !== "undefined") {
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
         window.dispatchEvent(new Event("cart-updated"));
       }
-      
+
       // Reload cart to update UI
       loadCart();
     } catch (err) {
@@ -253,10 +254,7 @@ export default function CartSidebar({ isOpen, onClose }) {
         closeIcon={null}
       >
         {/* Header - Fixed height */}
-        <CartSidebarHeader
-          onClose={onClose}
-          title={"Your Cart"}
-        />
+        <CartSidebarHeader onClose={onClose} title={"Your Cart"} />
 
         {/* Cart Content */}
         <div
@@ -310,33 +308,54 @@ export default function CartSidebar({ isOpen, onClose }) {
                     quantities={quantities}
                     updateQuantity={updateQuantity}
                     removeItem={removeItem}
-                    renderMeta={(it) => (
-                      <div
-                        className="mb-1 text-[12px] sm:text-[14px]"
-                        style={{
-                          display: "block",
-                          overflow: "hidden",
-                          color: "rgba(51, 51, 51, 0.70)",
-                          fontWeight: 500,
-                          lineHeight: "140%",
-                          letterSpacing: "-0.28px",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        <span style={{ marginRight: "16px" }}>
-                          {"Type"}:{" "}
-                          <span style={{ color: "#222", fontWeight: 500 }}>
-                            {it.color || "Standard"}
-                          </span>
-                        </span>
-                        <span>
-                          {"Size"}:{" "}
-                          <span style={{ color: "#222", fontWeight: 500 }}>
-                            {it.plug || "Default"}
-                          </span>
-                        </span>
-                      </div>
-                    )}
+                    renderMeta={(it) => {
+                      // Get variant options from the cart item
+                      const variantOptions =
+                        it.variantOptions ||
+                        it.variant?.options ||
+                        it.variant?.attributes ||
+                        {};
+                      const optionEntries = Object.entries(variantOptions);
+
+                      // If no variant options, don't show anything (or show a default message)
+                      if (optionEntries.length === 0) {
+                        return null;
+                      }
+
+                      return (
+                        <div
+                          className="mb-1 text-[12px] sm:text-[14px]"
+                          style={{
+                            display: "block",
+                            overflow: "hidden",
+                            color: "rgba(51, 51, 51, 0.70)",
+                            fontWeight: 500,
+                            lineHeight: "140%",
+                            letterSpacing: "-0.28px",
+                            marginBottom: "6px",
+                          }}
+                        >
+                          {optionEntries.map(([key, value], idx) => {
+                            // Capitalize first letter of option name
+                            const optionLabel =
+                              key.charAt(0).toUpperCase() + key.slice(1);
+                            return (
+                              <span
+                                key={`${key}-${idx}`}
+                                style={{ marginRight: "16px" }}
+                              >
+                                {optionLabel}:{" "}
+                                <span
+                                  style={{ color: "#222", fontWeight: 500 }}
+                                >
+                                  {value}
+                                </span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
                     renderPrice={(it) => (
                       <div className="flex items-center space-x-2 ml-4">
                         <span
@@ -356,11 +375,17 @@ export default function CartSidebar({ isOpen, onClose }) {
                             padding: "0 2px",
                           }}
                         >
-                          <FaRupeeSign color="#2B73B8" style={{ display: "inline", marginRight: 4 }} />
+                          <FaRupeeSign
+                            color="#2B73B8"
+                            style={{ display: "inline", marginRight: 4 }}
+                          />
                           {(it.price || 0).toLocaleString()}
                         </span>
                         <span className="text-[10px] sm:text-xs text-gray-400 line-through">
-                          <FaRupeeSign color="#2B73B8" style={{ display: "inline", marginRight: 4 }} />
+                          <FaRupeeSign
+                            color="#2B73B8"
+                            style={{ display: "inline", marginRight: 4 }}
+                          />
                           {(it.originalPrice || 0).toLocaleString()}
                         </span>
                       </div>

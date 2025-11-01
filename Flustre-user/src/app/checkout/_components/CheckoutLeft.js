@@ -45,7 +45,7 @@ export default function CheckoutLeft({
 
       // Static cart functionality - no API integration
       const ensureServerCart = async () => {
-        console.log('Cart sync (static mode)');
+        console.log("Cart sync (static mode)");
         return;
       };
 
@@ -54,13 +54,13 @@ export default function CheckoutLeft({
       // Static order placement - save to localStorage
       const orderData = {
         _id: `ORD${Date.now()}`,
-        products: cartItems.map(item => ({
+        products: cartItems.map((item) => ({
           productId: {
             name: item.name,
-            image: item.image
+            image: item.image,
           },
           quantity: quantities[item.id] || 1,
-          price: item.price * (quantities[item.id] || 1)
+          price: item.price * (quantities[item.id] || 1),
         })),
         totalAmount: total - couponDiscount,
         status: "pending",
@@ -68,15 +68,20 @@ export default function CheckoutLeft({
         paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : "Online",
         subtotal: subtotal,
         discount: discount,
-        couponDiscount: couponDiscount
+        couponDiscount: couponDiscount,
       };
 
       // Save order to localStorage
       try {
         if (typeof window !== "undefined") {
-          const existingOrders = JSON.parse(window.localStorage.getItem("userOrders") || "[]");
+          const existingOrders = JSON.parse(
+            window.localStorage.getItem("userOrders") || "[]"
+          );
           existingOrders.unshift(orderData); // Add new order at the beginning
-          window.localStorage.setItem("userOrders", JSON.stringify(existingOrders));
+          window.localStorage.setItem(
+            "userOrders",
+            JSON.stringify(existingOrders)
+          );
         }
       } catch (error) {
         console.error("Failed to save order:", error);
@@ -111,9 +116,7 @@ export default function CheckoutLeft({
       {/* Items Section */}
       <div className="rounded-lg">
         <div className="flex justify-between items-center p-4 sm:p-5 md:p-6">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Items
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-800">Items</h3>
           <span className="text-sm text-gray-600">
             {cartItems.length} products
           </span>
@@ -163,28 +166,39 @@ export default function CheckoutLeft({
                 <h4 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 mb-1">
                   {item.name}
                 </h4>
-                <div className="text-sm text-gray-600 mb-2">
-                  <span className="mr-4">
-                    Type:{" "}
-                    <span className="text-gray-800 font-medium">
-                      {item.color}
-                    </span>
-                  </span>
-                  <span>
-                    Size:{" "}
-                    <span className="text-gray-800 font-medium">
-                      {item.plug}
-                    </span>
-                  </span>
-                </div>
+                {(item.variantOptions &&
+                  Object.keys(item.variantOptions).length > 0) ||
+                item.variant?.options ||
+                item.variant?.attributes ? (
+                  <div className="text-sm text-gray-600 mb-2">
+                    {Object.entries(
+                      item.variantOptions ||
+                        item.variant?.options ||
+                        item.variant?.attributes ||
+                        {}
+                    ).map(([key, value], idx) => {
+                      const optionLabel =
+                        key.charAt(0).toUpperCase() + key.slice(1);
+                      return (
+                        <span
+                          key={`${key}-${idx}`}
+                          className={idx > 0 ? "ml-4" : ""}
+                        >
+                          {optionLabel}:{" "}
+                          <span className="text-gray-800 font-medium">
+                            {value}
+                          </span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                ) : null}
 
                 {/* Quantity and Price Row */}
                 <div className="flex items-center justify-between">
                   {/* Quantity Selector */}
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs text-gray-600">
-                      Qty :
-                    </span>
+                    <span className="text-xs text-gray-600">Qty :</span>
                     <div className="flex items-center border border-[var(--color-primary)] bg-[var(--color-primary)]/10 rounded">
                       <button
                         onClick={() =>
@@ -227,9 +241,7 @@ export default function CheckoutLeft({
       {/* Order Summary */}
       <div className="rounded-lg">
         <div className="flex items-center justify-between p-4 sm:p-5 md:p-6">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Order Summary
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-800">Order Summary</h3>
           <button
             onClick={() => setOrderSummaryOpen(!orderSummaryOpen)}
             className="p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
@@ -265,33 +277,25 @@ export default function CheckoutLeft({
 
             <div className="border-t border-dashed border-gray-200 pt-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-base text-gray-600">
-                  Total
-                </span>
+                <span className="text-base text-gray-600">Total</span>
                 <span className="text-base font-medium text-gray-800">
                   ₹ {(total || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-base text-gray-600">
-                  Discount
-                </span>
+                <span className="text-base text-gray-600">Discount</span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
                   -₹ {(discount || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-base text-gray-600">
-                  Delivery
-                </span>
+                <span className="text-base text-gray-600">Delivery</span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
                   Free Shipping
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-base text-gray-600">
-                  Coupon Discount
-                </span>
+                <span className="text-base text-gray-600">Coupon Discount</span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
                   -₹ {(couponDiscount || 0).toLocaleString()}
                 </span>
@@ -309,14 +313,14 @@ export default function CheckoutLeft({
           className="w-[80%] text-white py-3 px-4 rounded font-medium transition-colors cursor-pointer"
           style={{ backgroundColor: "var(--color-primary)" }}
           onClick={handleProceedToPay}
-          onMouseOver={(e) => (e.currentTarget.style.background = "var(--color-primary)")}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.background = "var(--color-primary)")
+          }
           onMouseOut={(e) =>
             (e.currentTarget.style.background = "var(--color-primary)")
           }
         >
-          {paymentMethod === "cod"
-            ? "Place Order"
-            : "Proceed to Pay"}
+          {paymentMethod === "cod" ? "Place Order" : "Proceed to Pay"}
         </Button>
       </div>
     </div>

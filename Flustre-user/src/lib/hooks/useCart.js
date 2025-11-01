@@ -35,7 +35,7 @@ const useCart = () => {
         if (index >= 0) {
           const existing = items[index];
           let totalQuantity = (existing.quantity || 1) + (quantity || 1);
-          
+
           // Try to check availability, but don't fail if the check fails
           try {
             const availability = await checkAvailability({
@@ -134,6 +134,8 @@ const useCart = () => {
               it?.variant?.price;
             const originalPrice = it?.price || it?.variant?.price || price;
             const qty = Number(it?.quantity) > 0 ? Number(it.quantity) : 1;
+            // Get variant options from variant object
+            const variantOptions = it?.variant?.options || it?.variant?.attributes || {};
             return {
               id: String(id),
               productId,
@@ -143,6 +145,7 @@ const useCart = () => {
               price,
               originalPrice,
               quantity: qty,
+              variantOptions, // Include variant options
             };
           });
 
@@ -313,6 +316,8 @@ const useCart = () => {
             it?.variant?.price;
           const originalPrice = it?.price || it?.variant?.price || price;
           const qty = Number(it?.quantity) > 0 ? Number(it.quantity) : 1;
+          // Get variant options from variant object
+          const variantOptions = it?.variant?.options || it?.variant?.attributes || {};
           return {
             id: String(id),
             productId,
@@ -322,6 +327,7 @@ const useCart = () => {
             price,
             originalPrice,
             quantity: qty,
+            variantOptions, // Include variant options
           };
         });
 

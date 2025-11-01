@@ -54,8 +54,11 @@ export default function CheckoutPage() {
           byId.set(id, {
             id: it.id,
             name: it.name,
-            color: it.color,
-            plug: it.plug,
+            variantOptions:
+              it.variantOptions ||
+              it.variant?.options ||
+              it.variant?.attributes ||
+              {},
             price: it.price,
             originalPrice: it.originalPrice,
             image: it.image,

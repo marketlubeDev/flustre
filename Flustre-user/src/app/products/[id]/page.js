@@ -175,6 +175,26 @@ export default function ProductDetailPage() {
         product.primaryImage ||
         product.featureImages[0];
 
+      // Get variant options (attributes)
+      // Handle both options and attributes fields
+      let variantOptions =
+        selectedVariantData?.options || selectedVariantData?.attributes || {};
+
+      // HOTFIX: If variant doesn't have options but product has options config, infer from position
+      if (
+        (!variantOptions || Object.keys(variantOptions).length === 0) &&
+        product?.options &&
+        selectedVariant >= 0
+      ) {
+        const inferredOptions = {};
+        product.options.forEach((opt) => {
+          if (opt.values && opt.values[selectedVariant]) {
+            inferredOptions[opt.name] = opt.values[selectedVariant];
+          }
+        });
+        variantOptions = inferredOptions;
+      }
+
       // Add to localStorage cart
       const cartItem = {
         id: variantId ? `${product.id}_${variantId}` : product.id,
@@ -186,6 +206,7 @@ export default function ProductDetailPage() {
         originalPrice,
         quantity: quantity,
         category: product.category,
+        variantOptions: variantOptions, // Store variant options/attributes
       };
 
       // Get existing cart items
