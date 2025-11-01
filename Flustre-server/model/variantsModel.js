@@ -33,7 +33,11 @@ const variantSchema = new Schema(
 );
 
 // Optional unique index to prevent duplicate option combinations per product
-variantSchema.index({ product: 1, options: 1 }, { unique: true });
+// Commented out due to duplicate key errors on updates with Mixed type options
+// variantSchema.index({ product: 1, options: 1 }, { unique: true });
+
+// Use SKU as the unique identifier instead
+variantSchema.index({ sku: 1 }, { unique: true, sparse: true });
 
 const Variant = mongoose.model("Variant", variantSchema);
 module.exports = Variant;

@@ -180,15 +180,30 @@ export default function Addproduct() {
         try {
           const res = await getProductById(productId);
           const prod = res.data;
+
+          console.log("Product data from API:", prod);
+          console.log("Category:", prod.category);
+          console.log("Subcategory:", prod.subcategory);
+          console.log("Extracted category ID:", prod.category?._id || "");
+          console.log(
+            "Extracted subcategory ID:",
+            prod.subcategory?._id || prod.subcategory || ""
+          );
+
           setProductData({
             name: prod.name || "",
             category: prod.category?._id || "",
-            subcategory: prod.subcategory || "",
+            subcategory: prod.subcategory?._id || prod.subcategory || "",
             store: prod.store?._id || "",
             label: prod.label?._id || "",
             activeStatus: prod.activeStatus ?? true,
             priority: prod.priority ?? 0,
             about: prod.about || "",
+            // Product-level pricing fields
+            price: prod.price || "",
+            compareAtPrice: prod.compareAtPrice || "",
+            profit: prod.profit || "",
+            costPerItem: prod.costPerItem || "",
             specifications:
               prod.specifications && prod.specifications.length > 0
                 ? prod.specifications

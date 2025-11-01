@@ -157,14 +157,14 @@ export function useProductForm({
 
       // Send product-level options as JSON string (server expects this format)
       if (productData.options && Array.isArray(productData.options) && productData.options.length > 0) {
-        const validOptions = productData.options.filter(opt => 
-          opt && 
-          typeof opt === "object" && 
-          opt.name && 
-          Array.isArray(opt.values) && 
+        const validOptions = productData.options.filter(opt =>
+          opt &&
+          typeof opt === "object" &&
+          opt.name &&
+          Array.isArray(opt.values) &&
           opt.values.length > 0
         );
-        
+
         if (validOptions.length > 0) {
           formData.append("options", JSON.stringify(validOptions));
         }
@@ -232,11 +232,11 @@ export function useProductForm({
           formData.append(`variants[${variantIndex}][sku]`, variant.sku || "");
           formData.append(
             `variants[${variantIndex}][price]`,
-            variant.mrp || ""
+            variant.offerPrice || ""
           );
           formData.append(
             `variants[${variantIndex}][compareAtPrice]`,
-            variant.offerPrice || ""
+            variant.mrp || ""
           );
           formData.append(
             `variants[${variantIndex}][quantity]`,
