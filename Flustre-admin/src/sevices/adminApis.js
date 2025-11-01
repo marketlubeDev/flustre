@@ -20,3 +20,10 @@ export const adminUtilities = () => {
   return axiosInstance.get("/admin/adminutilities");
 };
 
+// Get monthly sales report
+export const getMonthlySalesReport = (startDate, endDate) => {
+  const params = new URLSearchParams();
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+  return axiosInstance.get(`/admin/monthlyreport?${params.toString()}`);
+};

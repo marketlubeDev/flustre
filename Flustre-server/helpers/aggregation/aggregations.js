@@ -1,6 +1,7 @@
 const categoryModel = require("../../model/categoryModel");
 const orderModel = require("../../model/orderModel");
 const productModel = require("../../model/productModel");
+const { User } = require("../../model/userModel");
 const mongoose = require("mongoose");
 const catchAsync = require("../../utilities/errorHandlings/catchAsync");
 const { ObjectId } = mongoose.Types;
@@ -283,6 +284,10 @@ const getDashBoardDetails = (user, role) => {
       matchCriteria.store = new mongoose.Types.ObjectId(user);
     }
     try {
+      // Calculate date 28 days ago
+      const twentyEightDaysAgo = new Date();
+      twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
+
       // Aggregation for total orders, total deliveries, and total revenue
       const orderStats = await orderModel.aggregate([
         {
@@ -309,6 +314,31 @@ const getDashBoardDetails = (user, role) => {
         },
       ]);
 
+      // Get sales for last 28 days
+      const last28DaysSales = await orderModel.aggregate([
+        {
+          $match: {
+            ...matchCriteria,
+            createdAt: { $gte: twentyEightDaysAgo },
+            status: "delivered",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalSales: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      // Get total customers (users excluding admin and store)
+      const totalCustomers = await User.countDocuments({
+        role: { $in: ["user"] },
+      });
+
+      // Get total visitors (unique users who have placed orders)
+      const totalVisitors = await orderModel.distinct("user", matchCriteria);
+
       // Default values if no orders are found
       const stats =
         orderStats.length > 0
@@ -319,7 +349,11 @@ const getDashBoardDetails = (user, role) => {
               totalRevenue: 0,
             };
 
+      const salesLast28Days =
+        last28DaysSales.length > 0 ? last28DaysSales[0].totalSales : 0;
+
       // Aggregation for top 4 products based on order placements
+      // Orders have a products array, so we need to unwind first
       const topProducts = await orderModel.aggregate([
         {
           $match: {
@@ -327,10 +361,13 @@ const getDashBoardDetails = (user, role) => {
           },
         },
         {
+          $unwind: "$products", // Unwind the products array
+        },
+        {
           $group: {
-            _id: "$product",
-            totalOrdered: { $sum: "$quantity" },
-            orderCount: { $sum: 1 }  // Count number of orders
+            _id: "$products.productId", // Group by productId from the unwound products
+            totalOrdered: { $sum: "$products.quantity" }, // Sum quantity from products array
+            orderCount: { $sum: 1 }, // Count number of orders
           },
         },
         { $sort: { totalOrdered: -1 } }, // Sort in descending order
@@ -392,13 +429,105 @@ const getDashBoardDetails = (user, role) => {
             image: "$displayImage",
             price: "$displayPrice",
             totalOrdered: 1,
-            orderCount: 1
+            orderCount: 1,
           },
         },
       ]);
 
-      // Return results in separate arrays
+      // Calculate previous 28 days for comparison
+      const previous28DaysStart = new Date(twentyEightDaysAgo);
+      previous28DaysStart.setDate(previous28DaysStart.getDate() - 28);
+      const previous28DaysEnd = new Date(twentyEightDaysAgo);
+
+      const previous28DaysSales = await orderModel.aggregate([
+        {
+          $match: {
+            ...matchCriteria,
+            createdAt: {
+              $gte: previous28DaysStart,
+              $lt: previous28DaysEnd,
+            },
+            status: "delivered",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalSales: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      const prevSales =
+        previous28DaysSales.length > 0
+          ? previous28DaysSales[0].totalSales
+          : salesLast28Days;
+
+      // Calculate percentage change
+      const calculatePercentageChange = (current, previous) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return ((current - previous) / previous) * 100;
+      };
+
+      // Get order count for last 28 days and previous 28 days for comparison
+      const last28DaysOrdersCount = await orderModel.countDocuments({
+        ...matchCriteria,
+        createdAt: { $gte: twentyEightDaysAgo },
+      });
+
+      const previous28DaysOrdersCount = await orderModel.countDocuments({
+        ...matchCriteria,
+        createdAt: {
+          $gte: previous28DaysStart,
+          $lt: previous28DaysEnd,
+        },
+      });
+
+      // Get customers count for last 28 days
+      const last28DaysCustomersCount = await orderModel.distinct("user", {
+        ...matchCriteria,
+        createdAt: { $gte: twentyEightDaysAgo },
+      });
+
+      const previous28DaysCustomersCount = await orderModel.distinct("user", {
+        ...matchCriteria,
+        createdAt: {
+          $gte: previous28DaysStart,
+          $lt: previous28DaysEnd,
+        },
+      });
+
+      // Calculate visitors (approximate as unique users who placed orders)
+      const visitorsLast28Days = last28DaysCustomersCount.length;
+      const previousVisitors = previous28DaysCustomersCount.length;
+
+      // Return results with enhanced metrics
       resolve({
+        metrics: {
+          totalSalesLast28Days: salesLast28Days,
+          totalSalesLast28DaysChange: calculatePercentageChange(
+            salesLast28Days,
+            prevSales
+          ),
+          totalOrders: stats.totalOrders,
+          totalOrdersLast28Days: last28DaysOrdersCount,
+          totalOrdersChange: calculatePercentageChange(
+            last28DaysOrdersCount,
+            previous28DaysOrdersCount
+          ),
+          totalCustomers: totalCustomers,
+          totalCustomersLast28Days: visitorsLast28Days,
+          totalCustomersChange: calculatePercentageChange(
+            visitorsLast28Days,
+            previousVisitors
+          ),
+          totalVisitors: totalVisitors.length,
+          totalVisitorsLast28Days: visitorsLast28Days,
+          totalVisitorsChange: calculatePercentageChange(
+            visitorsLast28Days,
+            previousVisitors
+          ),
+        },
         summary: [
           { data: "Total Orders", count: stats.totalOrders },
           { data: "Total Deliveries", count: stats.totalDeliveries },

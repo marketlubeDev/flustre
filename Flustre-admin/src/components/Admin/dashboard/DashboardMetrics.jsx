@@ -1,21 +1,239 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import {
+  adminDashdoard,
+  getMonthlySalesReport,
+} from "../../../sevices/adminApis";
 
 const DashboardMetrics = () => {
+  const [metrics, setMetrics] = useState([
+    {
+      label: "Total sales (last 28 days)",
+      value: "₹0",
+      change: "0%",
+      changeType: "positive",
+      chartData: [],
+    },
+    {
+      label: "Total orders",
+      value: "0",
+      change: "0%",
+      changeType: "positive",
+      chartData: [],
+    },
+    {
+      label: "Total customers",
+      value: "0",
+      change: "0%",
+      changeType: "positive",
+      chartData: [],
+    },
+    {
+      label: "Total visitors",
+      value: "0",
+      change: "0%",
+      changeType: "positive",
+      chartData: [],
+    },
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        // Fetch dashboard data and monthly report for charts (12 months)
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+        const today = new Date();
+
+        const [dashboardRes, monthlyReportRes] = await Promise.all([
+          adminDashdoard(),
+          getMonthlySalesReport(
+            twelveMonthsAgo.toISOString(),
+            today.toISOString()
+          ),
+        ]);
+
+        const dashboardData = dashboardRes?.data || dashboardRes;
+        const monthlyData = monthlyReportRes?.data?.monthlySalesReport || [];
+
+        // Process monthly data for charts (last 12 months)
+        // Always ensure we have data for 12 months (JAN-DEC)
+        const monthNames = [
+          "JAN",
+          "FEB",
+          "MAR",
+          "APR",
+          "MAY",
+          "JUN",
+          "JUL",
+          "AUG",
+          "SEP",
+          "OCT",
+          "NOV",
+          "DEC",
+        ];
+
+        // Create a map of month data
+        const dataMap = new Map();
+        monthlyData.forEach((item) => {
+          const [year, month] = item.month.split("-");
+          const monthIndex = parseInt(month) - 1;
+          const key = `${year}-${month}`;
+          dataMap.set(key, item);
+        });
+
+        // Get current date to determine last 12 months
+        const last12MonthsData = [];
+        const monthLabels = [];
+
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(today);
+          date.setMonth(date.getMonth() - i);
+          const year = date.getFullYear();
+          const month = date.getMonth() + 1;
+          const monthKey = `${year}-${String(month).padStart(2, "0")}`;
+          const monthLabel = monthNames[date.getMonth()];
+
+          monthLabels.push(monthLabel);
+
+          // Get data for this month or use zero
+          const monthData = dataMap.get(monthKey);
+          if (monthData) {
+            last12MonthsData.push(monthData);
+          } else {
+            // Create empty data entry for months without data
+            last12MonthsData.push({
+              month: monthKey,
+              totalRevenueFromDeliveredOrders: 0,
+              totalSalesAmount: 0,
+              totalNumberOfOrders: 0,
+            });
+          }
+        }
+
+        // Extract sales data for chart
+        const salesChartData = last12MonthsData.map(
+          (item) =>
+            item.totalRevenueFromDeliveredOrders || item.totalSalesAmount || 0
+        );
+
+        // Extract orders data for chart
+        const ordersChartData = last12MonthsData.map(
+          (item) => item.totalNumberOfOrders || 0
+        );
+
+        // Format metrics from dashboard data
+        const metricsData = dashboardData.metrics || {};
+
+        // Calculate normalized values for charts (0-100 scale)
+        const normalizeChartData = (data) => {
+          if (!data || data.length === 0) return Array(12).fill(30);
+          const max = Math.max(...data, 1);
+          return data.map((val) => (val / max) * 100);
+        };
+
+        const formattedMetrics = [
+          {
+            label: "Total sales (last 28 days)",
+            value: `₹${(metricsData.totalSalesLast28Days || 0).toLocaleString(
+              "en-IN"
+            )}`,
+            change: `${
+              metricsData.totalSalesLast28DaysChange >= 0 ? "+" : ""
+            }${(metricsData.totalSalesLast28DaysChange || 0).toFixed(1)}%`,
+            changeType:
+              metricsData.totalSalesLast28DaysChange >= 0
+                ? "positive"
+                : "negative",
+            chartData: normalizeChartData(salesChartData),
+            labels: monthLabels,
+          },
+          {
+            label: "Total orders",
+            value: (metricsData.totalOrdersLast28Days || 0).toLocaleString(
+              "en-IN"
+            ),
+            change: `${metricsData.totalOrdersChange >= 0 ? "+" : ""}${(
+              metricsData.totalOrdersChange || 0
+            ).toFixed(1)}%`,
+            changeType:
+              metricsData.totalOrdersChange >= 0 ? "positive" : "negative",
+            chartData: normalizeChartData(ordersChartData),
+            labels: monthLabels,
+          },
+          {
+            label: "Total customers",
+            value: (metricsData.totalCustomers || 0).toLocaleString("en-IN"),
+            change: `${metricsData.totalCustomersChange >= 0 ? "+" : ""}${(
+              metricsData.totalCustomersChange || 0
+            ).toFixed(1)}%`,
+            changeType:
+              metricsData.totalCustomersChange >= 0 ? "positive" : "negative",
+            chartData: normalizeChartData(ordersChartData),
+            labels: monthLabels,
+          },
+          {
+            label: "Total visitors",
+            value: (metricsData.totalVisitors || 0).toLocaleString("en-IN"),
+            change: `${metricsData.totalVisitorsChange >= 0 ? "+" : ""}${(
+              metricsData.totalVisitorsChange || 0
+            ).toFixed(1)}%`,
+            changeType:
+              metricsData.totalVisitorsChange >= 0 ? "positive" : "negative",
+            chartData: normalizeChartData(ordersChartData),
+            labels: monthLabels,
+          },
+        ];
+
+        setMetrics(formattedMetrics);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   // Mini chart component
-  const MiniChart = () => {
-    const labels = ["OCT", "NOV", "DEC", "JAN", "FEB", "MAR"];
-    const dataPoints = labels.length;
+  const MiniChart = ({ chartData, labels = [] }) => {
+    const defaultLabels = [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+    ];
+    // Always use all 12 months (JAN-DEC) or provided labels
+    const chartLabels = labels.length >= 12 ? labels : defaultLabels;
+    const dataPoints = chartLabels.length; // Always 12
 
     const width = 180;
     const chartHeight = 48;
     const labelAreaHeight = 14;
     const totalHeight = chartHeight + labelAreaHeight;
-    const padding = 6;
+    const padding = 4; // Reduced padding to fit all 12 labels
 
-    // Generate gently increasing values to resemble trend
-    const values = Array.from({ length: dataPoints }).map(
-      (_, idx) => 30 + idx * 8 + Math.random() * 6
-    );
+    // Ensure we have 12 data points, pad if necessary
+    let values;
+    if (chartData.length >= 12) {
+      values = chartData.slice(0, 12);
+    } else if (chartData.length > 0) {
+      // Pad with zeros or last value if data is shorter
+      values = [...chartData, ...Array(12 - chartData.length).fill(0)];
+    } else {
+      // Generate default values for all 12 months
+      values = Array.from({ length: 12 }).map((_, idx) => 30 + idx * 2);
+    }
 
     const xStep = (width - padding * 2) / (dataPoints - 1);
     const yScale = (val) => {
@@ -52,7 +270,7 @@ const DashboardMetrics = () => {
           />
 
           {/* optional vertical guides */}
-          {labels.map((_, i) => (
+          {chartLabels.map((_, i) => (
             <line
               key={`guide-${i}`}
               x1={padding + i * xStep}
@@ -77,13 +295,13 @@ const DashboardMetrics = () => {
           />
 
           {/* month labels */}
-          {labels.map((label, i) => (
+          {chartLabels.map((label, i) => (
             <text
-              key={`label-${label}`}
+              key={`label-${label}-${i}`}
               x={padding + i * xStep}
-              y={totalHeight - 2}
+              y={totalHeight - 1}
               textAnchor="middle"
-              fontSize="8"
+              fontSize="6"
               fill="#2B73B8"
               opacity="0.6"
             >
@@ -94,37 +312,6 @@ const DashboardMetrics = () => {
       </div>
     );
   };
-
-  const metrics = [
-    {
-      label: "Total sales (last 28 days)",
-      value: "₹4,25,000",
-      change: "+2%",
-      changeType: "positive",
-      chartColor: "bg-blue-200",
-    },
-    {
-      label: "Total orders",
-      value: "₹1,10,000",
-      change: "-3%",
-      changeType: "negative",
-      chartColor: "bg-red-200",
-    },
-    {
-      label: "Total customers",
-      value: "1,260",
-      change: "+7%",
-      changeType: "positive",
-      chartColor: "bg-blue-200",
-    },
-    {
-      label: "Total visitors",
-      value: "22,500",
-      change: "+12%",
-      changeType: "positive",
-      chartColor: "bg-red-200",
-    },
-  ];
 
   return (
     <div className="p-6" style={{ backgroundColor: "#ffffff" }}>
@@ -157,10 +344,13 @@ const DashboardMetrics = () => {
                 {metric.change}
               </span>
             </div>
-            <MiniChart />
+            <MiniChart chartData={metric.chartData} labels={metric.labels} />
           </div>
         ))}
       </div>
+      {loading && (
+        <div className="text-center py-4 text-gray-500">Loading metrics...</div>
+      )}
     </div>
   );
 };
