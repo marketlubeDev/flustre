@@ -10,7 +10,24 @@ export default function VariantOptions({
   }
 
   const variants = product.variants;
-  const current = variants[selectedVariant] || null;
+  let current = variants[selectedVariant] || null;
+
+  // HOTFIX: If variants don't have options field, infer from position
+  // This handles legacy products where options weren't saved to variants
+  if (
+    current &&
+    !current.options &&
+    product?.options &&
+    product.options.length > 0
+  ) {
+    const inferredOptions = {};
+    product.options.forEach((opt) => {
+      if (opt.values && opt.values[selectedVariant]) {
+        inferredOptions[opt.name] = opt.values[selectedVariant];
+      }
+    });
+    current = { ...current, options: inferredOptions };
+  }
 
   const matchesOptions = (variant, desired) => {
     if (!variant?.options) return false;
@@ -41,14 +58,26 @@ export default function VariantOptions({
       const desired = { ...(current?.options || {}) };
       desired[optionName] = value;
 
-      let idx = variants.findIndex((v) => matchesOptions(v, desired));
-      if (idx < 0) {
-        idx = variants.findIndex(
-          (v) => v?.options && v.options[optionName] === value
-        );
+      // Try to find variant with matching options
+      let idx = variants.findIndex((v) => {
+        // If variant has options field, use exact match
+        if (v?.options) {
+          return matchesOptions(v, desired);
+        }
+        return false;
+      });
+
+      // HOTFIX: If no match and variants don't have options, find by position in values array
+      if (idx < 0 && product?.options) {
+        const optionConfig = product.options.find((o) => o.name === optionName);
+        if (optionConfig && optionConfig.values) {
+          idx = optionConfig.values.indexOf(value);
+        }
       }
 
-      if (idx >= 0) setSelectedVariant(idx);
+      if (idx >= 0 && idx < variants.length) {
+        setSelectedVariant(idx);
+      }
     };
 
     return (
@@ -68,7 +97,7 @@ export default function VariantOptions({
               <button
                 key={`${optionName}-${value}-${idx}`}
                 onClick={() => onSelectValue(value)}
-                className={`px-4 py-2 rounded-md text-xs sm:text-sm font-medium border cursor-pointer ${
+                className={`px-4 py-2 rounded-md text-xs sm:text-sm font-medium border cursor-pointer transition-all ${
                   isActive ? "border-2" : "border"
                 }`}
                 style={{

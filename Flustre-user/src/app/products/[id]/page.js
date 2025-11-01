@@ -36,7 +36,6 @@ export default function ProductDetailPage() {
 
   // Fetch product details from API
   const { product: apiProduct, loading, error } = useProductDetails(productId);
-  console.log(apiProduct, "apiProducsdsdsdsdt");
   // Build a product object compatible with existing UI components
   const firstVariant =
     Array.isArray(apiProduct?.variants) && apiProduct.variants.length > 0
@@ -102,6 +101,7 @@ export default function ProductDetailPage() {
         returnPolicyText: apiProduct.returnPolicyText,
         profit: apiProduct.profit,
         costPerItem: apiProduct.costPerItem,
+        options: apiProduct.options || [],
       }
     : null;
 
@@ -158,11 +158,22 @@ export default function ProductDetailPage() {
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Get the selected variant ID if available
-      const variantId =
+      // Get the selected variant if available
+      const selectedVariantData =
         product?.variants && product.variants.length > 0
-          ? product.variants[selectedVariant]?._id
+          ? product.variants[selectedVariant]
           : null;
+
+      const variantId = selectedVariantData?._id;
+
+      // Use variant-specific price and image if available
+      const price = selectedVariantData?.price || product.price;
+      const originalPrice =
+        selectedVariantData?.compareAtPrice || product.originalPrice;
+      const image =
+        (selectedVariantData?.images && selectedVariantData.images[0]) ||
+        product.primaryImage ||
+        product.featureImages[0];
 
       // Add to localStorage cart
       const cartItem = {
@@ -170,9 +181,9 @@ export default function ProductDetailPage() {
         productId: product.id,
         variantId,
         name: product.name,
-        image: product.primaryImage || product.featureImages[0],
-        price: product.price,
-        originalPrice: product.originalPrice,
+        image,
+        price,
+        originalPrice,
         quantity: quantity,
         category: product.category,
       };
