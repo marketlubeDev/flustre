@@ -32,57 +32,148 @@ export default function CheckoutPage() {
   }, [router]);
 
   useEffect(() => {
-    try {
-      const rawCart = localStorage.getItem("cartItems");
-      const rawCheckout = localStorage.getItem("checkout_items");
-      const cart = rawCart ? JSON.parse(rawCart) : [];
-      const checkout = rawCheckout ? JSON.parse(rawCheckout) : [];
+    const loadCheckoutData = () => {
+      try {
+        const rawCart = localStorage.getItem("cartItems");
+        const rawCheckout = localStorage.getItem("checkout_items");
 
-      // Merge by id, sum quantities
-      const byId = new Map();
-      const pushItem = (it) => {
-        if (!it) return;
-        const id = it.id;
-        const existing = byId.get(id);
-        const qty = Number(it.quantity) > 0 ? Number(it.quantity) : 1;
-        if (existing) {
-          byId.set(id, {
-            ...existing,
-            quantity: (existing.quantity || 1) + qty,
-          });
-        } else {
-          byId.set(id, {
-            id: it.id,
-            productId: it.productId || (it.id && it.id.toString().split('_')[0]),
-            variantId: it.variantId || (it.id && it.id.includes('_') ? it.id.toString().split('_')[1] : null),
-            name: it.name,
-            variantOptions:
-              it.variantOptions ||
-              it.variant?.options ||
-              it.variant?.attributes ||
-              {},
-            price: it.price,
-            originalPrice: it.originalPrice,
-            image: it.image,
-            quantity: qty,
-          });
+        console.log("Checkout page - Raw cart:", rawCart);
+        console.log("Checkout page - Raw checkout:", rawCheckout);
+
+        let cart = [];
+        let checkout = [];
+
+        // Parse cart items
+        if (rawCart) {
+          try {
+            cart = JSON.parse(rawCart);
+            if (!Array.isArray(cart)) cart = [];
+          } catch (e) {
+            console.error("Failed to parse cartItems:", e);
+            cart = [];
+          }
         }
+
+        // Parse checkout items
+        if (rawCheckout) {
+          try {
+            checkout = JSON.parse(rawCheckout);
+            if (!Array.isArray(checkout)) checkout = [];
+            console.log("Checkout page - Parsed checkout items:", checkout);
+          } catch (e) {
+            console.error("Failed to parse checkout_items:", e);
+            checkout = [];
+          }
+        }
+
+        // Merge by id, sum quantities
+        const byId = new Map();
+        const pushItem = (it) => {
+          if (!it) return;
+
+          // Ensure we have required fields
+          if (!it.id && !it.productId) {
+            console.warn("Item missing id and productId:", it);
+            return;
+          }
+
+          const id = it.id || it.productId;
+          const existing = byId.get(id);
+          const qty = Number(it.quantity) > 0 ? Number(it.quantity) : 1;
+
+          if (existing) {
+            byId.set(id, {
+              ...existing,
+              quantity: (existing.quantity || 1) + qty,
+            });
+          } else {
+            // Extract productId and variantId from id if not explicitly provided
+            let productId = it.productId;
+            let variantId = it.variantId;
+
+            if (!productId && id) {
+              const idParts = id.toString().split('_');
+              productId = idParts[0];
+              if (idParts.length > 1) {
+                variantId = idParts[1];
+              }
+            }
+
+            byId.set(id, {
+              id: id,
+              productId: productId,
+              variantId: variantId || null,
+              name: it.name || "Product",
+              variantOptions:
+                it.variantOptions ||
+                it.variant?.options ||
+                it.variant?.attributes ||
+                {},
+              price: Number(it.price) || 0,
+              originalPrice: Number(it.originalPrice) || Number(it.price) || 0,
+              image: it.image || "/banner1.png",
+              quantity: qty,
+            });
+          }
+        };
+
+        // Process cart items
+        (Array.isArray(cart) ? cart : []).forEach(pushItem);
+
+        // Process checkout items (these take priority)
+        (Array.isArray(checkout) ? checkout : []).forEach(pushItem);
+
+        const merged = Array.from(byId.values());
+
+        // Debug log
+        console.log("Checkout page - Merged items:", merged);
+
+        setCartItems(merged);
+
+        const initialQty = {};
+        merged.forEach((it) => {
+          initialQty[it.id] = it.quantity || 1;
+        });
+        setQuantities(initialQty);
+
+        // Clear the one-time buy-now payload after processing
+        // This prevents duplicate items on refresh
+        // Use setTimeout to ensure state is set before clearing
+        if (checkout.length > 0) {
+          setTimeout(() => {
+            localStorage.removeItem("checkout_items");
+          }, 500);
+        }
+      } catch (error) {
+        console.error("Error loading checkout items:", error);
+        setCartItems([]);
+        setQuantities({});
+      }
+    };
+
+    // Load data immediately
+    loadCheckoutData();
+
+    // Also listen for storage events in case data is added after page load
+    const handleStorageChange = (e) => {
+      if (e.key === "checkout_items") {
+        console.log("Storage change detected for checkout_items");
+        loadCheckoutData();
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+      // Also check again after a short delay in case of race conditions
+      const timeout = setTimeout(() => {
+        loadCheckoutData();
+      }, 200);
+
+      return () => {
+        window.removeEventListener("storage", handleStorageChange);
+        clearTimeout(timeout);
       };
-      (Array.isArray(cart) ? cart : []).forEach(pushItem);
-      (Array.isArray(checkout) ? checkout : []).forEach(pushItem);
-
-      const merged = Array.from(byId.values());
-      setCartItems(merged);
-
-      const initialQty = {};
-      merged.forEach((it) => {
-        initialQty[it.id] = it.quantity || 1;
-      });
-      setQuantities(initialQty);
-
-      // Optional: clear the one-time buy-now payload so refresh doesn't duplicate
-      localStorage.removeItem("checkout_items");
-    } catch {}
+    }
   }, []);
 
   const updateQuantity = (itemId, newQuantity) => {

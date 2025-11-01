@@ -250,34 +250,117 @@ export default function ProductDetailPage() {
   const buyNow = () => {
     if (!mounted) return; // Don't allow buy now operations during SSR
 
+    // Check authentication first
+    const isAuthenticated = () => {
+      if (typeof window === "undefined") return false;
+      const token =
+        window.localStorage?.getItem("token") ||
+        window.localStorage?.getItem("userToken");
+      return !!token;
+    };
+
+    if (!isAuthenticated()) {
+      // Store the intended checkout URL for redirect after login
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("intendedCheckoutUrl", "/checkout");
+        window.localStorage.setItem("intendedProductId", productId);
+      }
+      router.push("/login");
+      return;
+    }
+
     // Get the selected variant if available
     const variant = product?.variants?.[selectedVariant];
-    const variantOptions = variant?.options || {};
+    const variantOptions = variant?.options || variant?.attributes || {};
 
-    // Static authentication check - always redirect to checkout for demo
     try {
+      // Ensure product and variant data are available
+      if (!product) {
+        console.error("Product data not available");
+        alert("Product information is not loaded. Please try again.");
+        return;
+      }
+
+      // Create checkout item with proper format
+      // Use the normalized product ID (id from mappedFromApi)
+      const itemProductId = product?.id || product?._id || productId;
+
+      // Get variant ID - check both the normalized structure and raw API structure
+      const rawVariant = apiProduct?.variants?.[selectedVariant];
+      const itemVariantId = variant?._id || rawVariant?._id || variant?.id || rawVariant?.id || null;
+
+      // Create ID for cart item (productId_variantId or just productId)
+      const itemId = itemVariantId ? `${itemProductId}_${itemVariantId}` : itemProductId;
+
+      // Get price - prefer variant price, then product price
+      const itemPrice =
+        rawVariant?.price ||
+        variant?.price ||
+        product?.price ||
+        0;
+
+      // Get original price - prefer variant compareAtPrice, then product originalPrice
+      const itemOriginalPrice =
+        rawVariant?.compareAtPrice ||
+        variant?.compareAtPrice ||
+        product?.originalPrice ||
+        itemPrice ||
+        0;
+
+      // Get image - try multiple sources
+      const itemImage =
+        variant?.images?.[0] ||
+        rawVariant?.images?.[0] ||
+        product?.primaryImage ||
+        product?.images?.[0] ||
+        (product?.featureImages && product?.featureImages[0]) ||
+        "/banner1.png";
+
       const checkoutItems = [
         {
-          id: product?.id,
-          name: product?.name,
-          color: product?.category,
-          variant: variantOptions,
-          price: variant?.price || product?.price,
-          originalPrice: variant?.compareAtPrice || product?.originalPrice,
-          image:
-            product?.primaryImage ||
-            (product?.featureImages && product?.featureImages[0]) ||
-            "/banner1.png",
-          quantity,
+          id: itemId,
+          productId: itemProductId,
+          variantId: itemVariantId,
+          name: product?.name || "Product",
+          variantOptions: variantOptions,
+          price: itemPrice,
+          originalPrice: itemOriginalPrice,
+          image: itemImage,
+          quantity: quantity || 1,
         },
       ];
+
+      // Debug log
+      console.log("Buy Now - Checkout items:", checkoutItems);
+
       if (typeof window !== "undefined") {
+        // Store checkout items in localStorage
         localStorage.setItem("checkout_items", JSON.stringify(checkoutItems));
+
+        // Verify it was stored
+        const stored = localStorage.getItem("checkout_items");
+        console.log("Buy Now - Stored in localStorage:", stored);
+
+        // Parse to verify it's valid JSON
+        try {
+          const parsed = JSON.parse(stored);
+          console.log("Buy Now - Parsed checkout items:", parsed);
+        } catch (e) {
+          console.error("Buy Now - Failed to parse stored items:", e);
+        }
+
+        // Use window.location.href to ensure full page navigation
+        // This ensures localStorage is fully written before page loads
+        setTimeout(() => {
+          window.location.href = "/checkout";
+        }, 100);
+      } else {
+        // Fallback to router.push if window is not available
+        router.push("/checkout");
       }
-      alert("Redirecting to checkout...");
-      // router.push("/checkout"); // Uncomment if you have a checkout page
     } catch (err) {
       console.error("Error preparing checkout:", err);
+      alert("Failed to proceed to checkout. Please try again.");
     }
   };
 
