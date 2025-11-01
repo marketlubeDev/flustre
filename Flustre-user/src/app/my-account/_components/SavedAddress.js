@@ -1,29 +1,84 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
 import Button from "@/app/_components/common/Button";
-// import {
-//   useCurrentUser,
-//   useDeleteUserAddress,
-//   useUpdateCurrentUser,
-// } from "@/lib/hooks/useCurrentUser"; // Removed API integration
+import { toast } from "sonner";
+import {
+  useCurrentUser,
+  useDeleteUserAddress,
+  useUpdateCurrentUser,
+} from "@/lib/hooks/useCurrentUser";
+import { setUser } from "@/features/user/userSlice";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function SavedAddress() {
   const router = useRouter();
-  // Static data - no API integration
-  const user = null;
-  const isLoading = false;
-  const isError = false;
-  const deleteAddress = { mutate: () => {}, isLoading: false };
-  const updateUser = { mutate: () => {}, isLoading: false };
-  const savedAddresses = [];
+  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
+  // State declarations (needed before hooks that reference them)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add"); // 'add' | 'edit'
   const [editingId, setEditingId] = useState(null);
   const [currentAddressId, setCurrentAddressId] = useState(null);
+
+  // Use ref to track current modal mode for callback closure
+  const modalModeRef = useRef(modalMode);
+  useEffect(() => {
+    modalModeRef.current = modalMode;
+  }, [modalMode]);
+
+  // API integration
+  const { data: user, isLoading, isError } = useCurrentUser();
+  const deleteAddress = useDeleteUserAddress({
+    onSuccess: async (updatedUser) => {
+      const userObj =
+        updatedUser?.user || updatedUser?.content?.user || updatedUser;
+      if (userObj) {
+        dispatch(setUser(userObj));
+        // Ensure cache is updated with correct structure
+        queryClient.setQueryData(["current-user"], userObj);
+      }
+      // Force immediate refetch to ensure UI updates immediately (bypasses staleTime)
+      await queryClient.refetchQueries({ queryKey: ["current-user"] });
+      toast.success("Address deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to delete address");
+    },
+  });
+  const updateUser = useUpdateCurrentUser({
+    onSuccess: async (data) => {
+      // The API returns the user object directly, same format fetchCurrentUser expects
+      const updatedUser = data?.user || data?.content?.user || data;
+      if (updatedUser) {
+        dispatch(setUser(updatedUser));
+        // Ensure cache is updated with correct structure
+        queryClient.setQueryData(["current-user"], updatedUser);
+      }
+      // Force immediate refetch to ensure UI updates immediately (bypasses staleTime)
+      await queryClient.refetchQueries({ queryKey: ["current-user"] });
+      const mode = modalModeRef.current;
+      toast.success(
+        mode === "add"
+          ? "Address added successfully"
+          : "Address updated successfully"
+      );
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to save address");
+    },
+  });
+
+  const savedAddresses = useMemo(() => {
+    if (!user) return [];
+    const userObj = user?.user || user?.content?.user || user;
+    return Array.isArray(userObj?.address) ? userObj.address : [];
+  }, [user]);
   const [form, setForm] = useState({
     fullName: "",
     phoneNumber: "",
@@ -57,7 +112,7 @@ export default function SavedAddress() {
     } else {
       document.body.style.overflow = "unset";
     }
-    
+
     // Cleanup function to restore scrolling when component unmounts
     return () => {
       document.body.style.overflow = "unset";
@@ -135,7 +190,7 @@ export default function SavedAddress() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (updateUser.isLoading) return;
+    if (updateUser.isLoading || deleteAddress.isLoading) return;
     const trimmedPhone = (form.phoneNumber || "").trim();
     const phoneOk = /^\+?[0-9]{7,15}$/.test(trimmedPhone);
     if (!phoneOk) {
@@ -143,19 +198,17 @@ export default function SavedAddress() {
       return;
     }
     setPhoneError("");
+
+    const addressPayload = { ...form, phoneNumber: trimmedPhone };
+
     if (modalMode === "add") {
-      updateUser.mutate(
-        { address: { ...form, phoneNumber: trimmedPhone } },
-        { onSuccess: () => setIsModalOpen(false) }
-      );
+      updateUser.mutate({ address: addressPayload });
     } else if (modalMode === "edit") {
       if (!editingId) return;
+      // Update address: delete old and add new
       deleteAddress.mutate(editingId, {
         onSuccess: () => {
-          updateUser.mutate(
-            { address: { ...form, phoneNumber: trimmedPhone } },
-            { onSuccess: () => setIsModalOpen(false) }
-          );
+          updateUser.mutate({ address: addressPayload });
         },
       });
     }
@@ -256,9 +309,7 @@ export default function SavedAddress() {
                     onClick={(e) => handleDeleteClick(e, address._id)}
                     className="text-red-600 hover:text-red-700 text-xs sm:text-sm md:text-base cursor-pointer px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 transition-colors"
                   >
-                    {deleteAddress.isLoading
-                      ? "Deleting..."
-                      : "Delete"}
+                    {deleteAddress.isLoading ? "Deleting..." : "Delete"}
                   </Link>
                 </div>
               </div>
@@ -298,7 +349,10 @@ export default function SavedAddress() {
                 </svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="px-3 sm:px-4 py-2 sm:py-4 space-y-2 sm:space-y-3">
+            <form
+              onSubmit={handleSubmit}
+              className="px-3 sm:px-4 py-2 sm:py-4 space-y-2 sm:space-y-3"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div>
                   <label className="block text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">

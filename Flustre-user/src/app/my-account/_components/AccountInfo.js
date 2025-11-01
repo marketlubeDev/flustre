@@ -5,10 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Button from "@/app/_components/common/Button";
 import { toast } from "sonner";
-// import {
-//   useCurrentUser,
-//   useUpdateCurrentUser,
-// } from "@/lib/hooks/useCurrentUser"; // Removed API integration
+import {
+  useCurrentUser,
+  useUpdateCurrentUser,
+} from "@/lib/hooks/useCurrentUser";
 import { setUser } from "@/features/user/userSlice";
 
 export default function AccountInfo() {
@@ -21,30 +21,22 @@ export default function AccountInfo() {
   });
   const userFromStore = useSelector((state) => state.user?.user);
   const dispatch = useDispatch();
-  
-  // Static data - no API integration
-  const queriedUser = null;
-  const isLoading = false;
-  const isError = false;
-  
-  // Mock mutation object for demo
-  const updateUserMutation = {
-    isLoading: false,
-    mutate: (values) => {
-      // Simulate saving - update local state and localStorage
-      const updatedUser = { ...userData, ...values };
+
+  // API integration
+  const { data: queriedUser, isLoading, isError } = useCurrentUser();
+  const updateUserMutation = useUpdateCurrentUser({
+    onSuccess: (data) => {
+      const updatedUser = data?.user || data?.content?.user || data;
       dispatch(setUser(updatedUser));
       setLocalUser(updatedUser);
-      
-      // Update localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      }
-      
       setIsEditing(false);
       toast.success("Profile updated successfully");
     },
-  };
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to update profile");
+    },
+  });
+
   const userData = useMemo(() => {
     const userCandidate = localUser || queriedUser || userFromStore;
     if (userCandidate) return userCandidate;
@@ -94,15 +86,30 @@ export default function AccountInfo() {
               onClick={() => setIsEditing(false)}
               className="px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer text-xs sm:text-sm md:text-base"
               style={{ transition: "color 0.2s" }}
-              onMouseOver={e => e.currentTarget.style.color = "#777"}
-              onMouseOut={e => e.currentTarget.style.color = ""}
+              onMouseOver={(e) => (e.currentTarget.style.color = "#777")}
+              onMouseOut={(e) => (e.currentTarget.style.color = "")}
             >
               Cancel
             </Button>
             <Button
               variant="primary"
               size="large"
-              onClick={() => updateUserMutation.mutate(formValues)}
+              onClick={() => {
+                // Validate phone number if provided
+                if (
+                  formValues.phonenumber &&
+                  !/^\+?[0-9]{7,15}$/.test(formValues.phonenumber.trim())
+                ) {
+                  toast.error(
+                    "Please enter a valid phone number (7-15 digits, optionally starting with +)"
+                  );
+                  return;
+                }
+                updateUserMutation.mutate({
+                  username: formValues.username.trim(),
+                  phonenumber: formValues.phonenumber.trim() || undefined,
+                });
+              }}
               className="px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 bg-[var(--color-primary)] text-white rounded-md transition-colors cursor-pointer text-xs sm:text-sm md:text-base disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
               style={{
                 backgroundColor: "var(--color-primary)",
@@ -272,23 +279,25 @@ export default function AccountInfo() {
           onClick={handleLogout}
           className="px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 bg-transparent border border-[var(--color-primary)] text-[var(--color-primary)] rounded-md hover:bg-[var(--color-primary)]/10 transition-colors cursor-pointer text-xs sm:text-sm md:text-base"
           style={{
-            '--tw-text-opacity': '1',
-            color: '#2B73B8',
+            "--tw-text-opacity": "1",
+            color: "#2B73B8",
           }}
         >
-          <span style={{
-            color: '#2B73B8',
-            transition: 'color 0.2s',
-            display: "inline-block"
-          }}
+          <span
+            style={{
+              color: "#2B73B8",
+              transition: "color 0.2s",
+              display: "inline-block",
+            }}
             className="group-[.hover]:text-[#2B73B8]"
           >
             Logout
           </span>
         </Button>
         <style jsx>{`
-          button:hover, button:focus {
-            color: #2B73B8 !important;
+          button:hover,
+          button:focus {
+            color: #2b73b8 !important;
           }
         `}</style>
       </div>
