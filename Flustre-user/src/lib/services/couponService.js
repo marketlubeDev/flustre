@@ -12,8 +12,11 @@ export async function searchCoupons(query) {
   return res.data?.data?.coupons || [];
 }
 
-export async function applyCouponById(couponId) {
-  const res = await axiosInstance.post("/coupon/apply", { couponId });
+export async function applyCouponById(couponId, cartItems = null) {
+  const res = await axiosInstance.post("/coupon/apply", {
+    couponId,
+    cartItems // Include cart items for non-logged-in users
+  });
   return res.data;
 }
 

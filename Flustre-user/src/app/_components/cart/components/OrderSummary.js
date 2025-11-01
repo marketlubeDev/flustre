@@ -117,32 +117,6 @@ export default function OrderSummary({
                   letterSpacing: "-0.32px",
                 }}
               >
-                {labels.total}
-              </span>
-              <span
-                className="text-[14px] sm:text-[16px]"
-                style={{
-                  color: "#2B73B8",
-                  fontStyle: "normal",
-                  fontWeight: 500,
-                  lineHeight: "normal",
-                  letterSpacing: "-0.32px",
-                }}
-              >
-                ₹ {total.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between w-full">
-              <span
-                className="text-[14px] sm:text-[16px]"
-                style={{
-                  color: "rgba(51, 51, 51, 0.70)",
-                  fontStyle: "normal",
-                  fontWeight: 500,
-                  lineHeight: "normal",
-                  letterSpacing: "-0.32px",
-                }}
-              >
                 {labels.discount}
               </span>
               <span
@@ -156,6 +130,32 @@ export default function OrderSummary({
                 }}
               >
                 -₹ {discount.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between w-full">
+              <span
+                className="text-[14px] sm:text-[16px]"
+                style={{
+                  color: "rgba(51, 51, 51, 0.70)",
+                  fontStyle: "normal",
+                  fontWeight: 500,
+                  lineHeight: "normal",
+                  letterSpacing: "-0.32px",
+                }}
+              >
+                {labels.couponDiscount}
+              </span>
+              <span
+                className="text-[14px] sm:text-[16px]"
+                style={{
+                  color: "#2B73B8",
+                  fontStyle: "normal",
+                  fontWeight: 500,
+                  lineHeight: "normal",
+                  letterSpacing: "-0.32px",
+                }}
+              >
+                -₹ {couponDiscount.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between w-full">
@@ -184,30 +184,30 @@ export default function OrderSummary({
                 {labels.freeShipping}
               </span>
             </div>
-            <div className="flex justify-between w-full">
+            <div className="flex justify-between w-full pt-2 border-t border-dashed border-gray-200">
               <span
                 className="text-[14px] sm:text-[16px]"
                 style={{
-                  color: "rgba(51, 51, 51, 0.70)",
+                  color: "rgba(51, 51, 51, 1)",
                   fontStyle: "normal",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   lineHeight: "normal",
                   letterSpacing: "-0.32px",
                 }}
               >
-                {labels.couponDiscount}
+                {labels.total}
               </span>
               <span
                 className="text-[14px] sm:text-[16px]"
                 style={{
                   color: "#2B73B8",
                   fontStyle: "normal",
-                  fontWeight: 500,
+                  fontWeight: 700,
                   lineHeight: "normal",
                   letterSpacing: "-0.32px",
                 }}
               >
-                -₹ {couponDiscount.toLocaleString()}
+                ₹ {total.toLocaleString()}
               </span>
             </div>
           </div>

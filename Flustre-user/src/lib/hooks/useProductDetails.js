@@ -42,6 +42,8 @@ export default function useProductDetails(productId) {
           specifications: item?.specifications || [],
           featuresSections: item?.featuresSections || [],
           category: item?.category?.name || item?.category || "",
+          categoryObject: item?.category || null, // Preserve raw category object for coupon filtering
+          subcategoryObject: item?.subcategory || null, // Preserve raw subcategory object for coupon filtering
           label: item?.label?.name || item?.label || "",
           ratingStats: item?.ratingStats || null,
           variants: item?.variants || [],

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { FaHeart } from "react-icons/fa6";
 import { CiHeart } from "react-icons/ci";
@@ -19,6 +19,7 @@ import ProductInfoSection from "./_components/ProductInfoSection";
 import DynamicFeaturesSection from "./_components/DynamicFeaturesSection";
 import CartSidebar from "../../_components/cart/CartSidebar";
 import useProductDetails from "@/lib/hooks/useProductDetails";
+import { useCoupons } from "@/lib/hooks/useCoupons";
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -36,6 +37,9 @@ export default function ProductDetailPage() {
 
   // Fetch product details from API
   const { product: apiProduct, loading, error } = useProductDetails(productId);
+
+  // Fetch all coupons from API
+  const { data: allCoupons = [], isLoading: couponsLoading } = useCoupons();
   // Build a product object compatible with existing UI components
   const firstVariant =
     Array.isArray(apiProduct?.variants) && apiProduct.variants.length > 0
@@ -102,6 +106,9 @@ export default function ProductDetailPage() {
         profit: apiProduct.profit,
         costPerItem: apiProduct.costPerItem,
         options: apiProduct.options || [],
+        // Preserve category and subcategory IDs for coupon filtering
+        categoryId: apiProduct.categoryObject?._id || apiProduct.categoryObject?.id || null,
+        subcategoryId: apiProduct.subcategoryObject?._id || apiProduct.subcategoryObject?.id || null,
       }
     : null;
 
@@ -129,20 +136,82 @@ export default function ProductDetailPage() {
   const isInWishlist = (id) => {
     return wishlistItems.some((item) => item.id === id);
   };
-  const coupons = [
-    {
-      code: "FLAT20",
-      description: "Get 20% discount on products above Rs 1,999",
-    },
-    {
-      code: "SAVE100",
-      description: "Flat Rs 100 OFF on orders above Rs 999",
-    },
-    {
-      code: "GET250",
-      description: "Rs 250 OFF when you spend Rs 2,499 or more",
-    },
-  ];
+
+  // Filter coupons based on applyTo type and product eligibility
+  const coupons = useMemo(() => {
+    if (!product || !Array.isArray(allCoupons) || allCoupons.length === 0) {
+      return [];
+    }
+
+    // Get current product price (considering variant and quantity)
+    const currentPrice =
+      (product?.variants && product.variants.length > 0 && selectedVariant !== undefined)
+        ? product.variants[selectedVariant]?.price || product.price || 0
+        : product.price || 0;
+    const totalPrice = currentPrice * quantity;
+
+    // Get product IDs for comparison
+    const productIdStr = String(product.id || productId);
+    const categoryIdStr = product.categoryId ? String(product.categoryId) : null;
+    const subcategoryIdStr = product.subcategoryId ? String(product.subcategoryId) : null;
+
+    return allCoupons.filter((coupon) => {
+      if (!coupon || !coupon.isActive) return false;
+
+      // Check expiry date
+      const expiryDate = new Date(coupon.expiryDate);
+      if (expiryDate.getTime() <= Date.now()) return false;
+
+      // Check usage limit
+      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) return false;
+
+      // Filter based on applyTo type
+      switch (coupon.applyTo) {
+        case "product":
+          // Check if product ID is in the coupon's productIds array
+          if (Array.isArray(coupon.productIds) && coupon.productIds.length > 0) {
+            return coupon.productIds.some(
+              (pid) => String(pid) === productIdStr
+            );
+          }
+          return false;
+
+        case "category":
+          // Check if product's category matches coupon's categoryId
+          if (categoryIdStr && coupon.categoryId) {
+            return String(coupon.categoryId) === categoryIdStr;
+          }
+          return false;
+
+        case "subcategory":
+          // Check if product's subcategory matches coupon's categoryId
+          // Note: For subcategory type, coupon uses categoryId field
+          if (subcategoryIdStr && coupon.categoryId) {
+            return String(coupon.categoryId) === subcategoryIdStr;
+          }
+          return false;
+
+        case "above price":
+          // Check if total price (price * quantity) is above minPurchase
+          if (coupon.minPurchase !== undefined && coupon.minPurchase !== null) {
+            return totalPrice >= coupon.minPurchase;
+          }
+          return false;
+
+        default:
+          return false;
+      }
+    }).map((coupon) => ({
+      code: coupon.code,
+      description: coupon.description || "",
+      discountType: coupon.discountType,
+      discountAmount: coupon.discountAmount,
+      minPurchase: coupon.minPurchase,
+      maxDiscount: coupon.maxDiscount,
+      applyTo: coupon.applyTo,
+      _id: coupon._id,
+    }));
+  }, [product, allCoupons, selectedVariant, quantity, productId]);
   const visibleCoupons = coupons.slice(0, 2);
   const remainingCouponsCount = Math.max(
     coupons.length - visibleCoupons.length,
@@ -206,6 +275,8 @@ export default function ProductDetailPage() {
         originalPrice,
         quantity: quantity,
         category: product.category,
+        categoryId: product.categoryId || null, // Store category ID for coupon filtering
+        subcategoryId: product.subcategoryId || null, // Store subcategory ID for coupon filtering
         variantOptions: variantOptions, // Store variant options/attributes
       };
 

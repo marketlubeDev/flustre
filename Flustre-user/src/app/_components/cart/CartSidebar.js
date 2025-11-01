@@ -212,9 +212,9 @@ export default function CartSidebar({ isOpen, onClose }) {
       sum + (item.price || 0) * (quantities[item.id] || item.quantity || 1),
     0
   );
-  const total = subtotal; // Free shipping: no delivery charge added
   const discount = 0; // Do not show phantom discount for free shipping
   const couponDiscount = Number(couponDetails?.discountAmount || 0);
+  const total = subtotal - discount - couponDiscount; // Free shipping: no delivery charge added
 
   return (
     <>
@@ -434,7 +434,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           {/* Bottom Action Bar - Fixed height */}
           <BottomActionBar
             hasItems={cartItems.length !== 0}
-            totalPayable={total - discount - couponDiscount}
+            totalPayable={total}
             viewLabel={"View"}
             detailsLabel={"Details"}
             onCheckout={handleProceedToCheckout}

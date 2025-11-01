@@ -6,7 +6,9 @@ import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 import { Modal } from "antd";
 import { toast } from "sonner";
+import { addItemToServerCart, getServerCart } from "@/lib/services/orderService";
 import { placeOrder } from "@/lib/services/orderService";
+import { applyCouponById } from "@/lib/services/couponService";
 
 export default function CheckoutLeft({
   cartItems,
@@ -113,6 +115,93 @@ export default function CheckoutLeft({
       }
 
       setIsPlacingOrder(true);
+
+      // Sync localStorage cart to server before placing order
+      // This ensures the server has the cart items
+      try {
+        const isLoggedIn = typeof window !== "undefined" && (
+          !!window.localStorage?.getItem("token") ||
+          !!window.localStorage?.getItem("userToken")
+        );
+
+        if (isLoggedIn) {
+          // Get cart items from localStorage (use current quantities from state)
+          const localCartItems = typeof window !== "undefined"
+            ? JSON.parse(localStorage.getItem("cartItems") || "[]")
+            : [];
+
+          // Check if server cart exists and has items
+          let serverCartHasItems = false;
+          try {
+            const serverCart = await getServerCart();
+            const serverItems = serverCart?.formattedCart?.items || [];
+            serverCartHasItems = Array.isArray(serverItems) && serverItems.length > 0;
+          } catch (cartCheckError) {
+            // Server cart doesn't exist or is empty - we need to sync
+            serverCartHasItems = false;
+          }
+
+          // Only sync if server cart is empty
+          if (!serverCartHasItems && localCartItems && localCartItems.length > 0) {
+            // Sync each item to server cart with current quantities
+            for (const item of localCartItems) {
+              const productId = item.productId || (item.id?.split('_')[0]);
+              const variantId = item.variantId || (item.id?.includes('_') ? item.id.split('_')[1] : null);
+              // Use quantity from quantities state (current checkout quantities) or fallback to item.quantity
+              const quantity = quantities[item.id] !== undefined ? quantities[item.id] : (item.quantity || 1);
+
+              if (productId && quantity > 0) {
+                try {
+                  await addItemToServerCart({
+                    productId,
+                    variantId: variantId || undefined,
+                    quantity,
+                  });
+                } catch (syncError) {
+                  // If sync fails, log but continue
+                  const errorMsg = syncError?.response?.data?.message || "";
+                  console.warn("Error syncing item to cart:", errorMsg || "Unknown error");
+                }
+              }
+            }
+          }
+
+          // Apply coupon to server cart if one is applied locally (only if cart was synced)
+          if (!serverCartHasItems && localCartItems && localCartItems.length > 0) {
+            try {
+              const couponData = typeof window !== "undefined"
+                ? localStorage.getItem("cartCoupon")
+                : null;
+
+              if (couponData) {
+                const coupon = JSON.parse(couponData);
+                if (coupon?.couponId) {
+                  try {
+                    // Small delay to ensure cart is created
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    await applyCouponById(coupon.couponId);
+                  } catch (couponError) {
+                    // If coupon application fails, continue
+                    // The coupon discount will be handled on the frontend
+                    console.log("Apply coupon to server cart:", couponError?.response?.data?.message || "Coupon may already be applied");
+                  }
+                }
+              }
+            } catch (couponSyncError) {
+              console.error("Error syncing coupon to server:", couponSyncError);
+              // Continue anyway
+            }
+          }
+
+          // Small delay to ensure server cart is fully synced before placing order
+          if (!serverCartHasItems) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      } catch (syncError) {
+        console.error("Error syncing cart to server:", syncError);
+        // Continue anyway - try to place order, it might still work
+      }
 
       // Convert payment method to backend format (COD or ONLINE)
       const backendPaymentMethod =
@@ -368,15 +457,15 @@ export default function CheckoutLeft({
 
             <div className="border-t border-dashed border-gray-200 pt-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-base text-gray-600">Total</span>
-                <span className="text-base font-medium text-gray-800">
-                  ₹ {(total || 0).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-base text-gray-600">Discount</span>
                 <span className="text-base font-medium text-[var(--color-primary)]">
                   -₹ {(discount || 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-base text-gray-600">Coupon Discount</span>
+                <span className="text-base font-medium text-[var(--color-primary)]">
+                  -₹ {(couponDiscount || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -385,10 +474,10 @@ export default function CheckoutLeft({
                   Free Shipping
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-base text-gray-600">Coupon Discount</span>
-                <span className="text-base font-medium text-[var(--color-primary)]">
-                  -₹ {(couponDiscount || 0).toLocaleString()}
+              <div className="flex justify-between pt-2 border-t border-dashed border-gray-200">
+                <span className="text-base font-semibold text-gray-800">Total Payable</span>
+                <span className="text-base font-bold text-gray-800">
+                  ₹ {(total || 0).toLocaleString()}
                 </span>
               </div>
             </div>

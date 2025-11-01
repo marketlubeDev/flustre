@@ -204,13 +204,47 @@ export default function CheckoutPage() {
     } catch {}
   };
 
+  // Load coupon details from localStorage
+  const [couponDetails, setCouponDetails] = useState(null);
+
+  useEffect(() => {
+    const loadCoupon = () => {
+      try {
+        const raw = localStorage.getItem("cartCoupon");
+        if (raw) {
+          const coupon = JSON.parse(raw);
+          setCouponDetails(coupon);
+        } else {
+          setCouponDetails(null);
+        }
+      } catch (error) {
+        console.error("Failed to load coupon:", error);
+        setCouponDetails(null);
+      }
+    };
+
+    loadCoupon();
+
+    // Listen for coupon updates
+    const handleCouponUpdate = () => loadCoupon();
+    if (typeof window !== "undefined") {
+      window.addEventListener("coupon-updated", handleCouponUpdate);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("coupon-updated", handleCouponUpdate);
+      }
+    };
+  }, []);
+
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.price || 0) * (quantities[item.id] || 1),
     0
   );
-  const total = subtotal + 0; // Delivery Free
   const discount = 0;
-  const couponDiscount = 0;
+  const couponDiscount = couponDetails?.discountAmount || 0;
+  const total = subtotal - discount - couponDiscount; // Delivery Free
 
   return (
     <div className="min-h-screen">

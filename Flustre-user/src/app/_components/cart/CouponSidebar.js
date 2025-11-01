@@ -3,93 +3,147 @@
 import { useEffect, useMemo, useState } from "react";
 import { Drawer } from "antd";
 import Button from "@/app/_components/common/Button";
-// import { useCoupons, useApplyCoupon } from "@/lib/hooks/useCoupons"; // Removed API integration
+import { useCoupons, useApplyCoupon } from "@/lib/hooks/useCoupons";
 
 export default function CouponSidebar({ isOpen, onClose }) {
   const [selectedCouponId, setSelectedCouponId] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [error, setError] = useState("");
   const [debouncedTerm, setDebouncedTerm] = useState("");
+
   useEffect(() => {
     const id = setTimeout(() => setDebouncedTerm(couponCode.trim()), 300);
     return () => clearTimeout(id);
   }, [couponCode]);
 
-  // Static data - no API integration
-  const coupons = [];
-  const isLoading = false;
-  const queryError = null;
+  // Fetch coupons from API
+  const { data: allCoupons = [], isLoading, error: queryError } = useCoupons(debouncedTerm || null);
+  const { mutate: applyCoupon, isPending: isApplying } = useApplyCoupon();
 
-  const staticCoupons = useMemo(
-    () => [
-      {
-        _id: "STATIC10",
-        code: "SAVE10",
-        description: "Get 10% off on your order (max ₹ 30)",
-        discountType: "percentage",
-        discountAmount: 10,
-        maxDiscount: 30,
-      },
-      {
-        _id: "STATIC25",
-        code: "FLAT25",
-        description: "Flat ₹ 25 off on orders above ₹ 150",
-        discountType: "flat",
-        discountAmount: 25,
-      },
-      {
-        _id: "STATIC50",
-        code: "WELCOME50",
-        description: "50% off for new users (max ₹ 40)",
-        discountType: "percentage",
-        discountAmount: 50,
-        maxDiscount: 40,
-      },
-      {
-        _id: "STATIC15",
-        code: "GROCER15",
-        description: "15% off on groceries (max ₹ 25)",
-        discountType: "percentage",
-        discountAmount: 15,
-        maxDiscount: 25,
-      },
-    ],
-    []
-  );
+  // Get cart items and calculate subtotal
+  const [cartItems, setCartItems] = useState([]);
 
+  useEffect(() => {
+    const loadCart = () => {
+      try {
+        const raw =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem("cartItems")
+            : null;
+        setCartItems(raw ? JSON.parse(raw) : []);
+      } catch {
+        setCartItems([]);
+      }
+    };
+
+    loadCart();
+
+    // Listen for cart updates
+    const handleCartUpdate = () => loadCart();
+    if (typeof window !== "undefined") {
+      window.addEventListener("cart-updated", handleCartUpdate);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("cart-updated", handleCartUpdate);
+      }
+    };
+  }, [isOpen]);
+
+  const subtotal = useMemo(() => {
+    if (!Array.isArray(cartItems)) return 0;
+    return cartItems.reduce(
+      (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1),
+      0
+    );
+  }, [cartItems]);
+
+  // Filter eligible coupons based on cart items
+  const eligibleCoupons = useMemo(() => {
+    if (!Array.isArray(allCoupons) || allCoupons.length === 0) {
+      return [];
+    }
+
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      return [];
+    }
+
+    return allCoupons.filter((coupon) => {
+      if (!coupon || !coupon.isActive) return false;
+
+      // Check expiry date
+      const expiryDate = new Date(coupon.expiryDate);
+      if (expiryDate.getTime() <= Date.now()) return false;
+
+      // Check usage limit
+      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) return false;
+
+      // Filter based on applyTo type
+      switch (coupon.applyTo) {
+        case "product":
+          // Check if any cart item's productId is in the coupon's productIds array
+          if (Array.isArray(coupon.productIds) && coupon.productIds.length > 0) {
+            return cartItems.some((item) =>
+              coupon.productIds.some(
+                (pid) => String(pid) === String(item.productId || item.id)
+              )
+            );
+          }
+          return false;
+
+        case "category":
+          // Check if any cart item's category matches coupon's categoryId
+          if (coupon.categoryId) {
+            return cartItems.some((item) => {
+              const itemCategoryId = item.categoryId ||
+                (typeof item.category === 'object' ? item.category?._id || item.category?.id : null);
+              return itemCategoryId && String(coupon.categoryId) === String(itemCategoryId);
+            });
+          }
+          return false;
+
+        case "subcategory":
+          // Check if any cart item's subcategory matches coupon's categoryId
+          // Note: For subcategory type, coupon uses categoryId field
+          if (coupon.categoryId) {
+            return cartItems.some((item) => {
+              const itemSubcategoryId = item.subcategoryId ||
+                (typeof item.subcategory === 'object' ? item.subcategory?._id || item.subcategory?.id : null);
+              return itemSubcategoryId && String(coupon.categoryId) === String(itemSubcategoryId);
+            });
+          }
+          return false;
+
+        case "above price":
+          // Check if subtotal is above minPurchase
+          if (coupon.minPurchase !== undefined && coupon.minPurchase !== null) {
+            return subtotal >= coupon.minPurchase;
+          }
+          return false;
+
+        default:
+          return false;
+      }
+    });
+  }, [allCoupons, cartItems, subtotal]);
+
+  // Filter displayed coupons based on search term
   const displayedCoupons = useMemo(() => {
     const term = debouncedTerm.toLowerCase();
-    const source = Array.isArray(coupons) && coupons.length ? coupons : staticCoupons;
-    if (!term) return source;
-    return source.filter(
+    if (!term) return eligibleCoupons;
+    return eligibleCoupons.filter(
       (c) =>
         String(c.code || "").toLowerCase().includes(term) ||
         String(c.description || "").toLowerCase().includes(term)
     );
-  }, [coupons, staticCoupons, debouncedTerm]);
+  }, [eligibleCoupons, debouncedTerm]);
 
   useEffect(() => {
     if (!selectedCouponId && displayedCoupons?.length) {
       setSelectedCouponId(String(displayedCoupons[0]._id));
     }
   }, [displayedCoupons, selectedCouponId]);
-
-  const subtotal = useMemo(() => {
-    try {
-      const raw =
-        typeof window !== "undefined"
-          ? window.localStorage.getItem("cartItems")
-          : null;
-      const items = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(items)) return 0;
-      return items.reduce(
-        (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1),
-        0
-      );
-    } catch {
-      return 0;
-    }
-  }, [isOpen]);
 
   const selectedCoupon = displayedCoupons.find(
     (c) => String(c._id) === String(selectedCouponId)
@@ -109,29 +163,52 @@ export default function CouponSidebar({ isOpen, onClose }) {
         ) || 0
       );
     }
+    // Handle "fixed" or "flat" discount types
     return Math.min(amount, subtotal);
   }, [selectedCoupon, subtotal]);
 
-  // Static apply coupon function - no API integration
-  const applyCoupon = async (couponId) => {
-    console.log('Apply coupon (static mode):', couponId);
-    return Promise.resolve();
-  };
-  const isApplying = false;
+  // Apply selected coupon
   const applySelectedCoupon = async () => {
     if (!selectedCoupon) return;
     setError("");
-    try {
-      // If we're using static coupons (no API coupons), just close the drawer
-      if (!coupons || coupons.length === 0) {
-        onClose?.();
-        return;
+
+    // Don't show error for "Cart not found" if we have cart items locally
+    // The hook will handle fallback to local calculation
+    applyCoupon(
+      {
+        couponId: selectedCoupon._id,
+        cartItems: cartItems
+      },
+      {
+        onSuccess: () => {
+          // Clear any previous errors
+          setError("");
+          onClose?.();
+        },
+        onError: (err) => {
+          // Only show error if it's not a "Cart not found" error when we have local cart items
+          const errorMessage = err?.response?.data?.message || err?.message || "";
+          const isCartNotFoundError =
+            errorMessage.includes("Cart not found") ||
+            errorMessage.includes("Cart is empty");
+
+          // If we have cart items locally and it's a cart not found error,
+          // the hook should have handled it locally, so don't show error
+          if (isCartNotFoundError && cartItems && cartItems.length > 0) {
+            // The hook should have applied it locally, so don't show error
+            setError("");
+            onClose?.();
+            return;
+          }
+
+          // Show other errors
+          setError(
+            errorMessage ||
+            "Failed to apply coupon. Please try again."
+          );
+        },
       }
-      await applyCoupon(selectedCoupon._id);
-      onClose?.();
-    } catch (e) {
-      setError(e?.response?.data?.message || "Something went wrong");
-    }
+    );
   };
 
   return (
@@ -247,10 +324,22 @@ export default function CouponSidebar({ isOpen, onClose }) {
               ) : null}
             </div>
 
-            {/* Available Offers */
-            }
-            <div>
-              {displayedCoupons.map((coupon, idx) => (
+            {/* Available Offers */}
+            {isLoading ? (
+              <div className="px-3 sm:px-4 py-8 text-center text-gray-500">
+                Loading coupons...
+              </div>
+            ) : displayedCoupons.length === 0 ? (
+              <div className="px-3 sm:px-4 py-8 text-center text-gray-500">
+                {cartItems.length === 0
+                  ? "Add items to your cart to see eligible coupons"
+                  : debouncedTerm
+                  ? "No coupons found matching your search"
+                  : "No eligible coupons available for your cart"}
+              </div>
+            ) : (
+              <div>
+                {displayedCoupons.map((coupon, idx) => (
                 <div
                   key={coupon._id}
                   className="py-3 sm:py-4 px-3 sm:px-4"
@@ -288,9 +377,10 @@ export default function CouponSidebar({ isOpen, onClose }) {
                       </p>
                     </div>
                   </label>
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
