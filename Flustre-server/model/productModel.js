@@ -30,6 +30,7 @@ const productSchema = new Schema(
     compareAtPrice: { type: Number, default: 0 },
     profit: { type: Number, default: 0 },
     costPerItem: { type: Number, default: 0 },
+    stock: { type: Number, default: 0, min: 0 },
     averageRating: { type: Number, default: 0 },
     totalRatings: { type: Number, default: 0 },
     about: { type: String },

@@ -156,11 +156,30 @@ const verifyPayment = catchAsync(async (req, res, next) => {
         (v) => v._id.toString() === item.variant.toString()
       );
 
+      if (!variant) {
+        return next(new AppError(`Variant not found: ${item.variant}`, 404));
+      }
+
+      const variantStock =
+        variant.quantity !== undefined ? variant.quantity : variant.stock || 0;
+      if (variantStock < item.quantity) {
+        return next(
+          new AppError(
+            `Insufficient stock for variant ${
+              variant.attributes?.title || "Unknown"
+            } of ${product.name}. Available: ${variantStock}, Requested: ${
+              item.quantity
+            }`,
+            400
+          )
+        );
+      }
+
       price = variant.offerPrice || variant.price;
-      stock = variant.stock;
+      stock = variantStock;
 
       await Variant.findByIdAndUpdate(variant._id, {
-        $inc: { stock: -item.quantity },
+        $inc: { quantity: -item.quantity, stock: -item.quantity },
       });
     } else {
       if (product.stock < item.quantity) {
@@ -276,9 +295,7 @@ const placeOrder = catchAsync(async (req, res, next) => {
     }
 
     // Use quantity from request body if provided, otherwise use cart item quantity
-    const key = item.variant
-      ? `${item.product}_${item.variant}`
-      : item.product;
+    const key = item.variant ? `${item.product}_${item.variant}` : item.product;
     const orderQuantity = quantityMap[key] || item.quantity;
 
     if (orderQuantity < 1) {
@@ -297,20 +314,26 @@ const placeOrder = catchAsync(async (req, res, next) => {
         return next(new AppError(`Variant not found: ${item.variant}`, 404));
       }
 
-      if (variant.stock < orderQuantity) {
+      const variantStock =
+        variant.quantity !== undefined ? variant.quantity : variant.stock || 0;
+      if (variantStock < orderQuantity) {
         return next(
           new AppError(
-            `Insufficient stock for variant ${variant.attributes.title} of ${product.name}. Available: ${variant.stock}, Requested: ${orderQuantity}`,
+            `Insufficient stock for variant ${
+              variant.attributes?.title || variant.sku || "Unknown"
+            } of ${
+              product.name
+            }. Available: ${variantStock}, Requested: ${orderQuantity}`,
             400
           )
         );
       }
 
       price = variant.offerPrice || variant.price;
-      stock = variant.stock;
+      stock = variantStock;
 
       await Variant.findByIdAndUpdate(variant._id, {
-        $inc: { stock: -orderQuantity },
+        $inc: { quantity: -orderQuantity, stock: -orderQuantity },
       });
     } else {
       if (product.stock < orderQuantity) {
@@ -475,7 +498,9 @@ const updateOrderStatus = catchAsync(async (req, res, next) => {
         variantBulkOperations.push({
           updateOne: {
             filter: { _id: product.variantId },
-            update: { $inc: { stock: product.quantity } },
+            update: {
+              $inc: { quantity: product.quantity, stock: product.quantity },
+            },
           },
         });
       } else {
@@ -662,14 +687,37 @@ const cancelOrder = catchAsync(async (req, res, next) => {
   }
 
   // Restore stock for cancelled order
-  const bulkOperations = order.products.map((product) => ({
-    updateOne: {
-      filter: { _id: product.productId },
-      update: { $inc: { stock: product.quantity } },
-    },
-  }));
+  const variantBulkOperations = [];
+  const productBulkOperations = [];
 
-  await productModel.bulkWrite(bulkOperations);
+  for (const product of order.products) {
+    if (product?.variantId && product?.variantId !== null) {
+      variantBulkOperations.push({
+        updateOne: {
+          filter: { _id: product.variantId },
+          update: {
+            $inc: { quantity: product.quantity, stock: product.quantity },
+          },
+        },
+      });
+    } else {
+      productBulkOperations.push({
+        updateOne: {
+          filter: { _id: product.productId },
+          update: { $inc: { stock: product.quantity } },
+        },
+      });
+    }
+  }
+
+  // Execute bulk operations separately for variants and products
+  if (variantBulkOperations.length > 0) {
+    await Variant.bulkWrite(variantBulkOperations);
+  }
+
+  if (productBulkOperations.length > 0) {
+    await productModel.bulkWrite(productBulkOperations);
+  }
 
   order.status = "cancelled";
   await order.save();

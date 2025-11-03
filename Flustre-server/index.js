@@ -57,7 +57,7 @@ app.use(globalErrorHandler);
 // If not running on Vercel, start the server normally.
 // On Vercel, export the app as a handler for the serverless function.
 if (!process.env.VERCEL) {
-  const port = process.env.PORT || 5001;
+  const port = process.env.PORT || 5000;
   app.listen(port, (err) => {
     if (err) {
       console.log(err);
