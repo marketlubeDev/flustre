@@ -107,8 +107,14 @@ export default function ProductDetailPage() {
         costPerItem: apiProduct.costPerItem,
         options: apiProduct.options || [],
         // Preserve category and subcategory IDs for coupon filtering
-        categoryId: apiProduct.categoryObject?._id || apiProduct.categoryObject?.id || null,
-        subcategoryId: apiProduct.subcategoryObject?._id || apiProduct.subcategoryObject?.id || null,
+        categoryId:
+          apiProduct.categoryObject?._id ||
+          apiProduct.categoryObject?.id ||
+          null,
+        subcategoryId:
+          apiProduct.subcategoryObject?._id ||
+          apiProduct.subcategoryObject?.id ||
+          null,
       }
     : null;
 
@@ -139,79 +145,100 @@ export default function ProductDetailPage() {
 
   // Filter coupons based on applyTo type and product eligibility
   const coupons = useMemo(() => {
-    if (!product || !Array.isArray(allCoupons) || allCoupons.length === 0) {
+    // Only filter after component is mounted to avoid hydration mismatch
+    if (
+      !mounted ||
+      !product ||
+      !Array.isArray(allCoupons) ||
+      allCoupons.length === 0
+    ) {
       return [];
     }
 
     // Get current product price (considering variant and quantity)
     const currentPrice =
-      (product?.variants && product.variants.length > 0 && selectedVariant !== undefined)
+      product?.variants &&
+      product.variants.length > 0 &&
+      selectedVariant !== undefined
         ? product.variants[selectedVariant]?.price || product.price || 0
         : product.price || 0;
     const totalPrice = currentPrice * quantity;
 
     // Get product IDs for comparison
     const productIdStr = String(product.id || productId);
-    const categoryIdStr = product.categoryId ? String(product.categoryId) : null;
-    const subcategoryIdStr = product.subcategoryId ? String(product.subcategoryId) : null;
+    const categoryIdStr = product.categoryId
+      ? String(product.categoryId)
+      : null;
+    const subcategoryIdStr = product.subcategoryId
+      ? String(product.subcategoryId)
+      : null;
 
-    return allCoupons.filter((coupon) => {
-      if (!coupon || !coupon.isActive) return false;
+    return allCoupons
+      .filter((coupon) => {
+        if (!coupon || !coupon.isActive) return false;
 
-      // Check expiry date
-      const expiryDate = new Date(coupon.expiryDate);
-      if (expiryDate.getTime() <= Date.now()) return false;
+        // Check expiry date (only after mount to avoid hydration mismatch)
+        const expiryDate = new Date(coupon.expiryDate);
+        if (expiryDate.getTime() <= Date.now()) return false;
 
-      // Check usage limit
-      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) return false;
-
-      // Filter based on applyTo type
-      switch (coupon.applyTo) {
-        case "product":
-          // Check if product ID is in the coupon's productIds array
-          if (Array.isArray(coupon.productIds) && coupon.productIds.length > 0) {
-            return coupon.productIds.some(
-              (pid) => String(pid) === productIdStr
-            );
-          }
+        // Check usage limit
+        if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit)
           return false;
 
-        case "category":
-          // Check if product's category matches coupon's categoryId
-          if (categoryIdStr && coupon.categoryId) {
-            return String(coupon.categoryId) === categoryIdStr;
-          }
-          return false;
+        // Filter based on applyTo type
+        switch (coupon.applyTo) {
+          case "product":
+            // Check if product ID is in the coupon's productIds array
+            if (
+              Array.isArray(coupon.productIds) &&
+              coupon.productIds.length > 0
+            ) {
+              return coupon.productIds.some(
+                (pid) => String(pid) === productIdStr
+              );
+            }
+            return false;
 
-        case "subcategory":
-          // Check if product's subcategory matches coupon's categoryId
-          // Note: For subcategory type, coupon uses categoryId field
-          if (subcategoryIdStr && coupon.categoryId) {
-            return String(coupon.categoryId) === subcategoryIdStr;
-          }
-          return false;
+          case "category":
+            // Check if product's category matches coupon's categoryId
+            if (categoryIdStr && coupon.categoryId) {
+              return String(coupon.categoryId) === categoryIdStr;
+            }
+            return false;
 
-        case "above price":
-          // Check if total price (price * quantity) is above minPurchase
-          if (coupon.minPurchase !== undefined && coupon.minPurchase !== null) {
-            return totalPrice >= coupon.minPurchase;
-          }
-          return false;
+          case "subcategory":
+            // Check if product's subcategory matches coupon's categoryId
+            // Note: For subcategory type, coupon uses categoryId field
+            if (subcategoryIdStr && coupon.categoryId) {
+              return String(coupon.categoryId) === subcategoryIdStr;
+            }
+            return false;
 
-        default:
-          return false;
-      }
-    }).map((coupon) => ({
-      code: coupon.code,
-      description: coupon.description || "",
-      discountType: coupon.discountType,
-      discountAmount: coupon.discountAmount,
-      minPurchase: coupon.minPurchase,
-      maxDiscount: coupon.maxDiscount,
-      applyTo: coupon.applyTo,
-      _id: coupon._id,
-    }));
-  }, [product, allCoupons, selectedVariant, quantity, productId]);
+          case "above price":
+            // Check if total price (price * quantity) is above minPurchase
+            if (
+              coupon.minPurchase !== undefined &&
+              coupon.minPurchase !== null
+            ) {
+              return totalPrice >= coupon.minPurchase;
+            }
+            return false;
+
+          default:
+            return false;
+        }
+      })
+      .map((coupon) => ({
+        code: coupon.code,
+        description: coupon.description || "",
+        discountType: coupon.discountType,
+        discountAmount: coupon.discountAmount,
+        minPurchase: coupon.minPurchase,
+        maxDiscount: coupon.maxDiscount,
+        applyTo: coupon.applyTo,
+        _id: coupon._id,
+      }));
+  }, [mounted, product, allCoupons, selectedVariant, quantity, productId]);
   const visibleCoupons = coupons.slice(0, 2);
   const remainingCouponsCount = Math.max(
     coupons.length - visibleCoupons.length,
@@ -358,17 +385,21 @@ export default function ProductDetailPage() {
 
       // Get variant ID - check both the normalized structure and raw API structure
       const rawVariant = apiProduct?.variants?.[selectedVariant];
-      const itemVariantId = variant?._id || rawVariant?._id || variant?.id || rawVariant?.id || null;
+      const itemVariantId =
+        variant?._id ||
+        rawVariant?._id ||
+        variant?.id ||
+        rawVariant?.id ||
+        null;
 
       // Create ID for cart item (productId_variantId or just productId)
-      const itemId = itemVariantId ? `${itemProductId}_${itemVariantId}` : itemProductId;
+      const itemId = itemVariantId
+        ? `${itemProductId}_${itemVariantId}`
+        : itemProductId;
 
       // Get price - prefer variant price, then product price
       const itemPrice =
-        rawVariant?.price ||
-        variant?.price ||
-        product?.price ||
-        0;
+        rawVariant?.price || variant?.price || product?.price || 0;
 
       // Get original price - prefer variant compareAtPrice, then product originalPrice
       const itemOriginalPrice =

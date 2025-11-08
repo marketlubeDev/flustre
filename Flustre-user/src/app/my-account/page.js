@@ -16,6 +16,9 @@ function MyAccountContent() {
   const tabParam = (searchParams.get("tab") || "").toLowerCase();
 
   // Auth state derived from localStorage tokens
+  // Initialize with false to avoid hydration mismatch (server vs client)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const getIsAuthenticated = () => {
     if (typeof window === "undefined") return false;
     const token =
@@ -23,7 +26,6 @@ function MyAccountContent() {
       window.localStorage?.getItem("userToken");
     return !!token;
   };
-  const [isAuthenticated, setIsAuthenticated] = useState(getIsAuthenticated);
 
   useEffect(() => {
     const syncAuth = () => setIsAuthenticated(getIsAuthenticated());
@@ -49,7 +51,7 @@ function MyAccountContent() {
     { key: "myOrders", displayName: "My Orders" },
     { key: "helpSupport", displayName: "Help & Support" },
     { key: "privacyPolicy", displayName: "Privacy & Policy" },
-    { key: "termsConditions", displayName: "Terms & Conditions" }
+    { key: "termsConditions", displayName: "Terms & Conditions" },
   ];
 
   const protectedTabs = ["accountInfo", "savedAddress", "myOrders"];
@@ -134,7 +136,9 @@ function MyAccountContent() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">My Account</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            My Account
+          </h1>
           <p className="text-sm sm:text-base text-gray-600">
             Manage your account settings and preferences
           </p>
@@ -156,7 +160,9 @@ function MyAccountContent() {
                     return;
                   }
                   setActiveTab(tab.key);
-                  const newSearch = new URLSearchParams(searchParams.toString());
+                  const newSearch = new URLSearchParams(
+                    searchParams.toString()
+                  );
                   newSearch.set("tab", tab.key);
                   if (protectedTabs.includes(tab.key)) {
                     router.replace(`${pathname}?${newSearch.toString()}`);
@@ -189,15 +195,17 @@ function MyAccountContent() {
 
 export default function MyAccountPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <MyAccountContent />
     </Suspense>
   );
-} 
+}

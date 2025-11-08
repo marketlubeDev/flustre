@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Button from '@/app/_components/common/Button';
+import Button from "@/app/_components/common/Button";
 import { FaHeart } from "react-icons/fa6";
 import { CiHeart } from "react-icons/ci";
 import { useWishlist } from "@/app/_components/context/WishlistContext";
@@ -20,15 +20,19 @@ export default function FeaturedProductCard({ product }) {
 
   const addToCart = () => {
     if (!isClient) return;
-    
+
     try {
-      const raw = localStorage.getItem('cartItems');
+      const raw = localStorage.getItem("cartItems");
       const items = raw ? JSON.parse(raw) : [];
       const idx = items.findIndex((it) => String(it.id) === String(product.id));
 
       // Convert price strings to numbers (remove AED label and commas)
-      const priceNumber = parseInt(String(product.price).replace(/AED\s*|,/g, ''));
-      const originalPriceNumber = parseInt(String(product.originalPrice).replace(/AED\s*|,/g, ''));
+      const priceNumber = parseInt(
+        String(product.price).replace(/AED\s*|,/g, "")
+      );
+      const originalPriceNumber = parseInt(
+        String(product.originalPrice).replace(/AED\s*|,/g, "")
+      );
 
       if (idx >= 0) {
         const existing = items[idx];
@@ -41,22 +45,22 @@ export default function FeaturedProductCard({ product }) {
           originalPrice: originalPriceNumber,
           image: product.image,
           color: product.category,
-          plug: 'Default',
+          plug: "Default",
           quantity: 1,
         });
       }
 
-      localStorage.setItem('cartItems', JSON.stringify(items));
-      window.dispatchEvent(new Event('cart-updated'));
+      localStorage.setItem("cartItems", JSON.stringify(items));
+      window.dispatchEvent(new Event("cart-updated"));
 
       // Open the cart
       if (window.__openCart) {
         window.__openCart();
       } else {
-        window.dispatchEvent(new Event('open-cart'));
+        window.dispatchEvent(new Event("open-cart"));
       }
     } catch (err) {
-      console.error('Failed to add to cart', err);
+      console.error("Failed to add to cart", err);
     }
   };
 
@@ -86,7 +90,7 @@ export default function FeaturedProductCard({ product }) {
           priority={false}
         />
         {/* Wishlist Button */}
-        <button 
+        <button
           className="absolute top-2 md:top-2 lg:top-3 left-2 md:left-2 lg:left-3 w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 flex items-center justify-center bg-white/90 rounded-full shadow hover:scale-105 transition-transform"
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(e) => {
@@ -110,7 +114,7 @@ export default function FeaturedProductCard({ product }) {
           <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-800 leading-tight tracking-tight line-clamp-2">
             {product.name}
           </h3>
-          
+
           {/* Category */}
           <p className="text-[10px] sm:text-xs md:text-sm lg:text-base font-normal text-gray-600 tracking-tight">
             {product.category}
@@ -133,20 +137,31 @@ export default function FeaturedProductCard({ product }) {
         </div>
 
         {/* Price and Button */}
-                  <div className="flex flex-col gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 md:mt-auto">
+        <div className="flex flex-col gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 md:mt-auto">
           {/* Price */}
           <div className="flex flex-row gap-1.5 md:gap-2 lg:gap-3 items-center whitespace-nowrap">
             <span className="font-bold text-[var(--color-primary)] tracking-tight text-xs sm:text-sm md:text-base lg:text-base">
-              <span className="align-baseline text-[9px] md:text-[10px] lg:text-xs text-[#2B73B8]">₹</span>
-              <span className="ml-1">{String(product.price).replace(/AED\s*/,'')}</span>
+              <span className="align-baseline text-[9px] md:text-[10px] lg:text-xs text-[#2B73B8]">
+                ₹
+              </span>
+              <span className="ml-1">
+                {String(product.price).replace(/AED\s*/, "")}
+              </span>
             </span>
             <span className="relative inline-flex items-center text-gray-500 tracking-tight">
-              <span className="align-baseline text-[9px] md:text-[10px] lg:text-xs text-[#2B73B8]">₹</span>
-              <span className="text-[10px] sm:text-xs md:text-sm lg:text-sm ml-1">{String(product.originalPrice).replace(/AED\s*/,'')}</span>
-              <span aria-hidden="true" className="absolute left-0 right-0 top-1/2 -translate-y-1/2 transform h-px bg-gray-400"></span>
+              <span className="align-baseline text-[9px] md:text-[10px] lg:text-xs text-[#2B73B8]">
+                ₹
+              </span>
+              <span className="text-[10px] sm:text-xs md:text-sm lg:text-sm ml-1">
+                {String(product.originalPrice).replace(/AED\s*/, "")}
+              </span>
+              <span
+                aria-hidden="true"
+                className="absolute left-0 right-0 top-1/2 -translate-y-1/2 transform h-px bg-gray-400"
+              ></span>
             </span>
           </div>
-          
+
           {/* Add to Cart Button */}
           <Button
             variant="secondary"

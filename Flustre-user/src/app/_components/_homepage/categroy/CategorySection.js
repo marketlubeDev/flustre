@@ -31,9 +31,9 @@ const CategorySection = () => {
   // Loading State:
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center w-full overflow-hidden container mx-auto py-10 px-4 md:px-10">
-      <h2 className="text-[#333333] text-center text-xl sm:text-2xl md:text-[26px] lg:text-[28px] font-bold leading-normal tracking-[-0.28px] mb-6">
+      {/* <h2 className="text-[#333333] text-center text-xl sm:text-2xl md:text-[26px] lg:text-[28px] font-bold leading-normal tracking-[-0.28px] mb-6">
         Shop by Category
-      </h2>
+      </h2> */}
       <div className="flex justify-center items-center w-full h-32">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
       </div>
