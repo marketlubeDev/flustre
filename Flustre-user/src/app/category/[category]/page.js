@@ -55,7 +55,6 @@ export default function CategoryPage() {
   };
 
   const displayName = getCategoryDisplayName(categoryName);
-  console.log("CategoryPage - categoryName:", categoryName, "displayName:", displayName);
 
   return (
     <div className="min-h-screen bg-white">

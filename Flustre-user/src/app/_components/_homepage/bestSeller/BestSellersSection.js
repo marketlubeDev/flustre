@@ -151,8 +151,7 @@ export default function BestSellersSection() {
   const [isScrollable, setIsScrollable] = useState(false);
   // Static cart function - no API integration
   const addToCart = (item) => {
-    console.log("Added to cart (static):", item);
-    // You can add localStorage functionality here if needed
+
   };
   // Fetch products labeled "Best Sellers" and compute badges for top 3
   const { products: fetchedProducts, loading } = useProductsByLabelName(

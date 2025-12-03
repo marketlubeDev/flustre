@@ -70,7 +70,6 @@ const updateAverageRating = async (productId) => {
       { new: true }
     );
 
-    console.log(`✅ Average rating updated for product: ${productId}`);
     return updatedProduct;
   } catch (error) {
     console.error("❌ Error updating average rating:", error);

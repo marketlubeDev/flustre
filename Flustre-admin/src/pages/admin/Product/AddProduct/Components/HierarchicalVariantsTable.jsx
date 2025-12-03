@@ -295,14 +295,7 @@ const HierarchicalVariantsTable = ({
       ? current.filter(Boolean).slice(0, 5)
       : [];
 
-    console.log(
-      `Opening image modal for ${
-        isGroup
-          ? `group: ${groupName}`
-          : `variant index: ${variant.originalIndex}`
-      }`,
-      { isGroup, groupName, variant: variant?.originalIndex, current: cleaned }
-    );
+
 
     setInitialImages(cleaned);
     setIsImageModalOpen(true);
@@ -321,7 +314,6 @@ const HierarchicalVariantsTable = ({
 
     if (isEditingGroupImages && editingGroupName) {
       // Save to group images (local, for header preview)
-      console.log(`Saving images to group: ${editingGroupName}`, finalImages);
       setGroupImages((prev) => ({
         ...prev,
         [editingGroupName]: finalImages,
@@ -330,11 +322,7 @@ const HierarchicalVariantsTable = ({
       // Also persist these images into each variant that belongs to this group
       // so that images are not lost when switching tabs (unmounting this component)
       try {
-        console.log(`Applying group images to group: ${editingGroupName}`, {
-          groupBy,
-          finalImages,
-          variantsCount: variants.length,
-        });
+    
 
         // Collect all variant indices that need to be updated
         const variantIndicesToUpdate = [];
@@ -343,28 +331,17 @@ const HierarchicalVariantsTable = ({
           const attrs = parseVariantAttributes(v?.name);
           const groupValue = attrs[groupBy] || "Ungrouped";
 
-          console.log(`Checking variant ${idx}:`, {
-            variantName: v?.name,
-            parsedAttrs: attrs,
-            groupBy,
-            groupValue,
-            editingGroupName,
-            matches: groupValue === editingGroupName,
-          });
+          
 
           if (groupValue === editingGroupName) {
-            console.log(`Marking variant ${idx} (${v?.name}) for image update`);
+           
             variantIndicesToUpdate.push(idx);
           }
         });
 
         // Update all variants at once to avoid race conditions
         if (variantIndicesToUpdate.length > 0) {
-          console.log(
-            `Updating ${variantIndicesToUpdate.length} variants with images:`,
-            variantIndicesToUpdate
-          );
-
+         
           // Use a single state update for all variants
           onVariantUpdate("bulk-update", "images", {
             indices: variantIndicesToUpdate,
@@ -376,10 +353,7 @@ const HierarchicalVariantsTable = ({
       }
     } else if (imageVariantIndex !== null) {
       // Save to individual variant
-      console.log(
-        `Saving images to variant index: ${imageVariantIndex}`,
-        finalImages
-      );
+   
       handleVariantChange(imageVariantIndex, "images", finalImages);
     }
 

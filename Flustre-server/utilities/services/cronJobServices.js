@@ -44,9 +44,7 @@ const removeExpiredOffers = async () => {
     const expiredOffers = await Offer.find({ endDate: { $lt: currentDate } });
     for (const offer of expiredOffers) {
       await deleteOfferById(offer._id);
-      console.log(`Removed expired offer: ${offer.offerName}`);
     }
-    console.log("✅ Expired offers removed from Offer model.");
   } catch (error) {
     console.error("❌ Error removing expired offers:", error);
   }

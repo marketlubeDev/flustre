@@ -68,7 +68,7 @@ export default function ProductInfoSection({
 
   const discountPercentage = calculateDiscountPercentage();
 
-  console.log(product, "kgsakdgskgksh");
+
 
   // Extract category name - handle both string and object
   const categoryName =

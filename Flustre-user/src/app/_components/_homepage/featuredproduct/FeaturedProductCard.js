@@ -1,67 +1,37 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 import { FaHeart } from "react-icons/fa6";
 import { CiHeart } from "react-icons/ci";
 import { useWishlist } from "@/app/_components/context/WishlistContext";
+import useCart from "@/lib/hooks/useCart";
 
 export default function FeaturedProductCard({ product }) {
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
   const { toggleWishlistItem, isInWishlist } = useWishlist();
   const wishlisted = isInWishlist(product?.id);
+  const { addToCart } = useCart();
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // Best-effort extraction of a variantId for products that have variants
+  const deriveVariantId = () => {
+    if (!product) return undefined;
+    // Explicit variantId on the product
+    if (product.variantId) return product.variantId;
+    if (product.selectedVariantId) return product.selectedVariantId;
 
-  const addToCart = () => {
-    if (!isClient) return;
-
-    try {
-      const raw = localStorage.getItem("cartItems");
-      const items = raw ? JSON.parse(raw) : [];
-      const idx = items.findIndex((it) => String(it.id) === String(product.id));
-
-      // Convert price strings to numbers (remove AED label and commas)
-      const priceNumber = parseInt(
-        String(product.price).replace(/AED\s*|,/g, "")
-      );
-      const originalPriceNumber = parseInt(
-        String(product.originalPrice).replace(/AED\s*|,/g, "")
-      );
-
-      if (idx >= 0) {
-        const existing = items[idx];
-        items[idx] = { ...existing, quantity: (existing.quantity || 1) + 1 };
-      } else {
-        items.push({
-          id: product.id,
-          name: product.name,
-          price: priceNumber,
-          originalPrice: originalPriceNumber,
-          image: product.image,
-          color: product.category,
-          plug: "Default",
-          quantity: 1,
-        });
-      }
-
-      localStorage.setItem("cartItems", JSON.stringify(items));
-      window.dispatchEvent(new Event("cart-updated"));
-
-      // Open the cart
-      if (window.__openCart) {
-        window.__openCart();
-      } else {
-        window.dispatchEvent(new Event("open-cart"));
-      }
-    } catch (err) {
-      console.error("Failed to add to cart", err);
+    // variants may be an array of ids or objects
+    if (Array.isArray(product.variants) && product.variants.length > 0) {
+      const first = product.variants[0];
+      if (typeof first === "string") return first;
+      return first._id || first.id || first.variantId;
     }
+
+    return undefined;
+  };
+
+  const handleAddToCart = () => {
+    const variantId = deriveVariantId();
+    addToCart(product, variantId, 1);
   };
 
   const renderStars = () => {
@@ -166,8 +136,8 @@ export default function FeaturedProductCard({ product }) {
           <Button
             variant="secondary"
             size="large"
-            onClick={addToCart}
-            disabled={!isClient}
+            onClick={handleAddToCart}
+            disabled={false}
             className="gap-1.5 px-2 py-1.5 md:px-3 md:py-1.5 lg:px-4 lg:py-2 text-xs md:text-sm text-[var(--color-primary)] bg-white border border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white focus:ring-[var(--color-primary)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed self-start rounded"
             aria-label={`Add ${product.name} to cart`}
           >

@@ -81,10 +81,7 @@ const Dashboard = () => {
         const salesReport = salesReportRes?.data?.monthlySalesReport || [];
         const ordersReport = ordersReportRes?.data?.monthlySalesReport || [];
 
-        // Debug: Log the dashboard data structure
-        console.log("Full dashboard response:", dashboardRes);
-        console.log("Dashboard data object:", dashboardData);
-        console.log("Top products from backend:", dashboardData.topProducts);
+        
 
         // Helper function to process chart data for all 12 months
         const processChartData = (reportData, isMonthly, isOrders = false) => {
@@ -191,8 +188,6 @@ const Dashboard = () => {
           }
         }
 
-        console.log("Recent orders response:", recentOrdersRes);
-        console.log("Extracted orders:", orders);
 
         // Sort orders by creation date (newest first) and take only the last 5
         const sortedOrders = orders
@@ -203,7 +198,6 @@ const Dashboard = () => {
           })
           .slice(0, 5); // Take only the last 5 orders
 
-        console.log("Sorted and limited orders:", sortedOrders);
 
         const formattedRecentOrders = sortedOrders.map((order) => {
           const product = order.products?.[0];
@@ -235,8 +229,6 @@ const Dashboard = () => {
         // Process top products from dashboard data
         // The backend returns topProducts with: name, price, totalOrdered, orderCount
         const topProductsData = dashboardData.topProducts || [];
-        console.log("Raw top products data:", topProductsData);
-        console.log("Top products array length:", topProductsData.length);
 
         // Process top products - show ALL products from backend, NO filtering
         const formattedTopProducts = (
@@ -255,14 +247,7 @@ const Dashboard = () => {
           // Calculate total sales: totalOrdered (quantity) * price
           const totalRevenue = totalQuantity * productPrice;
 
-          console.log(`Processing product ${idx + 1}:`, {
-            original: product,
-            name: productName,
-            price: productPrice,
-            totalOrdered: totalQuantity,
-            orderCount,
-            totalRevenue,
-          });
+        
 
           // Always show product, even with 0 sales - remove all filters
           return {
@@ -276,13 +261,6 @@ const Dashboard = () => {
           };
         });
 
-        // NO FILTERING - show all products that backend returns
-
-        console.log("Formatted top products:", formattedTopProducts);
-        console.log(
-          "Formatted top products length:",
-          formattedTopProducts.length
-        );
 
         // If no formatted products but we have raw data, log details for debugging
         if (formattedTopProducts.length === 0 && topProductsData.length > 0) {
@@ -292,13 +270,7 @@ const Dashboard = () => {
           );
         }
 
-        // Debug logging
-        console.log("Dashboard data:", dashboardData);
-        console.log("Recent orders response:", recentOrdersRes);
-        console.log("Formatted recent orders:", formattedRecentOrders);
-        console.log("Top products data:", topProductsData);
-        console.log("Formatted top products:", formattedTopProducts);
-
+        
         setSalesData(processedSalesData);
         setOrdersData(processedOrdersData);
         setRecentOrders(formattedRecentOrders);

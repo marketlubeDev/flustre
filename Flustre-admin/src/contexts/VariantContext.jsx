@@ -19,15 +19,7 @@ export const useVariantContext = () => {
 };
 
 export const VariantProvider = ({ children, variants, setVariants, setActiveVariant, setProductData, updateProductOptions }) => {
-  // Debug: Log variants prop changes
-  console.log('VariantProvider - variants prop updated:', variants?.map((v, idx) => ({
-    index: idx,
-    name: v.name,
-    images: v.images,
-    imagesLength: v.images?.length,
-    imagesFiltered: v.images?.filter(Boolean)?.length,
-    imageValues: v.images?.map((img, imgIdx) => ({ imgIdx, value: img, isTruthy: Boolean(img) }))
-  })));
+
   // State for variant options
   const [variantOptionSections, setVariantOptionSections] = useState([
     [{ optionName: "", valuesInput: "" }],
@@ -295,11 +287,7 @@ export const VariantProvider = ({ children, variants, setVariants, setActiveVari
     // Handle bulk updates for group images
     if (variantIndex === 'bulk-update' && fieldName === 'images') {
       const { indices, value } = fieldValue;
-      console.log(`Bulk Redux Update - Updating ${indices.length} variants with images:`, {
-        indices,
-        value,
-        valueLength: value?.length
-      });
+     
       
       setVariants((previousVariants) => {
         const updatedVariants = previousVariants.map((variant, index) => {
@@ -311,17 +299,6 @@ export const VariantProvider = ({ children, variants, setVariants, setActiveVari
           return { ...variant };
         });
         
-        console.log(`Bulk Redux State After Update:`, {
-          updatedIndices: indices,
-          allVariantsImages: updatedVariants.map((v, idx) => ({
-            index: idx,
-            name: v.name,
-            images: v.images,
-            imagesLength: v.images?.length,
-            imagesFiltered: v.images?.filter(Boolean)?.length,
-            rawImages: v.images
-          }))
-        });
         
         return updatedVariants;
       });
@@ -336,16 +313,7 @@ export const VariantProvider = ({ children, variants, setVariants, setActiveVari
       if (!Number.isNaN(numeric) && numeric < 0) return;
     }
     
-    // Debug: Log variant field changes
-    if (fieldName === "images") {
-      console.log(`Redux Update - Variant ${variantIndex} (${variants[variantIndex]?.name})`, {
-        fieldName,
-        fieldValue,
-        fieldValueLength: fieldValue?.length,
-        fieldValueFiltered: fieldValue?.filter(Boolean),
-        currentImages: variants[variantIndex]?.images
-      });
-    }
+
     
     setVariants((previousVariants) => {
       // Create a deep copy to avoid mutation issues
@@ -358,28 +326,6 @@ export const VariantProvider = ({ children, variants, setVariants, setActiveVari
         return { ...variant };
       });
       
-      // Debug: Log the updated state for image changes
-      if (fieldName === "images") {
-        console.log(`Redux State After Update - Variant ${variantIndex}:`, {
-          updatedImages: updatedVariants[variantIndex]?.images,
-          updatedImagesLength: updatedVariants[variantIndex]?.images?.length,
-          updatedImagesFiltered: updatedVariants[variantIndex]?.images?.filter(Boolean),
-          // Detailed inspection
-          image0: updatedVariants[variantIndex]?.images?.[0],
-          image1: updatedVariants[variantIndex]?.images?.[1],
-          image2: updatedVariants[variantIndex]?.images?.[2],
-          image3: updatedVariants[variantIndex]?.images?.[3],
-          allImagesTruthy: updatedVariants[variantIndex]?.images?.map(img => Boolean(img)),
-          allVariantsImages: updatedVariants.map((v, idx) => ({
-            index: idx,
-            name: v.name,
-            images: v.images,
-            imagesLength: v.images?.length,
-            imagesFiltered: v.images?.filter(Boolean)?.length,
-            rawImages: v.images
-          }))
-        });
-      }
       
       return updatedVariants;
     });

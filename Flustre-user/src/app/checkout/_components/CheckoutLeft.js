@@ -6,8 +6,14 @@ import Image from "next/image";
 import Button from "@/app/_components/common/Button";
 import { Modal } from "antd";
 import { toast } from "sonner";
-import { addItemToServerCart, getServerCart } from "@/lib/services/orderService";
-import { placeOrder } from "@/lib/services/orderService";
+import {
+  addItemToServerCart,
+  getServerCart,
+  placeOrder,
+  createPaymentIntent,
+  verifyPayment,
+} from "@/lib/services/orderService";
+import { checkStockApi } from "@/lib/services/cartService";
 import { applyCouponById } from "@/lib/services/couponService";
 
 export default function CheckoutLeft({
@@ -24,6 +30,27 @@ export default function CheckoutLeft({
   const [orderSummaryOpen, setOrderSummaryOpen] = useState(true);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const router = useRouter();
+  const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve, reject) => {
+      if (typeof window === "undefined") {
+        return reject(new Error("Window is not available"));
+      }
+
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
+      document.body.appendChild(script);
+    });
+  };
 
   const handleProceedToPay = async () => {
     if (isPlacingOrder) return; // Prevent multiple submissions
@@ -104,16 +131,6 @@ export default function CheckoutLeft({
         return;
       }
 
-      // Handle online payment (not fully implemented yet)
-      if (paymentMethod === "online") {
-        Modal.info({
-          title: "Online payment",
-          content:
-            "Online payment flow is not configured yet. Please choose Cash on Delivery.",
-        });
-        return;
-      }
-
       setIsPlacingOrder(true);
 
       // Sync localStorage cart to server before placing order
@@ -134,8 +151,11 @@ export default function CheckoutLeft({
           let serverCartHasItems = false;
           try {
             const serverCart = await getServerCart();
-            const serverItems = serverCart?.formattedCart?.items || [];
-            serverCartHasItems = Array.isArray(serverItems) && serverItems.length > 0;
+            // get-cart returns { success, message, data: { formattedCart, ... } }
+            const formattedCart = serverCart?.data?.formattedCart;
+            const serverItems = formattedCart?.items || [];
+            serverCartHasItems =
+              Array.isArray(serverItems) && serverItems.length > 0;
           } catch (cartCheckError) {
             // Server cart doesn't exist or is empty - we need to sync
             serverCartHasItems = false;
@@ -181,9 +201,7 @@ export default function CheckoutLeft({
                     await new Promise(resolve => setTimeout(resolve, 300));
                     await applyCouponById(coupon.couponId);
                   } catch (couponError) {
-                    // If coupon application fails, continue
-                    // The coupon discount will be handled on the frontend
-                    console.log("Apply coupon to server cart:", couponError?.response?.data?.message || "Coupon may already be applied");
+               
                   }
                 }
               }
@@ -202,10 +220,6 @@ export default function CheckoutLeft({
         console.error("Error syncing cart to server:", syncError);
         // Continue anyway - try to place order, it might still work
       }
-
-      // Convert payment method to backend format (COD or ONLINE)
-      const backendPaymentMethod =
-        paymentMethod === "cod" ? "COD" : "ONLINE";
 
       // Prepare quantities array for the backend
       // Format: [{ productId, variantId (optional), quantity }]
@@ -244,10 +258,154 @@ export default function CheckoutLeft({
         return payload;
       });
 
-      // Call the placeOrder API
+      if (paymentMethod === "online") {
+        try {
+          await checkStockApi();
+        } catch (err) {
+          const errorMessage =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Some items are out of stock. Please update your cart.";
+          toast.error(errorMessage);
+          Modal.error({
+            title: "Stock unavailable",
+            content: errorMessage,
+          });
+          return;
+        }
+
+        if (!razorpayKeyId) {
+          toast.error(
+            "Online payment is not configured. Please contact support or use Cash on Delivery."
+          );
+          return;
+        }
+
+        // 1. Create payment intent on backend (Razorpay order)
+        const paymentData = await createPaymentIntent();
+
+        if (!paymentData || !paymentData.order_id) {
+          throw new Error("Failed to create payment intent");
+        }
+
+        // 2. Load Razorpay SDK
+        await loadRazorpayScript();
+
+        if (typeof window === "undefined" || !window.Razorpay) {
+          throw new Error("Razorpay SDK not available");
+        }
+
+        // Normalize address object for prefill where possible
+        const addressObj =
+          typeof address === "string"
+            ? null
+            : address && typeof address === "object"
+            ? address
+            : null;
+
+        const options = {
+          key: razorpayKeyId,
+          amount: paymentData.amount,
+          currency: paymentData.currency || "INR",
+          name: "Flustre",
+          description: "Order payment",
+          order_id: paymentData.order_id,
+          handler: async function (response) {
+            try {
+              const verifyRes = await verifyPayment({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: paymentData.amount,
+                address,
+              });
+
+              if (!verifyRes?.success) {
+                throw new Error(
+                  verifyRes?.message || "Payment verification failed"
+                );
+              }
+
+              toast.success(
+                verifyRes.message || "Payment successful and order placed"
+              );
+
+              // Clear cart from localStorage after successful order
+              try {
+                if (typeof window !== "undefined") {
+                  window.localStorage.removeItem("cartItems");
+                  window.localStorage.removeItem("cartCoupon");
+                  // Notify listeners (Nav, CartSidebar, etc.)
+                  window.dispatchEvent(new Event("coupon-updated"));
+                  window.dispatchEvent(new Event("cart-updated"));
+                  window.dispatchEvent(new Event("orders-updated"));
+                }
+              } catch (error) {
+                console.error("Error clearing cart:", error);
+              }
+
+              // Redirect to My Orders after a short delay
+              setTimeout(() => {
+                router.push("/my-account?tab=my-orders");
+              }, 1000);
+            } catch (err) {
+              console.error("Error verifying payment:", err);
+              const errorMessage =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Payment verification failed. Please contact support.";
+              toast.error(errorMessage);
+              Modal.error({
+                title: "Payment verification failed",
+                content: errorMessage,
+              });
+            }
+          },
+          prefill: {
+            name:
+              addressObj?.fullName ||
+              addressObj?.name ||
+              "",
+            contact:
+              addressObj?.phoneNumber ||
+              addressObj?.phone ||
+              "",
+          },
+          notes: {
+            address: addressObj
+              ? `${addressObj.houseApartmentName || ""}, ${
+                  addressObj.street || ""
+                }, ${addressObj.city || ""} - ${addressObj.pincode || ""}`
+              : "",
+          },
+          theme: {
+            color: "#ff5c35",
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+
+        rzp.on("payment.failed", function (response) {
+          console.error("Payment failed:", response.error);
+          const errorMessage =
+            response.error?.description ||
+            response.error?.reason ||
+            "Payment failed or was cancelled. Please try again.";
+          toast.error(errorMessage);
+          Modal.error({
+            title: "Payment failed",
+            content: errorMessage,
+          });
+        });
+
+        rzp.open();
+        return;
+      }
+
+      // COD flow - Call the placeOrder API
       const response = await placeOrder({
         address: address,
-        paymentMethod: backendPaymentMethod,
+        paymentMethod: "COD",
         quantities: quantitiesArray,
       });
 

@@ -32,7 +32,6 @@ export default function Addproduct() {
   const productData = useSelector((state) => state.productCreation.productData);
   const variants = useSelector((state) => state.productCreation.variants);
 
-  console.log(productData, "productDatacvbk");
 
   // Step management
   const [currentStep, setCurrentStep] = useState(1);
@@ -181,14 +180,6 @@ export default function Addproduct() {
           const res = await getProductById(productId);
           const prod = res.data;
 
-          console.log("Product data from API:", prod);
-          console.log("Category:", prod.category);
-          console.log("Subcategory:", prod.subcategory);
-          console.log("Extracted category ID:", prod.category?._id || "");
-          console.log(
-            "Extracted subcategory ID:",
-            prod.subcategory?._id || prod.subcategory || ""
-          );
 
           setProductData({
             name: prod.name || "",
@@ -395,7 +386,6 @@ export default function Addproduct() {
     setCurrentStep(stepNumber);
   };
 
-  console.log(productData, "productData");
   const {
     renderProductInfoStep,
     renderVariantInfoStep,

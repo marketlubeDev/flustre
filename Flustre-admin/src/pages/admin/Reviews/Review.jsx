@@ -132,7 +132,6 @@ const ReviewManagement = () => {
   const renderStars = (rating) => {
     // Ensure rating is a number
     const numRating = Number(rating);
-    console.log("Rating value:", rating, "Number rating:", numRating);
     
     return Array.from({ length: 5 }, (_, i) => (
       <Star

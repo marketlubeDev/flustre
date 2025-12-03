@@ -47,7 +47,7 @@ function ProductsPageContent() {
     error,
   } = useProducts(requestOptions);
 
-  console.log("productsasdsad", products);
+
 
   // Live categories used in mobile filter sheet
 

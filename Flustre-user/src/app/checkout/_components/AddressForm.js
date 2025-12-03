@@ -2,11 +2,17 @@
 
 import { useState } from "react";
 import Button from "@/app/_components/common/Button";
+import { useUpdateUserAddress } from "@/lib/hooks/useUpdateUserAddress";
 // import { useUpdateCurrentUser } from "@/lib/hooks/useCurrentUser"; // Removed API integration
 
 export default function AddressForm({ onBack, initialData, onSave, addressId }) {
+
+  const { mutate: updateUserAddress, isLoading: isUpdatingUserAddress } = useUpdateUserAddress();
   // Static update user function - no API integration
-  const updateUser = { mutate: () => {}, isLoading: false };
+
+
+
+  
   const [formData, setFormData] = useState({
     fullName: initialData?.fullName || "",
     phone: initialData?.phone || "",
@@ -27,7 +33,7 @@ export default function AddressForm({ onBack, initialData, onSave, addressId }) 
   };
 
   const handleSave = () => {
-    if (updateUser.isLoading) return;
+    if (isUpdatingUserAddress) return;
     // Map checkout form fields to API expected fields
     const payload = {
       address: {
@@ -42,15 +48,22 @@ export default function AddressForm({ onBack, initialData, onSave, addressId }) 
       },
     };
 
+
     // If we have an addressId, include it to update the existing address
     if (addressId) {
       payload.addressId = addressId;
     }
 
-    updateUser.mutate(payload, {
-      onSuccess: () => {
+    updateUserAddress(payload, {
+      onSuccess: (data) => {
+        const currentAddressId = data?.address?.[0]?._id;
+        localStorage.setItem("currentAddressId", currentAddressId);
+        localStorage.setItem("currentAddress", JSON.stringify(formData));
         onSave(formData);
         onBack();
+      },
+      onError: (error) => {
+        console.log(error, "error");
       },
       // Optional: surface error to user in future
     });

@@ -215,12 +215,11 @@ const Orders = () => {
 
   const handleExport = () => {
     // TODO: Implement export functionality
-    console.log("Export CSV clicked");
+
   };
 
   const handleCreateOrder = () => {
     // TODO: Implement create order functionality
-    console.log("Create order clicked");
   };
 
   // Mock categories and subcategories data

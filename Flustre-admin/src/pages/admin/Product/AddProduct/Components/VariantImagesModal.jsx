@@ -77,9 +77,6 @@ const VariantImagesModal = ({
           filename = slug
             ? `${slug}-group-${groupSlug}`
             : `group-image-${groupSlug}`;
-          console.log(
-            `Uploading images for group ${groupName} with filename: ${filename}`
-          );
         } else {
           // Individual variant image filename
           const variantSuffix =
@@ -87,9 +84,6 @@ const VariantImagesModal = ({
           filename = slug
             ? `${slug}${variantSuffix}`
             : `variant-image${variantSuffix}`;
-          console.log(
-            `Uploading images for variant ${variantIndex} with filename: ${filename}`
-          );
         }
 
         uploadedUrls = await uploadMultipleImagesToS3(filesToUpload, {

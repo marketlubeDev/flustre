@@ -20,6 +20,7 @@ import DynamicFeaturesSection from "./_components/DynamicFeaturesSection";
 import CartSidebar from "../../_components/cart/CartSidebar";
 import useProductDetails from "@/lib/hooks/useProductDetails";
 import { useCoupons } from "@/lib/hooks/useCoupons";
+import useCart from "@/lib/hooks/useCart";
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -119,6 +120,7 @@ export default function ProductDetailPage() {
     : null;
 
   const product = mappedFromApi;
+  const { addToCart: addToCartHook } = useCart();
 
   useEffect(() => {
     setMounted(true);
@@ -251,9 +253,6 @@ export default function ProductDetailPage() {
 
     setCartLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       // Get the selected variant if available
       const selectedVariantData =
         product?.variants && product.variants.length > 0
@@ -262,80 +261,12 @@ export default function ProductDetailPage() {
 
       const variantId = selectedVariantData?._id;
 
-      // Use variant-specific price and image if available
-      const price = selectedVariantData?.price || product.price;
-      const originalPrice =
-        selectedVariantData?.compareAtPrice || product.originalPrice;
-      const image =
-        (selectedVariantData?.images && selectedVariantData.images[0]) ||
-        product.primaryImage ||
-        product.featureImages[0];
+      // Delegate to shared cart hook – this will:
+      // - For logged-in users: call /cart/add-to-cart on the backend
+      // - For guests: manage cart in localStorage with availability checks
+      await addToCartHook(product, variantId, quantity);
 
-      // Get variant options (attributes)
-      // Handle both options and attributes fields
-      let variantOptions =
-        selectedVariantData?.options || selectedVariantData?.attributes || {};
-
-      // HOTFIX: If variant doesn't have options but product has options config, infer from position
-      if (
-        (!variantOptions || Object.keys(variantOptions).length === 0) &&
-        product?.options &&
-        selectedVariant >= 0
-      ) {
-        const inferredOptions = {};
-        product.options.forEach((opt) => {
-          if (opt.values && opt.values[selectedVariant]) {
-            inferredOptions[opt.name] = opt.values[selectedVariant];
-          }
-        });
-        variantOptions = inferredOptions;
-      }
-
-      // Add to localStorage cart
-      const cartItem = {
-        id: variantId ? `${product.id}_${variantId}` : product.id,
-        productId: product.id,
-        variantId,
-        name: product.name,
-        image,
-        price,
-        originalPrice,
-        quantity: quantity,
-        category: product.category,
-        categoryId: product.categoryId || null, // Store category ID for coupon filtering
-        subcategoryId: product.subcategoryId || null, // Store subcategory ID for coupon filtering
-        variantOptions: variantOptions, // Store variant options/attributes
-      };
-
-      // Get existing cart items
-      const existingCart =
-        typeof window !== "undefined"
-          ? JSON.parse(localStorage.getItem("cartItems") || "[]")
-          : [];
-
-      // Check if item already exists
-      const existingItemIndex = existingCart.findIndex(
-        (item) => item.id === cartItem.id
-      );
-
-      if (existingItemIndex >= 0) {
-        // Update quantity if item exists
-        existingCart[existingItemIndex].quantity += quantity;
-      } else {
-        // Add new item
-        existingCart.push(cartItem);
-      }
-
-      // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cartItems", JSON.stringify(existingCart));
-        // Dispatch cart update event
-        window.dispatchEvent(new Event("cart-updated"));
-      }
-
-      console.log("Added to cart:", cartItem);
-
-      // Open cart sidebar
+      // Open cart sidebar on this page as well
       setIsCartOpen(true);
     } catch (err) {
       console.error("Failed to add to cart", err);
@@ -432,32 +363,15 @@ export default function ProductDetailPage() {
         },
       ];
 
-      // Debug log
-      console.log("Buy Now - Checkout items:", checkoutItems);
+
 
       if (typeof window !== "undefined") {
-        // Store checkout items in localStorage
         localStorage.setItem("checkout_items", JSON.stringify(checkoutItems));
-
-        // Verify it was stored
-        const stored = localStorage.getItem("checkout_items");
-        console.log("Buy Now - Stored in localStorage:", stored);
-
-        // Parse to verify it's valid JSON
-        try {
-          const parsed = JSON.parse(stored);
-          console.log("Buy Now - Parsed checkout items:", parsed);
-        } catch (e) {
-          console.error("Buy Now - Failed to parse stored items:", e);
-        }
-
-        // Use window.location.href to ensure full page navigation
-        // This ensures localStorage is fully written before page loads
+       
         setTimeout(() => {
           window.location.href = "/checkout";
         }, 100);
       } else {
-        // Fallback to router.push if window is not available
         router.push("/checkout");
       }
     } catch (err) {

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import CheckoutLeft from "./_components/CheckoutLeft";
 import CheckoutRight from "./_components/CheckoutRight";
+import { updateCartItemQuantityApi } from "@/lib/services/cartService";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -37,8 +38,7 @@ export default function CheckoutPage() {
         const rawCart = localStorage.getItem("cartItems");
         const rawCheckout = localStorage.getItem("checkout_items");
 
-        console.log("Checkout page - Raw cart:", rawCart);
-        console.log("Checkout page - Raw checkout:", rawCheckout);
+
 
         let cart = [];
         let checkout = [];
@@ -59,7 +59,6 @@ export default function CheckoutPage() {
           try {
             checkout = JSON.parse(rawCheckout);
             if (!Array.isArray(checkout)) checkout = [];
-            console.log("Checkout page - Parsed checkout items:", checkout);
           } catch (e) {
             console.error("Failed to parse checkout_items:", e);
             checkout = [];
@@ -125,8 +124,7 @@ export default function CheckoutPage() {
 
         const merged = Array.from(byId.values());
 
-        // Debug log
-        console.log("Checkout page - Merged items:", merged);
+
 
         setCartItems(merged);
 
@@ -157,7 +155,6 @@ export default function CheckoutPage() {
     // Also listen for storage events in case data is added after page load
     const handleStorageChange = (e) => {
       if (e.key === "checkout_items") {
-        console.log("Storage change detected for checkout_items");
         loadCheckoutData();
       }
     };
@@ -176,12 +173,56 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  const updateQuantity = (itemId, newQuantity) => {
-    if (newQuantity >= 1) {
-      setQuantities((prev) => ({
-        ...prev,
-        [itemId]: newQuantity,
-      }));
+  const updateQuantity = async (itemId, newQuantity) => {
+    if (newQuantity < 1) return;
+
+    // Capture previous quantity before updating state
+    const prevQty = quantities[itemId] || 1;
+
+    setQuantities((prev) => ({
+      ...prev,
+      [itemId]: newQuantity,
+    }));
+
+    // Also persist updated quantities to localStorage cart items
+    try {
+      const raw = localStorage.getItem("cartItems");
+      const arr = raw ? JSON.parse(raw) : [];
+      const next = (Array.isArray(arr) ? arr : []).map((it) =>
+        String(it.id) === String(itemId)
+          ? { ...it, quantity: newQuantity }
+          : it
+      );
+      localStorage.setItem("cartItems", JSON.stringify(next));
+      // Notify listeners (cart sidebar, etc.)
+      window.dispatchEvent(new Event("cart-updated"));
+    } catch (e) {
+      console.error("Failed to persist quantity change to localStorage", e);
+    }
+
+    // If user is logged in, sync the quantity change to the server cart
+    try {
+      const isLoggedIn =
+        typeof window !== "undefined" &&
+        (!!window.localStorage?.getItem("token") ||
+          !!window.localStorage?.getItem("userToken"));
+
+      if (!isLoggedIn) return;
+
+      const item = cartItems.find((it) => String(it.id) === String(itemId));
+      if (!item) return;
+
+      const action = newQuantity > prevQty ? "increment" : "decrement";
+
+      await updateCartItemQuantityApi({
+        productId: item.productId,
+        variantId: item.variantId,
+        action,
+      });
+      // We don't need to read the response here; cart sidebar/checkout will
+      // re-sync from server on next open if needed.
+    } catch (err) {
+      console.error("Failed to sync checkout quantity change to server:", err);
     }
   };
 

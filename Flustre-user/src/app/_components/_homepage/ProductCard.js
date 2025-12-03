@@ -25,13 +25,28 @@ export default function ProductCard({
     const rawId = product && product.id != null ? String(product.id) : "";
     const originalId = rawId.includes("_") ? rawId.split("_")[0] : rawId;
     if (!originalId) return;
-    console.log("Product clicked:", originalId, product.name);
     router.push(`/products/${originalId}`);
   };
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    addToCart(product, product.variants?.[0]?._id, 1);
+    let variantId;
+    if (product) {
+      if (product.variantId) {
+        variantId = product.variantId;
+      } else if (product.selectedVariantId) {
+        variantId = product.selectedVariantId;
+      } else if (Array.isArray(product.variants) && product.variants.length > 0) {
+        const first = product.variants[0];
+        if (typeof first === "string") {
+          variantId = first;
+        } else {
+          variantId = first._id || first.id || first.variantId;
+        }
+      }
+    }
+
+    addToCart(product, variantId, 1);
   };
 
   return (

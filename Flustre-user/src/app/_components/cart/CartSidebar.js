@@ -12,35 +12,17 @@ import CartItemRow from "./components/CartItemRow";
 import CouponSection from "./components/CouponSection";
 import OrderSummary from "./components/OrderSummary";
 import BottomActionBar from "./components/BottomActionBar";
-// import useCart from "@/lib/hooks/useCart";
-// import { useSelector } from "react-redux";
+import useCart from "@/lib/hooks/useCart";
+import { useSelector } from "react-redux";
+import { updateCartItemQuantityApi } from "@/lib/services/cartService";
 
 export default function CartSidebar({ isOpen, onClose }) {
-  // Static data - no backend dependencies
-  const isLoggedIn = false; // Static for demo
-  const cartLoading = false; // Static for demo
-
-  // Static remove from cart function
-  const removeFromCart = async (itemId) => {
-    try {
-      const existingCart =
-        typeof window !== "undefined"
-          ? JSON.parse(localStorage.getItem("cartItems") || "[]")
-          : [];
-
-      const updatedCart = existingCart.filter((item) => item.id !== itemId);
-
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-        window.dispatchEvent(new Event("cart-updated"));
-      }
-
-      // Reload cart to update UI
-      loadCart();
-    } catch (err) {
-      console.error("Failed to remove item from cart:", err);
-    }
-  };
+  const { isLoggedIn } = useSelector((state) => state.user);
+  const {
+    removeFromCart: removeFromCartHook,
+    syncCartFromServer,
+    isLoading: cartLoading,
+  } = useCart();
   const [quantities, setQuantities] = useState({
     1: 1,
     2: 1,
@@ -50,6 +32,8 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [drawerWidth, setDrawerWidth] = useState(550);
   const [cartItems, setCartItems] = useState([]);
   const [couponDetails, setCouponDetails] = useState(null);
+
+
 
   const loadCart = () => {
     try {
@@ -75,8 +59,11 @@ export default function CartSidebar({ isOpen, onClose }) {
     try {
       if (typeof window !== "undefined") {
         window.localStorage.setItem("cartItems", JSON.stringify(items));
-        // Notify listeners
-        window.dispatchEvent(new Event("cart-updated"));
+        // Notify listeners in a separate task to avoid React warning
+        // "Cannot update a component while rendering a different component"
+        setTimeout(() => {
+          window.dispatchEvent(new Event("cart-updated"));
+        }, 0);
       }
     } catch (err) {
       console.error("Failed to persist cart to localStorage", err);
@@ -122,8 +109,15 @@ export default function CartSidebar({ isOpen, onClose }) {
 
   // Load cart when opened and when external updates happen
   useEffect(() => {
-    if (isOpen) loadCart();
-  }, [isOpen]);
+    if (isOpen) {
+      // For logged-in users, first sync from server so modal reflects DB state,
+      // then load from localStorage (which syncCartFromServer updates).
+      if (isLoggedIn) {
+        syncCartFromServer?.();
+      }
+      loadCart();
+    }
+  }, [isOpen, isLoggedIn]);
 
   useEffect(() => {
     const onCartUpdated = () => loadCart();
@@ -152,13 +146,78 @@ export default function CartSidebar({ isOpen, onClose }) {
     };
   }, []);
 
-  const updateQuantity = (itemId, newQuantity) => {
-    if (newQuantity >= 1) {
+  const updateQuantity = async (itemId, newQuantity) => {
+    if (newQuantity < 1) return;
+
+    if (isLoggedIn) {
+      // Logged-in: update quantity on server via API
+      const currentItem = cartItems.find(
+        (item) => String(item.id) === String(itemId)
+      );
+      if (!currentItem) return;
+
+      const currentQty =
+        quantities[itemId] || currentItem.quantity || Number(1);
+      const action = newQuantity > currentQty ? "increment" : "decrement";
+
+      try {
+        const response = await updateCartItemQuantityApi({
+          productId: currentItem.productId,
+          variantId: currentItem.variantId,
+          action,
+        });
+        const formattedCart = response?.data;
+
+        if (formattedCart && Array.isArray(formattedCart.items)) {
+          const itemsForUi = formattedCart.items.map((it) => {
+            const productId = it?.product?._id || it?.product;
+            const variantId = it?.variant?._id || it?.variant;
+            const id = variantId ? `${productId}_${variantId}` : productId;
+            const name = it?.product?.name;
+            const image =
+              it?.mainImage || it?.images?.[0] || it?.product?.mainImage;
+            const price =
+              it?.offerPrice ||
+              it?.price ||
+              it?.variant?.offerPrice ||
+              it?.variant?.price;
+            const originalPrice = it?.price || it?.variant?.price || price;
+            const qty = Number(it?.quantity) > 0 ? Number(it.quantity) : 1;
+            const variantOptions =
+              it?.variant?.options || it?.variant?.attributes || {};
+            return {
+              id: String(id),
+              productId,
+              variantId,
+              name,
+              image,
+              price,
+              originalPrice,
+              quantity: qty,
+              variantOptions,
+            };
+          });
+
+          // Persist and sync UI
+          persistCart(itemsForUi);
+          setCartItems(itemsForUi);
+          setQuantities((prev) => {
+            const next = { ...prev };
+            itemsForUi.forEach((it) => {
+              next[it.id] = it.quantity || 1;
+            });
+            return next;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to update cart quantity:", err);
+      }
+    } else {
+      // Guest: update only localStorage
       setQuantities((prev) => ({
         ...prev,
         [itemId]: newQuantity,
       }));
-      // Also persist to localStorage
       setCartItems((prev) => {
         const next = prev.map((item) =>
           item.id === itemId ? { ...item, quantity: newQuantity } : item
@@ -172,7 +231,7 @@ export default function CartSidebar({ isOpen, onClose }) {
   const removeItem = async (itemId) => {
     if (isLoggedIn) {
       // Use the useCart hook for logged-in users to sync with server
-      await removeFromCart(itemId);
+      await removeFromCartHook(itemId);
     } else {
       // For non-logged-in users, just update localStorage
       const next = cartItems.filter((item) => item.id !== itemId);

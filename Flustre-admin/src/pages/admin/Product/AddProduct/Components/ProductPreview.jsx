@@ -17,25 +17,7 @@ function ProductPreview({
     setForceRender((prev) => prev + 1);
   }, [variants]);
 
-  // Debug: Log Redux state when Preview renders
-  console.log(
-    "Preview - Redux variants state:",
-    variants?.map((v, idx) => ({
-      index: idx,
-      name: v.name,
-      images: v.images,
-      imagesLength: v.images?.length,
-      imagesFiltered: v.images?.filter(Boolean)?.length,
-      imageValues: v.images?.map((img, imgIdx) => ({
-        imgIdx,
-        value: img,
-        isTruthy: Boolean(img),
-      })),
-      rawImages: v.images,
-    })),
-    "forceRender:",
-    forceRender
-  );
+
 
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
@@ -328,32 +310,7 @@ function ProductPreview({
                                 ? variant.images.filter(Boolean)
                                 : [];
 
-                              // Debug: Log variant images in preview
-                              console.log(
-                                `Preview - Variant: ${variant.name}`,
-                                {
-                                  images: imgs,
-                                  imagesLength: imgs.length,
-                                  variantImages: variant.images,
-                                  variantImageValues: variant.images?.map(
-                                    (img, imgIdx) => ({
-                                      imgIdx,
-                                      value: img,
-                                      isTruthy: Boolean(img),
-                                    })
-                                  ),
-                                  forceRender: forceRender,
-                                  rawImages: variant.images,
-                                  // Detailed inspection
-                                  image0: variant.images?.[0],
-                                  image1: variant.images?.[1],
-                                  image2: variant.images?.[2],
-                                  image3: variant.images?.[3],
-                                  allImagesTruthy: variant.images?.map((img) =>
-                                    Boolean(img)
-                                  ),
-                                }
-                              );
+                             
 
                               const toSrc = (img) =>
                                 typeof img === "string"

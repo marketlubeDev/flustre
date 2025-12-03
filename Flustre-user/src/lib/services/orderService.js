@@ -27,3 +27,29 @@ export async function addItemToServerCart({ productId, variantId, quantity }) {
   });
   return response.data;
 }
+
+// ---------- Online payment helpers (Razorpay) ----------
+
+// Creates a Razorpay order on the backend based on the user's cart
+export async function createPaymentIntent() {
+  const response = await axiosInstance.post("/order/paymentIntent");
+  return response.data;
+}
+
+// Verifies Razorpay payment and creates the order on the backend
+export async function verifyPayment({
+  razorpay_payment_id,
+  razorpay_order_id,
+  razorpay_signature,
+  amount,
+  address,
+}) {
+  const response = await axiosInstance.post("/order/paymentVerify", {
+    razorpay_payment_id,
+    razorpay_order_id,
+    razorpay_signature,
+    amount,
+    address,
+  });
+  return response.data;
+}

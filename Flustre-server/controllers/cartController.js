@@ -21,7 +21,6 @@ const recalcTotalPrice = (cart) => {
 
 const addToCart = catchAsync(async (req, res, next) => {
   const { productId, variantId, quantity = 1 } = req.body;
-  console.log(req.user, "req.user");
   const userId = req.user;
 
   let product, variant;
@@ -135,7 +134,6 @@ const removeFromCart = catchAsync(async (req, res, next) => {
   // Replace the existing coupon check with this
   cart = await checkCoupon(cart);
   const updatedCart = await cart.save();
-  // console.log(updatedCart ,"cart",variant.offerPrice,"<u></u>");
   // updatedCart.couponApplied.finalAmount -= variant ? variant.offerPrice : product.offerPrice;
   // await updatedCart.save();
 
@@ -227,6 +225,7 @@ const getCart = catchAsync(async (req, res, next) => {
     });
     // return next(new AppError("Cart not found", 404));
   }
+
 
   const formattedCart = formatCartResponse(cart);
 
@@ -367,7 +366,7 @@ const checkStock = catchAsync(async (req, res, next) => {
       if (variant.stock < item.quantity) {
         return next(
           new AppError(
-            `Insufficient stock for variant ${variant.attributes.title} of ${product.name}`,
+            `Insufficient stock for variant ${ variant?.attributes?.title || variant?.sku || "Unknown"} of ${product?.name}`,
             400
           )
         );
@@ -388,7 +387,6 @@ const checkStock = catchAsync(async (req, res, next) => {
 });
 
 const checkAvailability = catchAsync(async (req, res, next) => {
-  console.log("req.body", req.body);
   const { productId, variantId, quantity } = req.body;
 
   const product = await productModel.findById({
@@ -406,9 +404,6 @@ const checkAvailability = catchAsync(async (req, res, next) => {
     return next(new AppError("Product or variant not found", 404));
   }
 
-  console.log(variant, "variant");
-  console.log(quantity, "quantity");
-  console.log(variant.quantity, "variant.quantity");
 
   if (variant && variant.quantity < quantity) {
     return next(new AppError("Insufficient stock for variant", 400));

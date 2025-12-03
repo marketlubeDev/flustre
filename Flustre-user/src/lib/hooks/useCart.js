@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   checkAvailability,
   addToCartApi,
@@ -11,8 +11,9 @@ import axiosInstance from "../axios/axiosInstance";
 const useCart = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [cartItems, setCartItems] = useState([]);
-
   const { isLoggedIn } = useSelector((state) => state.user);
+  const hasSyncedOnLoginRef = useRef(false);
+
   const addToCart = async (product, variantId, quantity) => {
     setIsLoading(true);
     if (!isLoggedIn) {
@@ -298,7 +299,8 @@ const useCart = () => {
 
     try {
       const response = await axiosInstance.get("/cart/get-cart");
-      const formattedCart = response?.data?.formattedCart;
+      // NOTE: get-cart responds with { success, message, data: { formattedCart, ... } }
+      const formattedCart = response?.data?.data?.formattedCart;
 
       if (formattedCart && Array.isArray(formattedCart.items)) {
         const itemsForUi = formattedCart.items.map((it) => {
@@ -342,6 +344,81 @@ const useCart = () => {
       console.error("Failed to sync cart from server:", err);
     }
   };
+
+  // When a user logs in, merge any existing guest cart from localStorage into
+  // the server cart, then sync the final server cart back to localStorage.
+  useEffect(() => {
+    const syncGuestCartToServer = async () => {
+      if (!isLoggedIn || hasSyncedOnLoginRef.current) return;
+      hasSyncedOnLoginRef.current = true;
+
+      if (typeof window === "undefined") return;
+
+      try {
+        const rawLocal = window.localStorage.getItem("cartItems");
+        const localItems = rawLocal ? JSON.parse(rawLocal) : [];
+
+        // If no local items, just sync from server
+        if (!Array.isArray(localItems) || localItems.length === 0) {
+          await syncCartFromServer();
+          return;
+        }
+
+        // Load current server cart to avoid double‑counting quantities
+        let serverItems = [];
+        try {
+          const res = await axiosInstance.get("/cart/get-cart");
+          const formattedCart = res?.data?.data?.formattedCart;
+          if (formattedCart && Array.isArray(formattedCart.items)) {
+            serverItems = formattedCart.items.map((it) => {
+              const productId = it?.product?._id || it?.product;
+              const variantId = it?.variant?._id || it?.variant;
+              const id = variantId ? `${productId}_${variantId}` : productId;
+              const qty = Number(it?.quantity) > 0 ? Number(it.quantity) : 1;
+              return { id: String(id), productId, variantId, quantity: qty };
+            });
+          }
+        } catch {
+          // If fetching server cart fails, we'll just replay all local items
+          serverItems = [];
+        }
+
+        const serverMap = new Map(
+          serverItems.map((it) => [String(it.id), it.quantity || 0])
+        );
+
+        // For each local item, if server has less quantity, add the difference.
+        for (const item of localItems) {
+          const productId = item.productId || item.id?.split("_")[0];
+          const variantId = item.variantId ||
+            (item.id?.includes("_") ? item.id.split("_")[1] : null);
+          const idKey = String(item.id);
+          const localQty = Number(item.quantity) > 0 ? Number(item.quantity) : 1;
+          const serverQty = serverMap.get(idKey) || 0;
+          const diff = localQty - serverQty;
+
+          if (!productId || diff <= 0) continue;
+
+          try {
+            await addToCartApi({
+              productId,
+              variantId,
+              quantity: diff,
+            });
+          } catch (err) {
+            console.warn("Failed to sync local cart item to server:", err);
+          }
+        }
+
+        // Finally, normalize everything by syncing from server
+        await syncCartFromServer();
+      } catch (err) {
+        console.error("Failed to sync guest cart to server on login:", err);
+      }
+    };
+
+    syncGuestCartToServer();
+  }, [isLoggedIn]);
 
   return {
     addToCart,

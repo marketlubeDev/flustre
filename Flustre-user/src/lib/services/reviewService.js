@@ -16,3 +16,8 @@ export async function submitReview({ productId, rating, review, files }) {
   });
   return res.data;
 }
+
+export async function updateUserAddress(payload) {
+  const res = await axiosInstance.patch(`/user//update-user`, payload);
+  return res.data;
+}

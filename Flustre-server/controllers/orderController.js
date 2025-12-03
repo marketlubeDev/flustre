@@ -109,7 +109,6 @@ const payment = catchAsync(async (req, res, next) => {
       amount: response.amount,
     });
   } catch (err) {
-    console.log(err, "error");
     res.status(400).send("Not able to create order. Please try again!");
   }
 });
@@ -271,6 +270,7 @@ const placeOrder = catchAsync(async (req, res, next) => {
     return next(new AppError("No items in cart to place an order", 400));
   }
 
+
   let totalAmount = 0;
   const validatedProducts = [];
 
@@ -309,6 +309,7 @@ const placeOrder = catchAsync(async (req, res, next) => {
       const variant = product.variants.find(
         (v) => v._id.toString() === item.variant.toString()
       );
+
 
       if (!variant) {
         return next(new AppError(`Variant not found: ${item.variant}`, 404));

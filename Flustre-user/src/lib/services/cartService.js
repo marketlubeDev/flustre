@@ -1,7 +1,6 @@
 import axiosInstance from "../axios/axiosInstance";
 
 export async function checkAvailability(data) {
-  console.log("data", data);
   const response = await axiosInstance.post("/cart/check-availability", data);
   return response.data;
 }
@@ -34,5 +33,29 @@ export async function removeFromCartApi(data) {
   const response = await axiosInstance.delete("/cart/remove-from-cart", {
     data: payload,
   });
+  return response.data;
+}
+
+// Check that all items in the authenticated user's cart have sufficient stock.
+// Backend: GET /cart/check-stock
+export async function checkStockApi() {
+  const response = await axiosInstance.get("/cart/check-stock");
+  return response.data;
+}
+
+export async function updateCartItemQuantityApi(data) {
+  const { productId, variantId, action } =
+    typeof data === "object" && !Array.isArray(data) ? data : {};
+
+  const payload = {
+    productId,
+    variantId,
+    action,
+  };
+
+  const response = await axiosInstance.patch(
+    "/cart/update-cart-quantity",
+    payload
+  );
   return response.data;
 }

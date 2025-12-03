@@ -11,7 +11,6 @@ const ProductTableRow = ({
 }) => {
   const navigate = useNavigate();
 
-  console.log(product, "sdfdfsdsdds");
 
   const handleEdit = (id) => {
     const query = `?productId=${encodeURIComponent(id)}`;
