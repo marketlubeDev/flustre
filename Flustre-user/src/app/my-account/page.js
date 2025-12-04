@@ -2,6 +2,7 @@
 
 import React, { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
 import AccountInfo from "./_components/AccountInfo";
 import SavedAddress from "./_components/SavedAddress";
 import MyOrders from "./_components/MyOrders";
@@ -15,34 +16,8 @@ function MyAccountContent() {
   const searchParams = useSearchParams();
   const tabParam = (searchParams.get("tab") || "").toLowerCase();
 
-  // Auth state derived from localStorage tokens
-  // Initialize with false to avoid hydration mismatch (server vs client)
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const getIsAuthenticated = () => {
-    if (typeof window === "undefined") return false;
-    const token =
-      window.localStorage?.getItem("token") ||
-      window.localStorage?.getItem("userToken");
-    return !!token;
-  };
-
-  useEffect(() => {
-    const syncAuth = () => setIsAuthenticated(getIsAuthenticated());
-    // Initial sync in case of late hydration
-    syncAuth();
-    // Update on storage changes (other tabs) and window focus
-    window.addEventListener("storage", syncAuth);
-    window.addEventListener("focus", syncAuth);
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") syncAuth();
-    });
-    return () => {
-      window.removeEventListener("storage", syncAuth);
-      window.removeEventListener("focus", syncAuth);
-      document.removeEventListener("visibilitychange", () => {});
-    };
-  }, []);
+  // Use Redux for authentication state (consistent with other components)
+  const { isLoggedIn } = useSelector((state) => state.user);
 
   // Define tabs with their keys and corresponding display names
   const tabsConfig = [
@@ -103,14 +78,14 @@ function MyAccountContent() {
 
   // Guard: if not authenticated and a protected tab is selected via URL, redirect to login with redirect back
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoggedIn) {
       if (protectedTabs.includes(activeTab)) {
         const desiredUrl = `${pathname}?tab=${activeTab}`;
         const redirectParam = encodeURIComponent(desiredUrl);
         router.replace(`/login?redirect=${redirectParam}`);
       }
     }
-  }, [isAuthenticated, activeTab, pathname]);
+  }, [isLoggedIn, activeTab, pathname, router]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -153,7 +128,7 @@ function MyAccountContent() {
               <button
                 key={tab.key}
                 onClick={() => {
-                  if (!isAuthenticated && protectedTabs.includes(tab.key)) {
+                  if (!isLoggedIn && protectedTabs.includes(tab.key)) {
                     const desiredUrl = `${pathname}?tab=${tab.key}`;
                     const redirectParam = encodeURIComponent(desiredUrl);
                     router.push(`/login?redirect=${redirectParam}`);

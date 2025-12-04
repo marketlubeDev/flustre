@@ -379,7 +379,7 @@ export default function CheckoutLeft({
               : "",
           },
           theme: {
-            color: "#ff5c35",
+            color: "#2B73B8",
           },
         };
 

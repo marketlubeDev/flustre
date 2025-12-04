@@ -363,7 +363,7 @@ const checkStock = catchAsync(async (req, res, next) => {
     }
 
     if (variant) {
-      if (variant.stock < item.quantity) {
+      if (variant.quantity < item.quantity) {
         return next(
           new AppError(
             `Insufficient stock for variant ${ variant?.attributes?.title || variant?.sku || "Unknown"} of ${product?.name}`,
@@ -372,7 +372,7 @@ const checkStock = catchAsync(async (req, res, next) => {
         );
       }
     } else {
-      if (product.stock < item.quantity) {
+      if (product.quantity < item.quantity) {
         return next(
           new AppError(`Insufficient stock for product ${product.name}`, 400)
         );
