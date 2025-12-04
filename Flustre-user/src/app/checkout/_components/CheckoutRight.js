@@ -177,11 +177,16 @@ export default function CheckoutRight({
       localStorage.removeItem("userToken");
       localStorage.removeItem("user");
       localStorage.removeItem("selectedCategory");
+      // Clear cart from localStorage when logging out (logged-in users' carts are in DB)
       localStorage.removeItem("cartItems");
+      localStorage.removeItem("cartCoupon");
       localStorage.removeItem("currentAddressId");
       localStorage.removeItem("currentAddress");
       localStorage.removeItem("checkoutAddressOverride");
       sessionStorage.clear();
+      // Notify listeners that cart was cleared
+      window.dispatchEvent(new Event("cart-updated"));
+      window.dispatchEvent(new Event("coupon-updated"));
     }
     router.push("/login");
   };

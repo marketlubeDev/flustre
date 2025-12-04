@@ -345,6 +345,22 @@ const useCart = () => {
     }
   };
 
+  // When user logs out, clear cart state and localStorage
+  useEffect(() => {
+    if (!isLoggedIn) {
+      hasSyncedOnLoginRef.current = false;
+      // Clear cart state when logged out
+      setCartItems([]);
+      // Clear cart from localStorage (logged-in users' carts are in DB)
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("cartItems");
+        window.localStorage.removeItem("cartCoupon");
+        window.dispatchEvent(new Event("cart-updated"));
+        window.dispatchEvent(new Event("coupon-updated"));
+      }
+    }
+  }, [isLoggedIn]);
+
   // When a user logs in, merge any existing guest cart from localStorage into
   // the server cart, then sync the final server cart back to localStorage.
   useEffect(() => {

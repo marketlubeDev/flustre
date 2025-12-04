@@ -9,7 +9,7 @@ import {
   useCurrentUser,
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
-import { setUser } from "@/features/user/userSlice";
+import { setUser, logout } from "@/features/user/userSlice";
 
 export default function AccountInfo() {
   const router = useRouter();
@@ -65,9 +65,16 @@ export default function AccountInfo() {
       localStorage.removeItem("userToken");
       localStorage.removeItem("user");
       localStorage.removeItem("selectedCategory");
+      // Clear cart from localStorage when logging out (logged-in users' carts are in DB)
       localStorage.removeItem("cartItems");
+      localStorage.removeItem("cartCoupon");
       sessionStorage.clear();
+      // Notify listeners that cart was cleared
+      window.dispatchEvent(new Event("cart-updated"));
+      window.dispatchEvent(new Event("coupon-updated"));
     }
+    // Dispatch Redux logout action
+    dispatch(logout());
     // Navigate to login page
     router.push("/login");
   };

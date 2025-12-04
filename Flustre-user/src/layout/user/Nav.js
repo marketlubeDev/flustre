@@ -3,10 +3,12 @@
 import { useState, useRef, useMemo, Suspense, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useDispatch } from "react-redux";
 import Image from "next/image";
 import NavigationBar from "./NavigationBar";
 import CartSidebar from "../../app/_components/cart/CartSidebar";
 import useCategories from "../../lib/hooks/useCategories";
+import { logout } from "@/features/user/userSlice";
 
 import LocationModal from "../../app/_components/common/LocationModal";
 
@@ -36,6 +38,7 @@ function useBigTablet() {
 
 function NavContent() {
   // All state management
+  const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -395,8 +398,16 @@ function NavContent() {
       window.localStorage?.removeItem("userToken");
       window.localStorage?.removeItem("user");
       window.localStorage?.removeItem("selectedCategory");
+      // Clear cart from localStorage when logging out (logged-in users' carts are in DB)
+      window.localStorage?.removeItem("cartItems");
+      window.localStorage?.removeItem("cartCoupon");
       window.sessionStorage?.clear();
+      // Notify listeners that cart was cleared
+      window.dispatchEvent(new Event("cart-updated"));
+      window.dispatchEvent(new Event("coupon-updated"));
     }
+    // Dispatch Redux logout action
+    dispatch(logout());
     setAuthToken(null);
     setUserData(null);
     setIsAuthenticated(false);
