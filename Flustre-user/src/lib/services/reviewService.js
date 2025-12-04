@@ -18,6 +18,6 @@ export async function submitReview({ productId, rating, review, files }) {
 }
 
 export async function updateUserAddress(payload) {
-  const res = await axiosInstance.patch(`/user//update-user`, payload);
+  const res = await axiosInstance.patch(`/user/update-user`, payload);
   return res.data;
 }
