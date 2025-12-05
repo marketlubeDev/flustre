@@ -341,6 +341,9 @@ function ProductsPageContent() {
               selectedCategory={selectedCategory}
               sortBy={sortBy}
               setSortBy={setSortBy}
+              selectedDiscount={selectedDiscount}
+              priceRange={priceRange}
+              onClearFilters={clearAllFilters}
             />
           </div>
         </div>

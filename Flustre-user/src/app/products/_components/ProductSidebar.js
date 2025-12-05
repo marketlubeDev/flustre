@@ -28,9 +28,10 @@ export default function ProductSidebar({
   ];
 
   const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
+    const newCategory = selectedCategory === category ? "" : category;
+    setSelectedCategory(newCategory);
     // Store in component state instead of localStorage
-    setSessionData({ selectedCategory: category });
+    setSessionData({ selectedCategory: newCategory });
   };
 
   return (
@@ -105,7 +106,11 @@ export default function ProductSidebar({
           {discountOptions.map((discount) => (
             <button
               key={discount}
-              onClick={() => setSelectedDiscount(discount)}
+              onClick={() =>
+                setSelectedDiscount(
+                  selectedDiscount === discount ? "" : discount
+                )
+              }
               className={`w-full text-left px-3 py-2 rounded-md transition-colors cursor-pointer ${
                 selectedDiscount === discount
                   ? "bg-[#f7f3f4]"

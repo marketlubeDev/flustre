@@ -4,14 +4,17 @@ import PromotionalBanner from "../../_components/_homepage/promotion/Promotional
 import ProductShowcaseBanner from "../../_components/_homepage/promotion/ProductShowcaseBanner";
 import ProductCard from "../../_components/_homepage/ProductCard";
 import { LuPackageSearch } from "react-icons/lu";
+import { RxCross2 } from "react-icons/rx";
 import Image from "next/image";
-;
 
 export default function ProductGrid({
   products,
   selectedCategory,
   sortBy,
   setSortBy,
+  selectedDiscount,
+  priceRange,
+  onClearFilters,
 }) {
   const sortOptions = [
     "Featured",
@@ -20,6 +23,12 @@ export default function ProductGrid({
     "Newest",
     "Popular",
   ];
+
+  const hasActiveFilters =
+    selectedCategory ||
+    selectedDiscount ||
+    priceRange?.min !== 0 ||
+    priceRange?.max !== 100000;
 
   // Use products from parent directly
   const modifiedProducts = Array.isArray(products) ? products : [];
@@ -69,7 +78,7 @@ export default function ProductGrid({
             <span className="font-semibold text-sm">Sort</span>
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-lg sm:text-xl font-semibold text-gray-600">
             Showing results for{" "}
             <span className="font-semibold text-gray-900">
@@ -78,6 +87,15 @@ export default function ProductGrid({
               &quot;
             </span>
           </h1>
+          {hasActiveFilters && onClearFilters && (
+            <button
+              onClick={onClearFilters}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors border border-red-200 hover:border-red-300"
+            >
+              <RxCross2 className="w-4 h-4" />
+              <span>Clear Filters</span>
+            </button>
+          )}
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
