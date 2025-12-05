@@ -154,24 +154,24 @@ export default function ProductSidebar({
         {/* Price Range Slider */}
         <div className="mb-4 px-4">
           <div
-            className="relative max-w-[200px]"
+            className="relative max-w-[200px] overflow-visible"
             style={{ margin: "0 auto 0 0" }}
           >
             {/* Background track */}
-            <div className="w-full h-1 bg-gray-300 rounded-lg relative">
+            <div className="w-full h-1 bg-gray-300 rounded-lg relative overflow-visible">
               {/* Green selected portion */}
               <div
                 className="h-1 bg-[var(--color-primary)] absolute top-0"
                 style={{
                   width: `${
-                    ((priceRange.max - priceRange.min) / (20000 - 0)) * 100
+                    ((priceRange.max - priceRange.min) / (100000 - 0)) * 100
                   }%`,
-                  left: `${(priceRange.min / 20000) * 100}%`,
+                  left: `${(priceRange.min / 100000) * 100}%`,
                   right: "auto",
                   borderRadius:
                     priceRange.min === 0
                       ? "4px 0 0 4px"
-                      : priceRange.max === 20000
+                      : priceRange.max === 100000   
                       ? "0 4px 4px 0"
                       : "0",
                 }}
@@ -182,9 +182,13 @@ export default function ProductSidebar({
                 className="absolute z-10"
                 style={{
                   top: "50%",
-                  left: `${(priceRange.min / 20000) * 100}%`,
+                  left: priceRange.min === 0 
+                    ? "0" 
+                    : `${(priceRange.min / 100000) * 100}%`,
                   right: "auto",
-                  transform: "translate(-50%, -50%)",
+                  transform: priceRange.min === 0 
+                    ? "translate(0, -50%)" 
+                    : "translate(-50%, -50%)",
                 }}
               >
                 <Image
@@ -201,9 +205,15 @@ export default function ProductSidebar({
                 className="absolute z-10"
                 style={{
                   top: "50%",
-                  left: `${(priceRange.max / 20000) * 100}%`,
-                  right: "auto",
-                  transform: "translate(-50%, -50%)",
+                  left: priceRange.max === 100000 
+                    ? "auto" 
+                    : `${(priceRange.max / 100000) * 100}%`,
+                  right: priceRange.max === 100000 
+                    ? "0" 
+                    : "auto",
+                  transform: priceRange.max === 100000 
+                    ? "translate(50%, -50%)" 
+                    : "translate(-50%, -50%)",
                 }}
               >
                 <Image
@@ -220,7 +230,7 @@ export default function ProductSidebar({
             <input
               type="range"
               min="0"
-              max="20000"
+              max="100000"
               value={priceRange.min}
               onChange={(e) => {
                 const value = parseInt(e.target.value);
@@ -239,7 +249,7 @@ export default function ProductSidebar({
             <input
               type="range"
               min="0"
-              max="20000"
+              max="100000"
               value={priceRange.max}
               onChange={(e) => {
                 const value = parseInt(e.target.value);
