@@ -11,7 +11,6 @@ import ProductImageSection from "./_components/ProductImageSection";
 import ProductFeaturesText from "./_components/ProductFeaturesText";
 import FeaturedProductsSection from "../../_components/_homepage/featuredproduct/FeaturedProductsSection";
 import BestSellersSection from "../../_components/_homepage/bestSeller/BestSellersSection";
-import RecommendedSection from "./_components/RecommendedSection";
 import ReviewsSection from "./_components/ReviewsSection";
 import CategoryFeaturesSection from "./_components/CategoryFeaturesSection";
 import ProductImagesSection from "./_components/ProductImagesSection";
@@ -442,11 +441,10 @@ export default function ProductDetailPage() {
         <DynamicFeaturesSection product={product} />
         <FeaturedProductsSection isProductPage={true} />
         <ReviewsSection product={product} selectedImage={selectedImage} />
-        <RecommendedSection />
       </div>
 
       {/* Cart Sidebar */}
       <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
-}
+}s
