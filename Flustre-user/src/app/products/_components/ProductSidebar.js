@@ -27,14 +27,6 @@ export default function ProductSidebar({
     "Discount 50",
   ];
 
-  const priceRanges = [
-    "Under 1000",
-    "Range 1000 to 2000",
-    "Range 2000 to 3000",
-    "Range 3000 to 4000",
-    "Over 4000",
-  ];
-
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
     // Store in component state instead of localStorage
@@ -315,27 +307,6 @@ export default function ProductSidebar({
               <span style={{ color: "rgba(51, 51, 51, 0.70)" }}>₹</span>{" "}
               {priceRange.max.toLocaleString()}
             </div>
-          </div>
-        </div>
-
-        {/* Predefined Price Ranges */}
-        <div className="space-y-0 px-0">
-          <div className="max-w-[200px]" style={{ margin: "0 auto 0 0" }}>
-            {priceRanges.map((range) => (
-              <button
-                key={range}
-                className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-                style={{
-                  color: "rgba(51, 51, 51, 0.70)",
-                  fontSize: "15px",
-                  fontWeight: "600",
-                  lineHeight: "normal",
-                  letterSpacing: "-0.16px",
-                }}
-              >
-                {range}
-              </button>
-            ))}
           </div>
         </div>
       </div>

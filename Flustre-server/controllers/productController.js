@@ -414,6 +414,9 @@ const listProducts = catchAsync(async (req, res, next) => {
     activeStatus,
   } = req.query;
 
+
+  console.log(req.query , "req.query>>>");
+
   page = parseInt(page) || 1;
   const noPagination = String(req.query.limit).toLowerCase() === "all";
   limit = noPagination ? undefined : parseInt(limit) || 10;
@@ -464,8 +467,19 @@ const listProducts = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: "variants",
-        localField: "variants",
-        foreignField: "_id",
+        let: { variantIds: "$variants" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $in: ["$_id", "$$variantIds"] },
+                  { $ne: ["$isDeleted", true] },
+                ],
+              },
+            },
+          },
+        ],
         as: "variantsData",
       },
     },
@@ -512,15 +526,15 @@ const listProducts = catchAsync(async (req, res, next) => {
             then: {
               $cond: {
                 if: { $gt: [{ $size: "$finalVariants" }, 0] },
-                then: { $max: "$finalVariants.offerPrice" },
-                else: "$offerPrice",
+                then: { $max: "$finalVariants.price" },
+                else: "$price",
               },
             },
             else: {
               $cond: {
                 if: { $gt: [{ $size: "$finalVariants" }, 0] },
-                then: { $min: "$finalVariants.offerPrice" },
-                else: "$offerPrice",
+                then: { $min: "$finalVariants.price" },
+                else: "$price",
               },
             },
           },
@@ -534,13 +548,13 @@ const listProducts = catchAsync(async (req, res, next) => {
                 then: {
                   $sortArray: {
                     input: "$finalVariants",
-                    sortBy: { offerPrice: -1 },
+                    sortBy: { price: -1 },
                   },
                 },
                 else: {
                   $sortArray: {
                     input: "$finalVariants",
-                    sortBy: { offerPrice: 1 },
+                    sortBy: { price: 1 },
                   },
                 },
               },
@@ -663,8 +677,19 @@ const listProducts = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: "variants",
-        localField: "variants",
-        foreignField: "_id",
+        let: { variantIds: "$variants" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $in: ["$_id", "$$variantIds"] },
+                  { $ne: ["$isDeleted", true] },
+                ],
+              },
+            },
+          },
+        ],
         as: "variantsData",
       },
     },
