@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, useMemo } from "react";
 import ProductCard from "../_components/_homepage/ProductCard";
 import ProductSidebar from "./_components/ProductSidebar";
 import ProductGrid from "./_components/ProductGrid";
@@ -11,6 +11,7 @@ import Image from "next/image";
 
 function ProductsPageContent() {
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [selectedDiscount, setSelectedDiscount] = useState("");
   const DEFAULT_PRICE_RANGE = { min: 0, max: 100000 };
   const [priceRange, setPriceRange] = useState({ ...DEFAULT_PRICE_RANGE });
@@ -27,6 +28,30 @@ function ProductsPageContent() {
     (c) => c.name?.toLowerCase() === selectedCategory?.toLowerCase()
   )?.id;
 
+  // Find subcategory ID from the selected category's subcategories
+  const selectedSubcategoryId = useMemo(() => {
+    if (!selectedSubcategory || !selectedCategoryId || !categories) return null;
+    
+    const category = categories.find(
+      (c) => c.id === selectedCategoryId
+    );
+    
+    if (category && Array.isArray(category.subcategories)) {
+      const subcategory = category.subcategories.find((sub) => {
+        const subName = typeof sub === "object" && sub !== null ? (sub.name || sub) : sub;
+        return subName?.toLowerCase() === selectedSubcategory?.toLowerCase();
+      });
+      
+      if (subcategory) {
+        return typeof subcategory === "object" && subcategory !== null
+          ? (subcategory._id || subcategory.id || null)
+          : null;
+      }
+    }
+    
+    return null;
+  }, [selectedSubcategory, selectedCategoryId, categories]);
+
   const isPriceFilterActive =
     priceRange.min !== DEFAULT_PRICE_RANGE.min ||
     priceRange.max !== DEFAULT_PRICE_RANGE.max;
@@ -36,6 +61,7 @@ function ProductsPageContent() {
     limit: 24,
   };
   if (selectedCategoryId) requestOptions.categoryId = selectedCategoryId;
+  if (selectedSubcategoryId) requestOptions.subcategoryId = selectedSubcategoryId;
   if (isPriceFilterActive) {
     requestOptions.minPrice = priceRange.min;
     requestOptions.maxPrice = priceRange.max;
@@ -136,15 +162,23 @@ function ProductsPageContent() {
   // Initialize from URL params or localStorage fallback
   useEffect(() => {
     const urlCategory = searchParams?.get("category");
+    const urlSubcategory = searchParams?.get("subcategory");
+    
     if (urlCategory && urlCategory !== "") {
       setSelectedCategory(urlCategory);
-      return;
-    }
-    const storedCategory = localStorage.getItem("selectedCategory");
-    if (storedCategory && storedCategory !== "") {
-      setSelectedCategory(storedCategory);
     } else {
-      setSelectedCategory("");
+      const storedCategory = localStorage.getItem("selectedCategory");
+      if (storedCategory && storedCategory !== "") {
+        setSelectedCategory(storedCategory);
+      } else {
+        setSelectedCategory("");
+      }
+    }
+    
+    if (urlSubcategory && urlSubcategory !== "") {
+      setSelectedSubcategory(urlSubcategory);
+    } else {
+      setSelectedSubcategory("");
     }
   }, [searchParams]);
 

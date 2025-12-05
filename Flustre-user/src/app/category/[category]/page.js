@@ -3,29 +3,22 @@
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import HeroBanner from "../../_components/_homepage/hero/HeroBanner";
-import ShopByPriceSection from "../../_components/_homepage/ShopByPriceSection";
+import SubcategoriesSection from "../../_components/_homepage/SubcategoriesSection";
 import HaircareBanner from "../../_components/_homepage/HaircareBanner";
 import SunsilkShampooSection from "../../_components/_homepage/SunsilkShampooSection";
 import NewLaunchesSection from "../../_components/_homepage/NewLaunchesSection";
 import ShopOtherCategoriesSection from "../../_components/_homepage/ShopOtherCategoriesSection";
-import CategorySection from "../../_components/_homepage/categroy/CategorySection";
-import BestSellersSection from "../../_components/_homepage/bestSeller/BestSellersSection";
 import FeaturedProductsSection from "../../_components/_homepage/featuredproduct/FeaturedProductsSection";
-import ServiceBenefits from "../../_components/_homepage/service/ServiceBenefits";
-import PromotionalBanner from "../../_components/_homepage/promotion/PromotionalBanner";
-import CrystalClearBanner from "../../_components/_homepage/promotion/CrystalClearBanner";
-import EngineeredBy7Hz from "../../_components/_homepage/EngineeredBy7Hz";
-import InstagramSection from "../../_components/_homepage/InstagramSection";
 
 export default function CategoryPage() {
   const params = useParams();
   const categoryName = params.category;
-  const shopByPriceRef = useRef(null);
+  const subcategoriesRef = useRef(null);
 
-  // Scroll to Shop by Price section when category page loads or when category changes
+  // Scroll to Subcategories section when category page loads or when category changes
   useEffect(() => {
-    if (shopByPriceRef.current) {
-      const element = shopByPriceRef.current;
+    if (subcategoriesRef.current) {
+      const element = subcategoriesRef.current;
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - 100; // Offset by 100px to show some content above
       
@@ -61,9 +54,10 @@ export default function CategoryPage() {
       {/* Hero Banner */}
       <HeroBanner />
       
-      {/* Shop by Price Section - Auto-scroll target */}
-      <div ref={shopByPriceRef}>
-        <ShopByPriceSection key={displayName} selectedCategory={displayName} />
+      {/* Subcategories Section - Auto-scroll target */}
+      <div ref={subcategoriesRef}>
+        <SubcategoriesSection key={displayName} selectedCategory={displayName} />
+        
       </div>
       
       {/* Haircare Banner Section */}

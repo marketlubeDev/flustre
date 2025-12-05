@@ -27,7 +27,7 @@ export default function useCategories() {
           name: item?.name || "",
           image: item?.image || "",
           description: item?.description || "",
-          subcategories: item?.subcategories || "",
+          subcategories: Array.isArray(item?.subcategories) ? item.subcategories : [],
         }));
 
         setCategories(normalized);
