@@ -447,4 +447,4 @@ export default function ProductDetailPage() {
       <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
-}s
+}
