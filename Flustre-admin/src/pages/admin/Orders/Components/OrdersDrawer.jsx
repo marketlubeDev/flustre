@@ -1,15 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Drawer, Select } from "antd";
 import { IoClose } from "react-icons/io5";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import OrderCustomerBasics from "./OrderCustomerBasics";
 import OrderProducts from "./OrderProducts";
 import OrderPaymentStatus from "./OrderPaymentStatus";
 import OrderPricing from "./OrderPricing";
 import OrderStatusTimeline from "./OrderStatusTimeline";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/common";
-import { ChevronDown, Printer } from "lucide-react";
 import { IoPrintOutline } from "react-icons/io5";
 import { updateOrderStatus } from "@/sevices/OrderApis";
 import { toast } from "react-toastify";
@@ -49,26 +46,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
     }
   }, [localOrder?.createdAt]);
 
-  const subtotal = useMemo(() => {
-    if (!localOrder?.products) return 0;
-    return localOrder.products.reduce(
-      (sum, p) => sum + ((p?.price || 0) * (p?.quantity || 0)),
-      0
-    );
-  }, [localOrder?.products]);
 
-  const gst = useMemo(() => {
-    // example 18% GST if not provided
-    const explicit = localOrder?.taxAmount;
-    if (typeof explicit === "number") return explicit;
-    return Math.round(subtotal * 0.18);
-  }, [localOrder?.taxAmount, subtotal]);
-
-  const shipping = localOrder?.shippingAmount ?? 0;
-  const grandTotal = useMemo(
-    () => subtotal + gst + shipping,
-    [subtotal, gst, shipping]
-  );
 
   const renderStatusBadge = (value) => {
     const map = {
