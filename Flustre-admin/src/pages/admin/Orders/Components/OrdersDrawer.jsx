@@ -114,7 +114,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
     );
   };
 
-0
+
 
 
   const printInvoice = () => {
