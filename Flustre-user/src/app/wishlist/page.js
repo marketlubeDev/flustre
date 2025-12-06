@@ -1,28 +1,64 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useWishlist } from "../_components/context/WishlistContext";
+import { useWishlist } from "@/lib/hooks/useWishlist";
+
 import Image from "next/image";
 import { FaHeart } from "react-icons/fa6";
 
-const sortOptions = [
-  "Featured",
-  "Price: Low to High",
-  "Price: High to Low",
-  "Newest",
-  "Popular",
-];
-
-function WishlistCard({ product, onRemove }) {
+function WishlistCard({ item, onRemove }) {
   const router = useRouter();
 
+  // Handle both server response structure and localStorage structure
+  // Server structure: { product: {...}, variant: {...}, addedAt, mainImage, images }
+  // LocalStorage structure: { productId, variantId, id, ...productData }
+  
+  let product, variant, productId, variantId;
+  
+  if (item.product) {
+    // Server response structure
+    product = item.product;
+    variant = item.variant;
+    productId = product?._id || product?.id;
+    variantId = variant?._id || variant?.id || null;
+  } else {
+    // LocalStorage structure or legacy structure
+    product = item;
+    variant = null;
+    productId = item.productId || item.id?.split("_")[0] || item._id || item.id;
+    variantId = item.variantId || (item.id?.includes("_") ? item.id.split("_")[1] : null);
+  }
+  
+  // Get image - prefer variant image, then product mainImage, then first image
+  const productImage = 
+    variant?.images?.[0] || 
+    item.mainImage || 
+    product?.mainImage || 
+    product?.featureImages?.[0] || 
+    product?.primaryImage || 
+    product?.images?.[0] ||
+    product?.image ||
+    "/placeholder.png";
+  
+  // Get price - prefer variant price, then product price
+  const price = variant?.offerPrice || variant?.price || product?.offerPrice || product?.price || 0;
+  const originalPrice = variant?.price || product?.price || product?.originalPrice || null;
+  
+  // Get product name
+  const productName = product?.name || "Product";
+  
+  // Get category/subcategory for type
+  const productType = product?.category?.name || product?.subcategory?.name || product?.type || "";
+
   const handleCardClick = () => {
-    // Extract original product ID (remove _index suffix if present)
-    const rawId = product && product.id != null ? String(product.id) : "";
-    const originalId = rawId.includes("_") ? rawId.split("_")[0] : rawId;
-    if (!originalId) return;
-    router.push(`/products/${originalId}`);
+    if (!productId) return;
+    router.push(`/products/${productId}`);
+  };
+
+  const handleRemove = (e) => {
+    e.stopPropagation();
+    onRemove(productId, variantId);
   };
 
   return (
@@ -33,8 +69,8 @@ function WishlistCard({ product, onRemove }) {
       <div className="relative">
         <div className="relative h-32 sm:h-36 md:h-40 lg:h-44 flex items-center justify-center overflow-hidden">
           <Image
-            src={product.image}
-            alt={product.name}
+            src={productImage}
+            alt={productName}
             fill
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -42,27 +78,26 @@ function WishlistCard({ product, onRemove }) {
               e.target.src =
                 "https://via.placeholder.com/300x300?text=Product+Image";
             }}
-            unoptimized={product.image?.includes("amazonaws.com")}
+            unoptimized={productImage?.includes("amazonaws.com")}
           />
         </div>
         {/* Heart overlay */}
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(product.id);
-          }}
+          onClick={handleRemove}
           aria-label="Remove from wishlist"
-          className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 sm:p-2 hover:scale-105 transition-transform cursor-pointer"
+          className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 sm:p-2 hover:scale-105 transition-transform cursor-pointer z-10"
         >
           <FaHeart className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
         </button>
       </div>
       <div className="p-2">
         <h3 className="text-xs font-semibold text-gray-900 mb-1 line-clamp-2">
-          {product.name}
+          {productName}
         </h3>
-        <p className="text-[10px] text-gray-600 mb-2">{product.type}</p>
+        {productType && (
+          <p className="text-[10px] text-gray-600 mb-2">{productType}</p>
+        )}
         <div className="flex items-center gap-2 whitespace-nowrap">
           <span
             className="font-bold tracking-tight text-xs sm:text-sm md:text-base lg:text-base"
@@ -72,12 +107,12 @@ function WishlistCard({ product, onRemove }) {
               ₹
             </span>
             <span className="ml-1">
-              {(product.price ?? 0).toLocaleString()}
+              {Number(price).toLocaleString()}
             </span>
           </span>
-          {product.originalPrice ? (
+          {originalPrice && originalPrice > price ? (
             <span className="text-gray-500 tracking-tight line-through decoration-from-font decoration-gray-400 leading-none text-[10px] sm:text-xs md:text-sm lg:text-sm">
-              ₹ {(product.originalPrice ?? 0).toLocaleString()}
+              ₹ {Number(originalPrice).toLocaleString()}
             </span>
           ) : null}
         </div>
@@ -87,17 +122,12 @@ function WishlistCard({ product, onRemove }) {
 }
 
 export default function WishlistPage() {
-  const [sortBy, setSortBy] = useState("Featured");
-  const { items, remove } = useWishlist();
+  const { wishlistItems, removeItem, isLoading, totalItems } = useWishlist();
 
   const products = useMemo(() => {
-    const list = [...items];
-    if (sortBy === "Price: Low to High")
-      return list.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-    if (sortBy === "Price: High to Low")
-      return list.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-    return list; // Featured/Newest/Popular fall back to stored order
-  }, [items, sortBy]);
+    if (!wishlistItems || wishlistItems.length === 0) return [];
+    return wishlistItems;
+  }, [wishlistItems]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -109,65 +139,32 @@ export default function WishlistPage() {
               Wishlist
             </h1>
           </div>
-
-          <div className="flex items-center gap-1 relative">
-            <span className="text-sm text-gray-600">
-              Sort by:
-            </span>
-            <div
-              className="relative flex items-center"
-              style={{ marginRight: "12px" }}
-            >
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="pl-0 pr-6 py-0 text-sm bg-white appearance-none focus:outline-none font-semibold text-gray-800"
-                style={{
-                  border: "none",
-                  boxShadow: "none",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  MozAppearance: "none",
-                  appearance: "none",
-                  paddingLeft: "0rem",
-                  paddingRight: "1.5rem",
-                  height: "24px",
-                  lineHeight: "24px",
-                  minWidth: "80px",
-                  cursor: "pointer",
-                }}
-              >
-                {sortOptions.map((option) => (
-                  <option key={option} value={option} className="font-normal">
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <Image
-                src="/dropdownicon.svg"
-                alt="dropdown"
-                width={12}
-                height={12}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none"
-                style={{ minWidth: "12px", minHeight: "12px" }}
-              />
-            </div>
-          </div>
         </div>
 
-        {products.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center text-gray-600 py-16">
+            Loading wishlist...
+          </div>
+        ) : products.length === 0 ? (
           <div className="text-center text-gray-600 py-16">
             Your wishlist is empty
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-            {products.map((product) => (
-              <WishlistCard
-                key={product.id}
-                product={product}
-                onRemove={remove}
-              />
-            ))}
+            {products.map((item, index) => {
+              // Create a unique key from product and variant IDs
+              const productId = item.product?._id || item.product?.id || item._id;
+              const variantId = item.variant?._id || item.variant?.id;
+              const key = variantId ? `${productId}_${variantId}` : productId || `wishlist-item-${index}`;
+              
+              return (
+                <WishlistCard
+                  key={key}
+                  item={item}
+                  onRemove={removeItem}
+                />
+              );
+            })}
           </div>
         )}
       </div>

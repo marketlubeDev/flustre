@@ -60,7 +60,7 @@ export default function FeaturedProductCard({ product }) {
           priority={false}
         />
         {/* Wishlist Button */}
-        <button
+        {/* <button
           className="absolute top-2 md:top-2 lg:top-3 left-2 md:left-2 lg:left-3 w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 flex items-center justify-center bg-white/90 rounded-full shadow hover:scale-105 transition-transform"
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(e) => {
@@ -74,7 +74,7 @@ export default function FeaturedProductCard({ product }) {
           ) : (
             <CiHeart className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 text-gray-800" />
           )}
-        </button>
+        </button> */}
       </div>
 
       {/* Product Info */}

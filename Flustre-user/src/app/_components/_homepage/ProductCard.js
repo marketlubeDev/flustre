@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FaHeart } from "react-icons/fa6";
 import { CiHeart } from "react-icons/ci";
-import { useWishlist } from "../../_components/context/WishlistContext";
+import { useWishlist } from "@/lib/hooks/useWishlist";
 import Button from "@/app/_components/common/Button";
 
 import useCart from "@/lib/hooks/useCart";
@@ -71,7 +71,7 @@ export default function ProductCard({
           />
         </div>
         {/* Wishlist Heart */}
-        <button
+        {/* <button
           type="button"
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 sm:p-2 shadow hover:scale-105 transition-transform"
@@ -85,7 +85,7 @@ export default function ProductCard({
           ) : (
             <CiHeart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
           )}
-        </button>
+        </button> */}
         {/* Badge */}
         {showBadge && (
           <div className="absolute top-2 left-0 flex items-center shadow-lg">

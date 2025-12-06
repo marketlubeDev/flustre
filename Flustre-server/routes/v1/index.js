@@ -19,6 +19,7 @@ const couponRouter = require("./couponRoute");
 const reviewRouter = require("./reviewRoutes");
 const s3UploadRouter = require("./s3UploadRoutes");
 const instaCarouselRouter = require("./instaCarouselRoutes");
+const wishListRouter = require("./wishListRoutes");
 
 v1Router.use("/user", userRouter);
 v1Router.use("/product", productRouter);
@@ -39,6 +40,7 @@ v1Router.use("/cart", cartRouter);
 v1Router.use("/coupon", couponRouter);
 v1Router.use("/review", reviewRouter);
 v1Router.use("/s3-upload", s3UploadRouter);
+v1Router.use("/wishlist", wishListRouter);
 v1Router.use("/insta-carousel", instaCarouselRouter);
 
 module.exports = v1Router;

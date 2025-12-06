@@ -20,6 +20,7 @@ import CartSidebar from "../../_components/cart/CartSidebar";
 import useProductDetails from "@/lib/hooks/useProductDetails";
 import { useCoupons } from "@/lib/hooks/useCoupons";
 import useCart from "@/lib/hooks/useCart";
+import { useWishlist } from "@/lib/hooks/useWishlist";
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -31,9 +32,12 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [showMoreCoupons, setShowMoreCoupons] = useState(false);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
-  const [wishlistItems, setWishlistItems] = useState([]);
   const [cartLoading, setCartLoading] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Wishlist hook
+  const { toggleItem: toggleWishlistItem, isInWishlist } = useWishlist();
 
   // Fetch product details from API
   const { product: apiProduct, loading, error } = useProductDetails(productId);
@@ -130,18 +134,37 @@ export default function ProductDetailPage() {
     setSelectedImage(0);
   }, [selectedVariant]);
 
-  // Static wishlist functions
-  const toggleWishlistItem = (product) => {
-    const isInWishlist = wishlistItems.some((item) => item.id === product.id);
-    if (isInWishlist) {
-      setWishlistItems((prev) => prev.filter((item) => item.id !== product.id));
-    } else {
-      setWishlistItems((prev) => [...prev, product]);
-    }
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    if (typeof window === "undefined") return false;
+    const token =
+      window.localStorage?.getItem("token") ||
+      window.localStorage?.getItem("userToken");
+    return !!token;
   };
 
-  const isInWishlist = (id) => {
-    return wishlistItems.some((item) => item.id === id);
+  // Wishlist handler that works with product object
+  const handleToggleWishlist = (product) => {
+    // Check if user is logged in
+    if (!isAuthenticated()) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const prodId = product?.id || product?._id || params.id;
+    const variantId = product?.variants?.[selectedVariant]?._id || 
+                     product?.variants?.[selectedVariant]?.id || 
+                     null;
+    toggleWishlistItem(prodId, variantId);
+  };
+
+  // Check if product is in wishlist
+  const checkIsInWishlist = (id) => {
+    const prodId = id || product?.id || product?._id || params.id;
+    const variantId = product?.variants?.[selectedVariant]?._id || 
+                     product?.variants?.[selectedVariant]?.id || 
+                     null;
+    return isInWishlist(prodId, variantId);
   };
 
   // Filter coupons based on applyTo type and product eligibility
@@ -414,8 +437,8 @@ export default function ProductDetailPage() {
               selectedImage={selectedImage}
               setSelectedImage={setSelectedImage}
               selectedVariant={selectedVariant}
-              toggleWishlistItem={toggleWishlistItem}
-              isInWishlist={isInWishlist}
+              toggleWishlistItem={handleToggleWishlist}
+              isInWishlist={checkIsInWishlist}
             />
           </div>
           {/* Product Info */}
@@ -445,6 +468,35 @@ export default function ProductDetailPage() {
 
       {/* Cart Sidebar */}
       <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {/* Login Modal for Wishlist */}
+      <Modal
+        open={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
+        footer={null}
+        centered
+      >
+        <div className="p-4">
+          <h3 className="text-xl font-semibold mb-4">Login Required</h3>
+          <p className="text-gray-600 mb-6">
+            Please login to add products to your wishlist.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button onClick={() => setShowLoginModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => {
+                setShowLoginModal(false);
+                router.push("/login");
+              }}
+            >
+              Login
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
