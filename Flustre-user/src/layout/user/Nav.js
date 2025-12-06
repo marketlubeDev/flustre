@@ -12,12 +12,8 @@ import { logout } from "@/features/user/userSlice";
 
 import LocationModal from "../../app/_components/common/LocationModal";
 
-// Import your data
-import {
-  featuredProducts as fp,
-  bestSellers as bs,
-  catalogProducts,
-} from "../../lib/data";
+// Import API service
+import { fetchProducts } from "../../lib/services/productService";
 
 // Custom hook to detect bigTablet screen
 function useBigTablet() {
@@ -46,6 +42,7 @@ function NavContent() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [authToken, setAuthToken] = useState(null);
@@ -63,6 +60,7 @@ function NavContent() {
 
   // Refs
   const resultsRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   // Hooks
   const router = useRouter();
@@ -118,53 +116,84 @@ function NavContent() {
     }
   }, [pathname]);
 
-  // Build product search list
-  const allProducts = useMemo(() => {
-    const fpProducts = (fp || []).map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      image: p.image,
-      price: p.price,
-      originalPrice: p.originalPrice,
-      category: p.category,
-    }));
-
-    const bsProducts = (bs || []).map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      image: p.image,
-      price: p.price,
-      originalPrice: p.originalPrice,
-      category: p.category,
-    }));
-
-    const catalogProductsList = (catalogProducts || []).map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      image: p.image,
-      price: p.price ? `₹${p.price}` : undefined,
-      originalPrice: p.originalPrice,
-      category: p.category || p.type,
-    }));
-
-    return [...fpProducts, ...bsProducts, ...catalogProductsList];
-  }, []);
-
-  // Search functionality
+  // Search functionality with API call
   useEffect(() => {
-    const q = searchQuery.trim().toLowerCase();
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    const q = searchQuery.trim();
     if (!q) {
       setSearchResults([]);
+      setIsSearchLoading(false);
       return;
     }
 
-    const nameMatches = allProducts.filter((p) =>
-      p.name.toLowerCase().includes(q)
-    );
-    const results = nameMatches.slice(0, 8);
+    // Create AbortController for request cancellation
+    const abortController = new AbortController();
 
-    setSearchResults(results);
-  }, [searchQuery, allProducts]);
+    // Debounce API call
+    setIsSearchLoading(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetchProducts(
+          {
+            search: q,
+            limit: 8,
+            page: 1,
+          },
+          abortController.signal
+        );
+
+        // Extract products from API response
+        const products = Array.isArray(response?.data?.products)
+          ? response.data.products
+          : [];
+
+        // Map API products to search results format
+        const mappedResults = products.map((product) => {
+          const firstVariant =
+            Array.isArray(product?.variants) && product.variants.length > 0
+              ? product.variants[0]
+              : null;
+
+          const price = firstVariant?.price ?? product?.price ?? 0;
+          const image =
+            firstVariant?.images?.[0] ||
+            product?.featureImages?.[0] ||
+            product?.primaryImage ||
+            "/placeholder.png";
+
+          return {
+            id: String(product?._id || product?.id || ""),
+            name: product?.name || "",
+            image: image,
+            price: price > 0 ? `₹${price}` : undefined,
+            originalPrice: firstVariant?.compareAtPrice ?? product?.compareAtPrice,
+            category: product?.category?.name || product?.category || "",
+          };
+        });
+
+        setSearchResults(mappedResults);
+      } catch (error) {
+        // Ignore abort errors
+        if (error?.name !== "CanceledError" && error?.name !== "AbortError") {
+          console.error("Error searching products:", error);
+          setSearchResults([]);
+        }
+      } finally {
+        setIsSearchLoading(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      abortController.abort();
+    };
+  }, [searchQuery]);
 
   // Close search results on outside click
   useEffect(() => {
@@ -519,7 +548,12 @@ function NavContent() {
                         ref={resultsRef}
                         className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[400px] md:w-[700px] lg:w-[520px] xl:w-[640px] bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-auto z-50"
                       >
-                        {searchResults.length > 0 ? (
+                        {isSearchLoading ? (
+                          <div className="flex items-center justify-center gap-2 px-4 py-6 text-gray-500">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#2B73B8]"></div>
+                            <span className="text-sm">Searching...</span>
+                          </div>
+                        ) : searchResults.length > 0 ? (
                           searchResults.map((p) => (
                             <div
                               key={`${p.id}-${p.name}`}
@@ -962,7 +996,12 @@ function NavContent() {
                     </div>
                     {searchQuery.trim().length > 0 && (
                       <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-auto z-50">
-                        {searchResults.length > 0 ? (
+                        {isSearchLoading ? (
+                          <div className="flex items-center justify-center gap-2 px-4 py-6 text-gray-500">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#2B73B8]"></div>
+                            <span className="text-sm">Searching...</span>
+                          </div>
+                        ) : searchResults.length > 0 ? (
                           searchResults.map((p) => (
                             <div
                               key={`${p.id}-${p.name}`}
