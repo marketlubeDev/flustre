@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Drawer, Select } from "antd";
 import { IoClose } from "react-icons/io5";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
@@ -17,16 +17,22 @@ import { triggerOrderUpdated } from "@/utils/menuCountUtils";
 
 const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [localOrder, setLocalOrder] = useState(order || null);
 
-  const title = order
-    ? `Order #${order._id?.slice(-6)?.toUpperCase()}`
+  // Update local order when order prop changes
+  useEffect(() => {
+    setLocalOrder(order || null);
+  }, [order]);
+
+  const title = localOrder
+    ? `Order #${localOrder?._id?.slice(-6)?.toUpperCase()}`
     : "Order details";
 
   // Local state moved into dedicated section components
   const createdAtParts = useMemo(() => {
-    if (!order?.createdAt) return null;
+    if (!localOrder?.createdAt) return null;
     try {
-      const d = new Date(order.createdAt);
+      const d = new Date(localOrder.createdAt);
       const day = d.toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
@@ -41,24 +47,24 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
     } catch (_) {
       return null;
     }
-  }, [order?.createdAt]);
+  }, [localOrder?.createdAt]);
 
   const subtotal = useMemo(() => {
-    if (!order?.products) return 0;
-    return order.products.reduce(
-      (sum, p) => sum + (p.price || 0) * (p.quantity || 0),
+    if (!localOrder?.products) return 0;
+    return localOrder.products.reduce(
+      (sum, p) => sum + ((p?.price || 0) * (p?.quantity || 0)),
       0
     );
-  }, [order?.products]);
+  }, [localOrder?.products]);
 
   const gst = useMemo(() => {
     // example 18% GST if not provided
-    const explicit = order?.taxAmount;
+    const explicit = localOrder?.taxAmount;
     if (typeof explicit === "number") return explicit;
     return Math.round(subtotal * 0.18);
-  }, [order?.taxAmount, subtotal]);
+  }, [localOrder?.taxAmount, subtotal]);
 
-  const shipping = order?.shippingAmount ?? 0;
+  const shipping = localOrder?.shippingAmount ?? 0;
   const grandTotal = useMemo(
     () => subtotal + gst + shipping,
     [subtotal, gst, shipping]
@@ -108,36 +114,29 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
     );
   };
 
-  const paymentBadge = (value) => {
-    const paid = value === "paid";
-    return (
-      <span
-        className={`inline-flex items-center gap-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-          paid
-            ? "bg-status-delivered/10 text-status-delivered"
-            : "bg-status-pending/10 text-status-pending"
-        }`}
-      >
-        <span
-          className={`w-1.5 h-1.5 rounded-full ${
-            paid ? "bg-green-500" : "bg-yellow-500"
-          }`}
-        />
-        {paid ? "Paid" : "Pending"}
-      </span>
-    );
-  };
+0
+
 
   const printInvoice = () => {
     window.print();
   };
 
   const handleStatusChange = async (newStatus) => {
-    if (!order?._id) return;
+    if (!localOrder?._id) return;
 
     try {
       setIsUpdatingStatus(true);
-      await updateOrderStatus(order._id, newStatus, "order");
+      await updateOrderStatus(localOrder._id, newStatus, "order");
+      
+      // Update local order immediately for instant UI feedback
+      setLocalOrder((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          status: newStatus,
+        };
+      });
+      
       toast.success("Order status updated successfully");
 
       // Trigger menu count updates
@@ -167,11 +166,11 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
   return (
     <Drawer
       title={
-        order ? (
+        localOrder ? (
           <div className="flex items-center justify-between w-full">
             <div>
               <div className="text-base font-semibold text-[#000000] text-[28px]">
-                #{order._id?.slice(-6)?.toUpperCase()}
+                #{localOrder._id?.slice(-6)?.toUpperCase()}
               </div>
               <div className="text-[12px] text-gray-500 font-[500] mt-0.5 flex items-center">
                 {createdAtParts ? (
@@ -183,7 +182,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
                 ) : null}
               </div>
             </div>
-            {renderStatusBadge(order.status)}
+            {renderStatusBadge(localOrder?.status)}
           </div>
         ) : (
           <span>{title}</span>
@@ -220,7 +219,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
         },
       }}
       footer={
-        order ? (
+        localOrder ? (
           <div className="px-4 py-2">
             <Button
               onClick={printInvoice}
@@ -236,7 +235,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
         ) : null
       }
     >
-      {!order ? (
+      {!localOrder ? (
         <div className="text-sm text-gray-500">No order selected.</div>
       ) : (
         <div className="space-y-3">
@@ -246,7 +245,7 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
               Update Order Status
             </label>
             <Select
-              value={order.status}
+              value={localOrder?.status}
               onChange={handleStatusChange}
               loading={isUpdatingStatus}
               disabled={isUpdatingStatus}
@@ -257,21 +256,21 @@ const OrdersDrawer = ({ open, onClose, order, onOrderUpdate }) => {
           </div>
 
           {/* Customer Information */}
-          <OrderCustomerBasics order={order} />
+          <OrderCustomerBasics order={localOrder} />
 
           {/* Products */}
-          <OrderProducts order={order} />
+          <OrderProducts order={localOrder} />
 
           {/* Payment status */}
-          <OrderPaymentStatus order={order} />
+          <OrderPaymentStatus order={localOrder} />
 
           {/* Pricing */}
-          <OrderPricing order={order} />
+          <OrderPricing order={localOrder} />
 
           {/* Order status timeline */}
           <OrderStatusTimeline
-            createdAt={order?.createdAt}
-            status={order?.status}
+            createdAt={localOrder?.createdAt}
+            status={localOrder?.status}
           />
         </div>
       )}

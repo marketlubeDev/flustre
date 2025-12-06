@@ -415,8 +415,6 @@ const listProducts = catchAsync(async (req, res, next) => {
   } = req.query;
 
 
-  console.log(req.query , "req.query>>>");
-
   page = parseInt(page) || 1;
   const noPagination = String(req.query.limit).toLowerCase() === "all";
   limit = noPagination ? undefined : parseInt(limit) || 10;

@@ -1,175 +1,14 @@
-import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/common";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState,  } from "react";
 import OrdersSearchFilters from "./Components/OrdersSearchFilters";
 import OrdersTabs from "./Components/OrdersTabs";
 import OrdersTable from "./Components/OrdersTable";
 import OrdersDrawer from "./Components/OrdersDrawer";
 import OrdersPagination from "./Components/OrdersPagination";
 import { getOrders, getOrderStats } from "@/sevices/OrderApis";
+import { getAllCategories } from "@/sevices/categoryApis";
+import { getAllSubCategories } from "@/sevices/subcategoryApis";
 
-// Mock data
-const mockOrders = [
-  {
-    _id: "66f8b2c4d1a2b3e4f5g6h7i8",
-    products: [
-      {
-        _id: "p1",
-        productId: {
-          name: "Premium Wireless Headphones",
-          images: [
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop",
-          ],
-        },
-        quantity: 2,
-        price: 2999,
-      },
-    ],
-    createdAt: "2024-01-15T10:30:00Z",
-    deliveryAddress: {
-      fullName: "John Doe",
-      phoneNumber: "+91 9876543210",
-      building: "A-101, Royal Apartments",
-      street: "MG Road",
-      landmark: "Near Metro Station",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560001",
-    },
-    totalAmount: 6498,
-    paymentStatus: "paid",
-    status: "delivered",
-  },
-  {
-    _id: "77g9c3d5e2b4f6h8i9j0k1l2",
-    products: [
-      {
-        _id: "p2",
-        productId: {
-          name: "Smartphone Case with Stand",
-          images: [
-            "https://images.unsplash.com/photo-1601593346740-925612772716?w=300&h=300&fit=crop",
-          ],
-        },
-        quantity: 1,
-        price: 1299,
-      },
-    ],
-    createdAt: "2024-01-14T15:45:00Z",
-    deliveryAddress: {
-      fullName: "Jane Smith",
-      phoneNumber: "+91 8765432109",
-      building: "B-205, Green Valley",
-      street: "Whitefield Road",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560066",
-    },
-    totalAmount: 1299,
-    paymentStatus: "pending",
-    status: "processing",
-  },
-  {
-    _id: "88h0d4e6f3c5g7i9j1k2l3m4",
-    products: [
-      {
-        _id: "p3",
-        productId: {
-          name: "Bluetooth Gaming Mouse",
-          images: [
-            "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=300&fit=crop",
-          ],
-        },
-        quantity: 3,
-        price: 899,
-      },
-    ],
-    createdAt: "2024-01-13T09:15:00Z",
-    deliveryAddress: {
-      fullName: "Mike Johnson",
-      phoneNumber: "+91 7654321098",
-      building: "C-302, Tech Park",
-      street: "Electronic City",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560100",
-    },
-    totalAmount: 2697,
-    paymentStatus: "paid",
-    status: "shipped",
-  },
-  {
-    _id: "99i1e5f7g4d6h8j0k2l3m4n5",
-    products: [
-      {
-        _id: "p4",
-        productId: {
-          name: "Wireless Mechanical Keyboard",
-          images: [
-            "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=300&h=300&fit=crop",
-          ],
-        },
-        quantity: 1,
-        price: 4599,
-      },
-    ],
-    createdAt: "2024-01-12T14:20:00Z",
-    deliveryAddress: {
-      fullName: "Sarah Wilson",
-      phoneNumber: "+91 6543210987",
-      building: "D-401, Sunrise Heights",
-      street: "Koramangala 5th Block",
-      landmark: "Near Forum Mall",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560095",
-    },
-    totalAmount: 4599,
-    paymentStatus: "paid",
-    status: "delivered",
-  },
-  {
-    _id: "00j2f6g8h5e7i9k1l3m4n5o6",
-    products: [
-      {
-        _id: "p5",
-        productId: {
-          name: "Smart Fitness Watch",
-          images: [
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop",
-          ],
-        },
-        quantity: 2,
-        price: 12999,
-      },
-    ],
-    createdAt: "2024-01-11T11:30:00Z",
-    deliveryAddress: {
-      fullName: "David Brown",
-      phoneNumber: "+91 5432109876",
-      building: "E-102, Lake View Apartments",
-      street: "Ulsoor Lake Road",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560008",
-    },
-    totalAmount: 25998,
-    paymentStatus: "pending",
-    status: "processing",
-  },
-];
 
-const orderStats = {
-  statusCounts: {
-    pending: 12,
-    processed: 8,
-    shipped: 15,
-    delivered: 25,
-    cancelled: 3,
-    onrefund: 2,
-    refunded: 5,
-  },
-};
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -185,6 +24,9 @@ const Orders = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [stats, setStats] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   // Handler functions
   const handleSearchChange = (value) => {
@@ -222,51 +64,76 @@ const Orders = () => {
     // TODO: Implement create order functionality
   };
 
-  // Mock categories and subcategories data
-  const categories = [
-    { id: "electronics", name: "Electronics" },
-    { id: "clothing", name: "Clothing" },
-    { id: "books", name: "Books" },
-    { id: "home", name: "Home & Garden" },
-    { id: "sports", name: "Sports" },
-  ];
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const response = await getAllCategories();
+        const categoriesData = 
+          response?.categories ||
+          response?.data?.categories ||
+          response?.envelop?.data ||
+          response?.data?.envelop?.data ||
+          [];
+        
+        // Transform to match Selector component format
+        const formattedCategories = categoriesData.map((category) => ({
+          id: category._id,
+          value: category._id,
+          name: category.name,
+          label: category.name,
+        }));
+        
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
 
-  const subcategories = {
-    electronics: [
-      { id: "smartphones", name: "Smartphones" },
-      { id: "laptops", name: "Laptops" },
-      { id: "headphones", name: "Headphones" },
-      { id: "cameras", name: "Cameras" },
-    ],
-    clothing: [
-      { id: "mens", name: "Men's Clothing" },
-      { id: "womens", name: "Women's Clothing" },
-      { id: "kids", name: "Kids Clothing" },
-      { id: "accessories", name: "Accessories" },
-    ],
-    books: [
-      { id: "fiction", name: "Fiction" },
-      { id: "non-fiction", name: "Non-Fiction" },
-      { id: "educational", name: "Educational" },
-      { id: "children", name: "Children's Books" },
-    ],
-    home: [
-      { id: "furniture", name: "Furniture" },
-      { id: "decor", name: "Home Decor" },
-      { id: "kitchen", name: "Kitchen & Dining" },
-      { id: "garden", name: "Garden Tools" },
-    ],
-    sports: [
-      { id: "fitness", name: "Fitness Equipment" },
-      { id: "outdoor", name: "Outdoor Gear" },
-      { id: "team-sports", name: "Team Sports" },
-      { id: "water-sports", name: "Water Sports" },
-    ],
-  };
+    fetchCategories();
+  }, []);
+
+  // Fetch subcategories from backend
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      try {
+        const response = await getAllSubCategories();
+        // Handle different response structures - API may return array directly or wrapped
+        const subcategoriesData = Array.isArray(response)
+          ? response
+          : response?.subcategories ||
+            response?.data?.subcategories ||
+            response?.data ||
+            [];
+        
+        // Transform to match Selector component format
+        const formattedSubcategories = subcategoriesData.map((subcategory) => ({
+          id: subcategory._id,
+          value: subcategory._id,
+          name: subcategory.name,
+          label: subcategory.name,
+          categoryId: subcategory.category?._id || subcategory.category,
+        }));
+        
+        setSubcategories(formattedSubcategories);
+      } catch (error) {
+        console.error("Error fetching subcategories:", error);
+        setSubcategories([]);
+      }
+    };
+
+    fetchSubcategories();
+  }, []);
 
   // Get current subcategories based on selected category
   const currentSubcategories = selectedCategory
-    ? subcategories[selectedCategory] || []
+    ? subcategories.filter(
+        (subcat) => subcat.categoryId === selectedCategory
+      )
     : [];
 
   // Order counts for tabs
@@ -326,6 +193,9 @@ const Orders = () => {
         if (selectedCategory) {
           params.push(`category=${encodeURIComponent(selectedCategory)}`);
         }
+        if (selectedSubcategory) {
+          params.push(`subcategory=${encodeURIComponent(selectedSubcategory)}`);
+        }
         const [start, end] = dateRange || [];
         if (start && end) {
           const startIso = new Date(
@@ -349,6 +219,16 @@ const Orders = () => {
         setOrders(apiOrders);
         setTotalPages(apiTotalPages);
         setStats(statsRes?.stats || statsRes || null);
+        
+        // Update selectedOrder if it exists
+        if (selectedOrder?._id) {
+          const updatedOrder = apiOrders.find(
+            (o) => o._id === selectedOrder._id
+          );
+          if (updatedOrder) {
+            setSelectedOrder(updatedOrder);
+          }
+        }
       } finally {
         setIsLoading(false);
       }
@@ -395,6 +275,9 @@ const Orders = () => {
         if (selectedCategory) {
           params.push(`category=${encodeURIComponent(selectedCategory)}`);
         }
+        if (selectedSubcategory) {
+          params.push(`subcategory=${encodeURIComponent(selectedSubcategory)}`);
+        }
 
         const [start, end] = dateRange || [];
         if (start && end) {
@@ -429,7 +312,7 @@ const Orders = () => {
     };
 
     fetchData();
-  }, [currentPage, selectedCategory, selectedStatus, activeTab, dateRange]);
+  }, [currentPage, selectedCategory, selectedSubcategory, selectedStatus, activeTab, dateRange]);
 
   return (
     <div className="bg-gradient-to-br from-background via-muted/30 to-brand-lighter/20 h-[calc(100dvh-64px)] overflow-hidden flex flex-col min-h-0">

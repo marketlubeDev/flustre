@@ -53,3 +53,8 @@ export async function verifyPayment({
   });
   return response.data;
 }
+
+export async function cancelOrder(orderId) {
+  const response = await axiosInstance.post(`/order/cancel-order/${orderId}`);
+  return response.data;
+}

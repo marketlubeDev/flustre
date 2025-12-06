@@ -548,7 +548,7 @@ const updateOrderStatus = catchAsync(async (req, res, next) => {
 });
 
 const filterOrders = catchAsync(async (req, res, next) => {
-  const { status, startDate, endDate, category, page, limit } = req.query;
+  const { status, startDate, endDate, category,subcategory, page, limit } = req.query;
 
   let filterCriteria = {};
 
@@ -568,9 +568,13 @@ const filterOrders = catchAsync(async (req, res, next) => {
     .find(filterCriteria)
     .populate({
       path: "products.productId",
-      select: "name images price category",
+      select: "name images price category subcategory",
       populate: {
         path: "category",
+        select: "name",
+      },
+      populate: {
+        path: "subcategory",
         select: "name",
       },
     })
@@ -600,6 +604,14 @@ const filterOrders = catchAsync(async (req, res, next) => {
     totalPages = Math.ceil(totalOrders / limit);
   }
 
+  if (subcategory) {
+    console.log(subcategory , "subcategory>>>");
+    orders = orders.filter((order) =>
+      order.products.some(
+        (product) => product.productId?.subcategory?._id.toString() === subcategory
+      )
+    );
+  }
   // if (orders.length === 0) {
   //   return res
   //     .status(404)
