@@ -214,17 +214,14 @@ function CustomerTable() {
                       </td>
                       <td className="px-6 py-4">
                         <Badge 
-                          variant={user.isBlocked ? "destructive" : "default"}
+                          variant={user?.isBlocked ? "destructive" : "default"}
                           className={
-                            user.isBlocked 
+                            user?.isBlocked 
                               ? "bg-destructive/10 text-destructive border-destructive/20" 
                               : "bg-status-active/10 text-status-active border-status-active/20"
                           }
                         >
-                          <div className={`w-2 h-2 rounded-full mr-2 ${
-                            user.isBlocked ? "bg-destructive" : "bg-status-active"
-                          }`} />
-                          {user.isBlocked ? "Blocked" : "Active"}
+                          {user?.isBlocked ? "Blocked" : "Active"}
                         </Badge>
                       </td>
                       <td className="px-6 py-4">
@@ -232,15 +229,15 @@ function CustomerTable() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleToggleBlock(user._id, user.isBlocked)}
+                            onClick={() => handleToggleBlock(user?.id, user?.isBlocked)}
                             disabled={loading || !user._id}
                             className={`border-input ${
-                              user.isBlocked 
+                              user?.isBlocked 
                                 ? "text-green-600 hover:text-green-700 hover:bg-green-50" 
                                 : "text-red-600 hover:text-red-700 hover:bg-red-50"
                             }`}
                           >
-                            {user.isBlocked ? (
+                            {user?.isBlocked ? (
                               <>
                                 <UserCheck className="w-4 h-4 mr-1" />
                                 Unblock

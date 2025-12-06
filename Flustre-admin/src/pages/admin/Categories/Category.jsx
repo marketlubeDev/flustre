@@ -347,7 +347,7 @@ function Category() {
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
+          {/* <div>
             <p className="text-sm text-gray-700">
               Showing{" "}
               <span className="font-medium">
@@ -359,8 +359,8 @@ function Category() {
               </span>{" "}
               of <span className="font-medium">{totalItems}</span> results
             </p>
-          </div>
-          <div>
+          </div> */}
+          <div className="w-full flex justify-end">
             <nav
               className="isolate inline-flex -space-x-px rounded-md shadow-sm"
               aria-label="Pagination"

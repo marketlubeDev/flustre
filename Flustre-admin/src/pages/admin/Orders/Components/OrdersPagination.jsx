@@ -9,8 +9,8 @@ const OrdersPagination = ({
   getPageNumbers,
 }) => {
   return (
-    <div className="bg-white px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-      <div className="flex items-center space-x-2">
+    <div className="bg-white px-6 py-4 border-t border-gray-200 flex items-center justify-end">
+      {/* <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-700">Rows per page</span>
         <select
           className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#3573BA] focus:border-transparent"
@@ -25,16 +25,16 @@ const OrdersPagination = ({
           <option value="25">25</option>
           <option value="50">50</option>
         </select>
-      </div>
+      </div> */}
 
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-700">
           Showing {(currentPage - 1) * 9 + 1} to{" "}
           {Math.min(currentPage * 9, orders.length)} of {orders.length} results
         </span>
-      </div>
+      </div> */}
 
-      <div className="flex items-center space-x-1">
+      <div className="flex justify-end items-center space-x-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
